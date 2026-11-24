@@ -1,0 +1,18 @@
+{
+  "name": "ce",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Continuous Evidence — automated verification that produces inspectable runtime evidence for software changes.",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

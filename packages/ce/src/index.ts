@@ -1,0 +1,33 @@
+/**
+ * Continuous Evidence — core entry point.
+ *
+ * v0 implementation spike (Milestone 1: Prove the Concept).
+ * The pipeline follows the four core responsibilities defined in SPEC.md §4.2:
+ *
+ *   Context Resolver → Assessment Engine → Capability Runtime → Evidence Output
+ *
+ * Internal structure is intentionally minimal until the first end-to-end
+ * evidence run demonstrates which module boundaries are actually needed.
+ */
+
+export const VERSION = '0.1.0';
+
+/**
+ * Runs the CE pipeline for the current change context.
+ *
+ * Outcome contract (SPEC.md §7.1): every run MUST resolve to exactly one of
+ * SKIPPED | EVIDENCED | UNSUPPORTED | ERROR.
+ */
+export type ExecutionOutcome = 'SKIPPED' | 'EVIDENCED' | 'UNSUPPORTED' | 'ERROR';
+
+export interface RunResult {
+  outcome: ExecutionOutcome;
+}
+
+export async function run(): Promise<RunResult> {
+  // TODO(Milestone 1): implement the vertical slice.
+  // Hypothesis under test: Jev + generic browser capabilities can produce
+  // relevant runtime evidence for a software change, without a generative
+  // agent harness.
+  throw new Error('CE v0 implementation spike: not implemented yet');
+}

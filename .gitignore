@@ -1,0 +1,24 @@
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Continuous Evidence local evidence storage (v0: local filesystem)
+.ce/
+
+# Environment (Jev API key)
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.DS_Store
+
+# agent
+.agent/
+.worktree/
+.worktrees/
+.claude/
+.pi/
+.agents/
+skills-lock.json
+agent/
