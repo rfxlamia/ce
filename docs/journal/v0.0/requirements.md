@@ -223,3 +223,18 @@ claimed, what CE did, and what it saw, without re-running anything.
 3. An end-to-end test SHALL run CE against `examples/demo-app` for at least
    one `SKIPPED`, one `EVIDENCED` and one `UNSUPPORTED` scenario, with Jev
    replaced by a recorded fake.
+
+## R13 — Dogfooding
+
+**User story:** As the CE maintainer, I want CE to verify changes to CE's own
+landing page in this repository, so that the project shows it works on a real
+app it did not write tests for.
+
+1. The repository SHALL contain a React landing page under `apps/site/` that
+   is unaware of CE, deployed to a public URL.
+2. The repository's own workflow SHALL run CE through the local Action
+   (`uses: ./`) on pull requests that touch `apps/site/`.
+3. WHEN a pull request comes from a fork (no secrets available) THEN the
+   workflow SHALL report that CE could not run and SHALL NOT expose secrets
+   (`pull_request`, never `pull_request_target`).
+4. The landing page SHALL link to the latest CE report produced for it.
