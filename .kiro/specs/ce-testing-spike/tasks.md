@@ -116,7 +116,7 @@ Constraints that apply to every task:
 - [x] 6. Checkpoint - Ensure all tests pass
   - Run the harness tests and `npm run typecheck` from the repository root to confirm `packages/ce` is unaffected. Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 7. Live run and reconciliation (manual, needs the user)
+- [x] 7. Live run and reconciliation (manual, needs the user)
   - [x] 7.1 **[USER-RUN, no key needed]** Capture the demo-app screenshot fixture
     - Start `examples/demo-app` in a terminal, then run the `capture-screenshot.ts` script from task 4.4 against its URL. Confirm `fixtures/demo-app-screenshot.png` exists and shows the intended subject.
     - _Requirements: 2.2_
@@ -138,11 +138,11 @@ Constraints that apply to every task:
     - For each non-`confirmed` check, update the affected sections (candidates from the spec design: `box` needing `jev-preview`, image header requirement, `score` answer shape). If all checks are `confirmed`, mark the section 12 open question resolved and link the Findings_Document. Keep consistent with `SPEC.md` and leave `SPEC.md` unchanged.
     - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-  - [~] 7.6 **[USER-RUN]** Commit and close issue #3
+  - [x] 7.6 **[USER-RUN]** Commit and close issue #3
     - Commit the Findings_Document, samples, design changes, and harness (never `.env`). Close issue #3 once all four checks have a status.
     - _Requirements: 9.1, 9.2, 9.4_
 
-- [~] 8. Final checkpoint - Ensure all tests pass
+- [x] 8. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

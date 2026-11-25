@@ -409,6 +409,11 @@
         "executionId": "1a7b5abf-8cfb-430a-bbd6-16e04803c1e3",
         "chatSessionId": "sess_b8caa664-0f0a-45d7-9bfc-23037dd84d49",
         "timestamp": 1795594449223
+      },
+      {
+        "executionId": "1e7d62e5-4853-4822-b7fb-464c1e7109a3",
+        "chatSessionId": "sess_b8caa664-0f0a-45d7-9bfc-23037dd84d49",
+        "timestamp": 1795600363079
       }
     ],
     "8. Final checkpoint - Ensure all tests pass": [
@@ -416,6 +421,11 @@
         "executionId": "1a7b5abf-8cfb-430a-bbd6-16e04803c1e3",
         "chatSessionId": "sess_b8caa664-0f0a-45d7-9bfc-23037dd84d49",
         "timestamp": 1795594449304
+      },
+      {
+        "executionId": "1e7d62e5-4853-4822-b7fb-464c1e7109a3",
+        "chatSessionId": "sess_b8caa664-0f0a-45d7-9bfc-23037dd84d49",
+        "timestamp": 1795600375647
       }
     ],
     "1. Scaffold the harness and environment tooling": [
@@ -444,6 +454,13 @@
         "executionId": "1a7b5abf-8cfb-430a-bbd6-16e04803c1e3",
         "chatSessionId": "sess_b8caa664-0f0a-45d7-9bfc-23037dd84d49",
         "timestamp": 1795595401019
+      }
+    ],
+    "7. Live run and reconciliation (manual, needs the user)": [
+      {
+        "executionId": "1e7d62e5-4853-4822-b7fb-464c1e7109a3",
+        "chatSessionId": "sess_b8caa664-0f0a-45d7-9bfc-23037dd84d49",
+        "timestamp": 1795600363177
       }
     ]
   }
