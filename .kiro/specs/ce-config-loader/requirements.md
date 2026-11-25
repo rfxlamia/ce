@@ -42,7 +42,9 @@ Out of scope: the CLI command wiring (`ce run`, `ce init`), writing `run.json` a
 - **Environment**: The set of environment variables passed to the Config_Loader as an object (defaults to `process.env`).
 - **Effective_Config**: The validated configuration after merging all Config_Sources by precedence. Its type is the zod-inferred type of the Config_Schema and carries no metadata.
 - **Redacted_Config**: The Effective_Config with all secrets removed, for the Evidence bundle.
-- **Secret**: A credential value, namely the value of `OPENROUTER_API_KEY` or `TYPESAFE_API_KEY` or a value matching a configured redaction secret.
+- **Secret**: A credential value, namely the value of a Secret_Variable (`OPENROUTER_API_KEY`, `TYPESAFE_API_KEY`, or another environment variable selected by name pattern, as defined by `collectSecretValues` in `config/secrets.ts`) or a value matching a configured redaction secret.
+- **Secret_Variable**: An environment variable whose value is a Secret, as defined by the Secret_Definition (`collectSecretValues(env)` in `config/secrets.ts`). It covers `OPENROUTER_API_KEY` and `TYPESAFE_API_KEY` and the variables whose names match `CREDENTIAL_KEY_NAME_PATTERN` or `/api[-_]key/i` (with the value conditions stated in the ce-context-resolver spec, Requirement 5.3 and Decision D13).
+- **Secret_Value_Function**: The function `redactSecretValues(text, secrets)` in `config/secrets.ts` that removes secret values from text and is idempotent (ce-context-resolver spec, Decision D23).
 - **Validation_Error**: A structured error with `path`, `value` and `expected` fields, produced when a configuration value violates the Config_Schema.
 - **Config_Error_Report**: The human-readable text that lists every Validation_Error.
 - **Redact_Pattern**: One item of `context.redact`. It is either a plain JavaScript RegExp source (for example `token\s*[:=]\s*\S+`) or the delimited form `/pattern/flags` (for example `/token\s*[:=]\s*\S+/i`).
@@ -185,12 +187,12 @@ Out of scope: the CLI command wiring (`ce run`, `ce init`), writing `run.json` a
 
 1. WHEN the Config_Loader succeeds, THE Config_Loader SHALL return the Effective_Config, the Config_Meta and the Redacted_Config together, as the Loaded_Config.
 2. THE Redacted_Config SHALL contain every key of the Effective_Config with its resolved value, except values that are Secrets.
-3. THE Redacted_Config SHALL NOT contain the value of `OPENROUTER_API_KEY` or `TYPESAFE_API_KEY` in any key, any value or any metadata field.
+3. THE Redacted_Config SHALL NOT contain the value of any Secret_Variable (including `OPENROUTER_API_KEY`, `TYPESAFE_API_KEY` and variables selected by name pattern) in any key, any value or any metadata field.
 4. THE Redacted_Config SHALL contain no credential values at all, because the Config_Schema defines no key that holds a credential.
 5. THE Redacted_Config SHALL record `jev.provider` and the name of the environment variable that supplies the credential (`OPENROUTER_API_KEY` or `TYPESAFE_API_KEY`), and SHALL NOT record the credential value.
-6. WHEN any string value in the Effective_Config contains a Secret as a substring, THE Config_Loader SHALL replace that substring with `[REDACTED]` in the Redacted_Config.
+6. WHEN any string value in the Effective_Config contains a Secret as a substring, THE Config_Loader SHALL remove that substring from the Redacted_Config by applying the Secret_Value_Function (`buildRedactedConfig` uses `redactSecretValues`), which replaces it with `[REDACTED]`.
 7. THE Redacted_Config SHALL be a plain JSON-serializable object.
-8. FOR ALL Effective_Configs and Secret values, serializing the Redacted_Config to JSON SHALL give text that contains no Secret as a substring (redaction property).
+8. FOR ALL Effective_Configs and Secret values (including Secret_Variable values selected by name pattern), serializing the Redacted_Config to JSON SHALL give text that contains no Secret as a substring, where `buildRedactedConfig` removes secrets with the Secret_Value_Function (redaction property).
 9. FOR ALL Effective_Configs, THE redaction operation applied to a Redacted_Config SHALL give an equal Redacted_Config (idempotence property).
 10. THE Config_Loader SHALL expose the Redacted_Config through a function that the Evidence bundle writer can call, and SHALL NOT write any file itself.
 11. FOR ALL Redacted_Configs, serializing to JSON and parsing the result SHALL give an equal object (round-trip property).

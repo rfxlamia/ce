@@ -1,13 +1,10 @@
 import type { ConfigMeta, RedactedConfig } from './load.js';
 import { compileRedactPattern } from './redact-pattern.js';
 import type { EffectiveConfig } from './schema.js';
+import { collectSecretValues, redactSecretValues } from './secrets.js';
 
 export type { RedactedConfig } from './load.js';
-
-export const REDACTED = '[REDACTED]';
-
-/** Environment variables whose values are Secrets (Requirement 7). */
-const CREDENTIAL_ENV_NAMES = ['OPENROUTER_API_KEY', 'TYPESAFE_API_KEY'] as const;
+export { REDACTED } from './secrets.js';
 
 const CREDENTIAL_ENV_BY_PROVIDER = {
   openrouter: 'OPENROUTER_API_KEY',
@@ -43,12 +40,7 @@ function collectSecrets(
   config: EffectiveConfig,
   env: Record<string, string | undefined>,
 ): string[] {
-  const secrets = new Set<string>();
-
-  for (const name of CREDENTIAL_ENV_NAMES) {
-    const value = env[name]?.trim();
-    if (value) secrets.add(value);
-  }
+  const secrets = new Set<string>(collectSecretValues(env));
 
   const patterns = compilePatterns(config);
   if (patterns.length > 0) {
@@ -66,16 +58,8 @@ function collectSecrets(
   return [...secrets].sort((a, b) => b.length - a.length);
 }
 
-function redactString(text: string, secrets: string[]): string {
-  let result = text;
-  for (const secret of secrets) {
-    result = result.split(secret).join(REDACTED);
-  }
-  return result;
-}
-
 function redactDeep(value: unknown, secrets: string[]): unknown {
-  if (typeof value === 'string') return redactString(value, secrets);
+  if (typeof value === 'string') return redactSecretValues(value, secrets);
   if (Array.isArray(value)) return value.map((item) => redactDeep(item, secrets));
   if (value !== null && typeof value === 'object') {
     const out: Record<string, unknown> = {};
