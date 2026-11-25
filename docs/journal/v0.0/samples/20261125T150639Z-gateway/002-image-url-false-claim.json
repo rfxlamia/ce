@@ -1,0 +1,16 @@
+{
+  "probe": "image-url-false-claim",
+  "ok": true,
+  "latencyMs": 885.9018330000001,
+  "model": "typesafe/jev-1.14-20261014",
+  "usage": {
+    "input_tokens": 3014,
+    "output_tokens": 22
+  },
+  "questionNames": [
+    "state_reached"
+  ],
+  "noul": {
+    "state_reached": 0.01
+  }
+}

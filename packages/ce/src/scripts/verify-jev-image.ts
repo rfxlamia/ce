@@ -127,12 +127,15 @@ async function runImageUrl(
   writer: SampleWriter,
   date: string,
 ): Promise<string> {
-  const result = await probe.sendImageUrlForm({ ...base, claim: CLAIM });
-  await writer.write('image-url-array-form', result, IMAGE_URL_QUESTIONS);
+  const trueResult = await probe.sendImageUrlForm({ ...base, claim: probe.IMAGE_URL_TRUE_CLAIM });
+  await writer.write('image-url-true-claim', trueResult, IMAGE_URL_QUESTIONS);
+  const falseResult = await probe.sendImageUrlForm({ ...base, claim: probe.IMAGE_URL_FALSE_CLAIM });
+  await writer.write('image-url-false-claim', falseResult, IMAGE_URL_QUESTIONS);
   return probe.imageUrlSummaryMarkdown({
     date,
-    result,
-    usedBothParts: undefined,
+    trueResult,
+    falseResult,
+    question: IMAGE_URL_QUESTIONS[0] as string,
     samplesDir: args.out,
   });
 }

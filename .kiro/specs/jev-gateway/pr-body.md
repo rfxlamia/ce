@@ -6,12 +6,12 @@ Adds the Jev gateway in `packages/ce/src/jev/`: `JevGateway`, `HybridJevGateway`
 
 ## Verification results
 
-Keys unset, from the repository root: `npm run build`, `npm run typecheck`, `npm test` all pass (61 files, 403 tests).
+Keys unset, from the repository root: `npm run build`, `npm run typecheck`, `npm test` all pass (61 files, 406 tests).
 
 | Verification item | Answer_Status | Result |
 | --- | --- | --- |
 | Final-image latency (20 samples, `openrouter`, raw JSON) | `confirmed` | p50 837 ms, p95 1281 ms, 20/20 ok. Below the 7500 ms per-step budget. Model `typesafe/jev-1.14-20261014`. |
-| `image_url` array form | `not supported` | Request accepted (HTTP 200), but the answer is not shown to use both parts. The best-effort request shape is undocumented. Recommendation: do not adopt; image and text states stay separate. |
+| `image_url` array form | `confirmed` | Accepted (HTTP 200) for a true and a false claim on the fixture. Noul 0.99 for "The page shows a counter with value 0" and 0.01 for the false confirmation-message claim (gap 0.98). The shape is undocumented, so it is not adopted; image and text states stay separate. |
 | Direct `typesafe` provider | `not tested (blocked: TYPESAFE_API_KEY not set)` | No probe run, no result recorded. Follow-up: #25. |
 
 ### Deliberate narrowing of issue #5 "Done when"
@@ -42,9 +42,9 @@ The direct `typesafe` provider item is **deferred to #25** because `TYPESAFE_API
 | `TypeSafe-Danger-Zone-Images` not needed on JSON path (already checked) | 3.5, 20.3 | 5.1, 5.4, 10.2, 21 | spike diagnostic samples; transport-json.test.ts header tests |
 | Upstream report typesafe-sdk-js#27 (already checked) | 20.3 | 21 | https://github.com/typesafe-ai/typesafe-sdk-js/issues/27 |
 | Final-image latency, p50 and p95 over 20 samples | 14, 15 | 14.1, 14.2, 15.1, 17, 20 | confirmed: p50 837 ms, p95 1281 ms, 20/20 ok (findings Item 1; samples/20261125T142607Z-gateway/); properties/p20-latency-stats |
-| `image_url` array form | 14, 16 | 14.1, 15.1, 18, 20 | not supported (not shown to use both parts); do not adopt (findings Item 2; samples/20261125T142750Z-gateway/) |
+| `image_url` array form | 14, 16 | 14.1, 15.1, 18, 20 | confirmed: true-claim noul 0.99, false-claim noul 0.01; undocumented shape, not adopted (findings Item 2; samples/20261125T150639Z-gateway/; supersedes 20261125T142750Z-gateway/) |
 | Direct `typesafe` provider | 14, 17 | 15.1, 19, 20 | not tested (blocked: TYPESAFE_API_KEY not set); follow-up #25 (findings Item 3) |
-| All tests keyless with the fake gateway | 19 | 7, 11, 13.3, 16, 21 | keys unset: build, typecheck, test pass; 61 files, 403 tests |
+| All tests keyless with the fake gateway | 19 | 7, 11, 13.3, 16, 21 | keys unset: build, typecheck, test pass; 61 files, 406 tests |
 
 ## Gates
 

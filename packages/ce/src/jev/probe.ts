@@ -346,31 +346,78 @@ export function latencySummaryMarkdown(input: LatencySummaryInput): string {
   return lines.join('\n');
 }
 
+/** Claim that is TRUE for the fixture screenshot (a counter showing 0). */
+export const IMAGE_URL_TRUE_CLAIM = 'The page shows a counter with value 0';
+/** Claim that is FALSE for the fixture screenshot (no form, no confirmation message). */
+export const IMAGE_URL_FALSE_CLAIM =
+  'The page shows a confirmation message after the form is submitted.';
+
+/**
+ * Judging rule for the array form. The image was used only if the noul for the TRUE claim is
+ * clearly higher than the noul for the FALSE claim: true >= 0.5 and false <= 0.5 and a gap of at
+ * least 0.3. A low noul alone proves nothing, since a model ignoring the image would give it too.
+ */
+export const IMAGE_URL_TRUE_MIN = 0.5;
+export const IMAGE_URL_FALSE_MAX = 0.5;
+export const IMAGE_URL_MIN_GAP = 0.3;
+
+/** Reads the noul probability of one question from a result's answers. */
+export function noulOf(result: ProbeResult, name: string): number | undefined {
+  const answer = result.answers?.[name];
+  if (typeof answer === 'object' && answer !== null) {
+    const value = (answer as { noul?: unknown }).noul;
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+  }
+  return undefined;
+}
+
+export function judgeImageUrl(trueNoul: number | undefined, falseNoul: number | undefined): boolean {
+  if (trueNoul === undefined || falseNoul === undefined) return false;
+  return (
+    trueNoul >= IMAGE_URL_TRUE_MIN &&
+    falseNoul <= IMAGE_URL_FALSE_MAX &&
+    trueNoul - falseNoul >= IMAGE_URL_MIN_GAP
+  );
+}
+
 export interface ImageUrlSummaryInput {
   date: string;
-  result: ProbeResult;
-  /** True when the answer reflects both the text and the image part. Decided by the reader. */
-  usedBothParts: boolean | undefined;
+  /** Result for the TRUE claim. */
+  trueResult: ProbeResult;
+  /** Result for the FALSE claim. */
+  falseResult: ProbeResult;
+  /** Name of the noul question. */
+  question: string;
   samplesDir: string;
 }
 
 export function imageUrlSummaryMarkdown(input: ImageUrlSummaryInput): string {
-  const { result } = input;
-  const status: AnswerStatus =
-    result.ok && input.usedBothParts === true ? { kind: 'confirmed' } : { kind: 'not_supported' };
+  const { trueResult, falseResult, question } = input;
+  const trueNoul = noulOf(trueResult, question);
+  const falseNoul = noulOf(falseResult, question);
+  const confirmed = trueResult.ok && falseResult.ok && judgeImageUrl(trueNoul, falseNoul);
+  const fmt = (n: number | undefined): string => (n === undefined ? 'n/a' : String(n));
   const lines = ['### image_url array form', ''];
   lines.push(`- Date: ${input.date}`);
   lines.push(`- Request shape: ${IMAGE_URL_SHAPE_DESCRIPTION}`);
-  lines.push(`- HTTP status: ${result.status ?? (result.ok ? 200 : 'none')}`);
-  if (result.ok) {
-    lines.push(`- Answer: ${JSON.stringify(result.answers ?? {})}`);
-    lines.push(
-      `- Answer used both parts: ${input.usedBothParts === undefined ? 'not judged yet' : input.usedBothParts ? 'yes' : 'no'}`,
-    );
-  } else {
-    lines.push(`- Error: ${result.errorText ?? 'n/a'}`);
+  for (const [label, claim, r, n] of [
+    ['TRUE claim', IMAGE_URL_TRUE_CLAIM, trueResult, trueNoul],
+    ['FALSE claim', IMAGE_URL_FALSE_CLAIM, falseResult, falseNoul],
+  ] as const) {
+    lines.push(`- ${label} (${JSON.stringify(claim)}): HTTP status ${r.status ?? (r.ok ? 200 : 'none')}`);
+    if (r.ok) {
+      lines.push(`  - noul: ${fmt(n)}, model: ${r.model ?? 'n/a'}, usage: ${JSON.stringify(r.usage ?? {})}`);
+    } else {
+      lines.push(`  - Error: ${r.errorText ?? 'n/a'}`);
+    }
   }
-  lines.push(`- Answer_Status: ${answerStatusText(status)}`);
+  lines.push(
+    `- Judging: confirmed only if true noul >= ${IMAGE_URL_TRUE_MIN}, false noul <= ${IMAGE_URL_FALSE_MAX} and gap >= ${IMAGE_URL_MIN_GAP}`,
+  );
+  lines.push(
+    `- Gap (true - false): ${trueNoul !== undefined && falseNoul !== undefined ? (trueNoul - falseNoul).toFixed(3) : 'n/a'}`,
+  );
+  lines.push(`- Answer_Status: ${answerStatusText(confirmed ? { kind: 'confirmed' } : { kind: 'not_supported' })}`);
   lines.push(`- Raw samples: ${input.samplesDir}`);
   return lines.join('\n');
 }
@@ -435,7 +482,20 @@ export interface SanitizedSample {
   model?: string;
   usage?: ProbeResult['usage'];
   questionNames: string[];
+  /** Noul probability per question name. Numbers only: no text, no keys, no image data. */
+  noul?: Record<string, number>;
   errorText?: string;
+}
+
+function numericNoul(answers: Record<string, unknown> | undefined): Record<string, number> | undefined {
+  if (answers === undefined) return undefined;
+  const out: Record<string, number> = {};
+  for (const [name, answer] of Object.entries(answers)) {
+    if (typeof answer !== 'object' || answer === null) continue;
+    const value = (answer as { noul?: unknown }).noul;
+    if (typeof value === 'number' && Number.isFinite(value)) out[name] = value;
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
 }
 
 /** Keeps only whitelisted fields, so no key, Authorization header or image bytes can enter. */
@@ -449,6 +509,7 @@ export function sanitizeSample(sample: SampleInput, secrets: readonly string[] =
     ...(result.model !== undefined ? { model: result.model } : {}),
     ...(result.usage !== undefined ? { usage: result.usage } : {}),
     questionNames: [...(sample.questionNames ?? [])],
+    ...(numericNoul(result.answers) !== undefined ? { noul: numericNoul(result.answers) as Record<string, number> } : {}),
     ...(result.errorText !== undefined ? { errorText: sanitizeText(result.errorText, secrets) } : {}),
   };
 }

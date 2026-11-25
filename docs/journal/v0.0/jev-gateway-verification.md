@@ -9,7 +9,7 @@ Every value below was measured by a run of the Verification_Script. Nothing is e
 | Verification_Item | Requirement | Answer_Status |
 | --- | --- | --- |
 | 1. Final-image latency | 15 | `confirmed` |
-| 2. `image_url` array form | 16 | `not supported` (not shown to use both parts) |
+| 2. `image_url` array form | 16 | `confirmed` (true claim noul 0.99, false claim noul 0.01) |
 | 3. Direct `typesafe` provider | 17 | `not tested (blocked: TYPESAFE_API_KEY not set)` |
 
 ## How to re-run
@@ -47,30 +47,36 @@ Answer for design section 12 item 1: the final-image request over the JSON trans
 
 ## Item 2: `image_url` array form (Requirement 16)
 
-Answer_Status: `not supported`. The request was accepted, but the run does not show that the answer used both parts. This status is a "not shown", not a "proven rejected".
+Answer_Status: `confirmed`. The array form was accepted and the answers follow the image content: a claim that is true for the fixture screenshot scored high, and a claim that is false for it scored low.
+
+The first run (2026-11-25T14:27:50Z, sample `20261125T142750Z-gateway/`) was inconclusive. It used only the false claim, and a low noul is also what a model ignoring the image would return. It also dropped `answers` from the sample. That run is superseded by the run below. The sample is kept for the record.
+
+The fixture `packages/ce/fixtures/jev/demo-app-screenshot.png` shows the "Demo application" page with an Increment button and a counter at 0. The probe sent two requests with the same array-form state shape and the same `state_reached` noul question, differing only in the claim.
+
+Judging rule (in `jev/probe.ts`): `confirmed` only when the true-claim noul is at least 0.5, the false-claim noul is at most 0.5, and the gap (true minus false) is at least 0.3. Otherwise `not supported`.
 
 | Field | Value |
 | --- | --- |
-| Run date | 2026-11-25T14:27:50Z |
+| Run date | 2026-11-25T15:06:39Z |
 | Provider / transport | `openrouter` / `json` |
-| Request shape | `state = [{type:"text", ...}, {type:"image_url", image_url:{url:"data:image/png;base64,..."}}]` plus one `noul` question, `state_reached` |
+| Request shape | `state = [{type:"text", text:"claim: ..."}, {type:"image_url", image_url:{url:"data:image/png;base64,..."}}]` plus one `noul` question, `state_reached` |
 | Shape source | Best-effort guess. The API reference (`docs.typesafe.ai` `api.md`) documents no `image_url` shape. |
-| HTTP status | 200 |
-| Latency | about 1440 ms |
 | Returned_Model_Id | `typesafe/jev-1.14-20261014` |
-| Usage | 3016 input tokens, 22 output tokens |
-| Answer | `state_reached`, `noul` value 0.01 |
 
-Evidence and limits:
+| Claim | Fixture truth | HTTP status | `state_reached` noul | Latency | Usage (input / output tokens) |
+| --- | --- | --- | --- | --- | --- |
+| "The page shows a counter with value 0" | true | 200 | 0.99 | about 1706 ms | 3008 / 22 |
+| "The page shows a confirmation message after the form is submitted." | false | 200 | 0.01 | about 886 ms | 3014 / 22 |
 
-- The claim used ("page shows a confirmation message after form submit") is false for the fixture. A low value is therefore also what a model that ignored the image would return, so the answer does not show that the image was used.
-- The input token count (3016) is close to the 3017 seen on the standard asset path. This suggests the image was ingested, but it does not prove the image was used.
+Gap: 0.98, above the 0.3 threshold. The true noul is above 0.5 and the false noul is below it.
 
-Recommendation: do not adopt the array form. The gateway's request shape is unchanged, and image and text states stay separate. A discriminating re-run would settle the question, using a claim the fixture confirms, for example "The page shows a counter with value 0". A high value there would show the image was used.
+Limits: the shape is undocumented, so the provider may change or reject it without notice. One true/false pair is one observation, not a rate.
 
-Raw sample: `docs/journal/v0.0/samples/20261125T142750Z-gateway/001-image-url-array-form.json`.
+Recommendation: the gateway's request shape is unchanged (image requests keep using `assets` with `data_base64`, which is documented). The array form is a working but undocumented alternative and is not adopted.
 
-Answer for design section 12 item 2: not settled in favour of the array form. Keep image and text states separate.
+Raw samples: `docs/journal/v0.0/samples/20261125T150639Z-gateway/` (`001-image-url-true-claim.json`, `002-image-url-false-claim.json`; each holds status, model, usage and the numeric noul per question). The earlier sample `docs/journal/v0.0/samples/20261125T142750Z-gateway/001-image-url-array-form.json` is superseded.
+
+Answer for design section 12 item 2: the array form carries the image (answers separate a true claim from a false one), but it is undocumented. Keep image and text states separate.
 
 ## Item 3: direct `typesafe` provider (Requirement 17)
 
@@ -94,4 +100,4 @@ These were satisfied by the spike before this spec. The gateway keeps them true 
 
 ## Condition `verification_items_answered`
 
-Holds. Items 1 and 2 are `confirmed` or `not supported`. Item 3 is `not tested (blocked: TYPESAFE_API_KEY not set)` with the Follow_Up_Issue linked.
+Holds. Items 1 and 2 are `confirmed`. Item 3 is `not tested (blocked: TYPESAFE_API_KEY not set)` with the Follow_Up_Issue linked.

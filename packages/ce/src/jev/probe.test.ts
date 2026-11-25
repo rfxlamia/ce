@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   buildImageUrlRequestBody,
   computeLatencyStats,
+  imageUrlSummaryMarkdown,
+  judgeImageUrl,
   planRun,
   sanitizeSample,
   sendFinalImage,
@@ -330,5 +332,53 @@ describe('sanitizeSample', () => {
       result: { ok: true, latencyMs: 1, model: 'm-1', usage: { input_tokens: 1, output_tokens: 2 } },
     });
     expect(sample).toMatchObject({ ok: true, model: 'm-1', usage: { input_tokens: 1, output_tokens: 2 }, questionNames: [] });
+  });
+
+  it('keeps numeric noul values per question and drops free text', () => {
+    const sample = sanitizeSample({
+      probe: 'p',
+      result: {
+        ok: true,
+        latencyMs: 1,
+        answers: {
+          state_reached: { type: 'noul', noul: 0.82, note: 'free text' },
+          other: { type: 'choice', label: 'yes' },
+          bad: { noul: 'high' },
+        },
+      },
+    });
+    expect(sample.noul).toEqual({ state_reached: 0.82 });
+    expect(JSON.stringify(sample)).not.toContain('free text');
+  });
+});
+
+describe('image_url judging', () => {
+  const res = (noul: number): ProbeResult => ({
+    ok: true,
+    latencyMs: 1,
+    status: 200,
+    answers: { state_reached: { type: 'noul', noul } },
+  });
+
+  it('confirms only when the true noul is clearly above the false noul', () => {
+    expect(judgeImageUrl(0.9, 0.1)).toBe(true);
+    expect(judgeImageUrl(0.5, 0.2)).toBe(true);
+    expect(judgeImageUrl(0.4, 0.0)).toBe(false);
+    expect(judgeImageUrl(0.9, 0.7)).toBe(false);
+    expect(judgeImageUrl(0.6, 0.4)).toBe(false);
+    expect(judgeImageUrl(undefined, 0.1)).toBe(false);
+  });
+
+  it('summarizes confirmed and not supported', () => {
+    const base = { date: 'd', question: 'state_reached', samplesDir: 's' };
+    expect(imageUrlSummaryMarkdown({ ...base, trueResult: res(0.9), falseResult: res(0.1) })).toContain(
+      'Answer_Status: confirmed',
+    );
+    expect(imageUrlSummaryMarkdown({ ...base, trueResult: res(0.1), falseResult: res(0.1) })).toContain(
+      'Answer_Status: not supported',
+    );
+    expect(
+      imageUrlSummaryMarkdown({ ...base, trueResult: { ok: false, latencyMs: 0, status: 400 }, falseResult: res(0.1) }),
+    ).toContain('Answer_Status: not supported');
   });
 });

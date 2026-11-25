@@ -305,7 +305,7 @@ Conventions used by these tasks:
   - [x] 15.1 Implement `packages/ce/src/scripts/verify-jev-image.ts` and its npm script
     - Commands `latency`, `image-url`, `typesafe` and `all`; options `--samples <n>` (default 20), `--image <path>` (default `packages/ce/fixtures/jev/demo-app-screenshot.png`), `--out <dir>` (default `docs/journal/v0.0/samples/<UTC timestamp>-gateway/`) and `--allow-ci`.
     - Import only `jev/probe` and Node.js built-ins. Read keys only from `OPENROUTER_API_KEY` and `TYPESAFE_API_KEY` in the process environment; accept no key as an argument; call no `fetch`. Apply the run plan of task 14.1 (exit 2 in CI, exit 3 for a missing key, naming the variable and recording `not tested (blocked: <variable> not set)`).
-    - `latency`: send the samples one after another with `probe.sendFinalImage`, each starting after the previous one ended. `image-url`: one `probe.sendImageUrlForm`. `typesafe`: `probe.sendText`, `probe.sendFinalImage` (first without the header, once more with `dangerZoneHeader` true only when rejected) and `probe.sendSdkImage`.
+    - `latency`: send the samples one after another with `probe.sendFinalImage`, each starting after the previous one ended. `image-url`: two `probe.sendImageUrlForm` requests, one with a claim true for the fixture and one with a false claim. `typesafe`: `probe.sendText`, `probe.sendFinalImage` (first without the header, once more with `dangerZoneHeader` true only when rejected) and `probe.sendSdkImage`.
     - Write one sanitized sample file per call under `--out` (status, latency, Returned_Model_Id, usage, question names, sanitized error text). Print one Markdown summary block per Verification_Item.
     - Add to `packages/ce/package.json`: `"verify:jev-image": "tsx --env-file-if-exists=../../.env src/scripts/verify-jev-image.ts"`. A variable already set in the process environment wins over `.env`. Do not wire the script into `build` or `test`, and do not match the vitest file pattern.
     - _Requirements: 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7, 14.9, 14.10, 15.1, 15.2_
@@ -322,10 +322,10 @@ Conventions used by these tasks:
   - If the key is missing: record `not tested (blocked: OPENROUTER_API_KEY not set)` in the Findings_Document and report this task as failed. If no request returns an HTTP response (connection failure, timeout or script error): record the sanitized real error and `not tested (blocked: live call failed)` and report this task as failed. Do not ask the user. Never invent, estimate or copy a number, and never mark the item `confirmed` or `not supported` without a real HTTP response (Requirement 18 criteria 4 and 5).
   - _Requirements: 15.1, 15.2, 15.5, 15.6, 18.3, 18.4, 18.5, 18.7_
 
-- [x] 18. Run the live verification: `image_url` array form (needs `OPENROUTER_API_KEY`, agent-run)
+- [-] 18. Run the live verification: `image_url` array form (needs `OPENROUTER_API_KEY`, agent-run)
   - The agent runs this task itself. No user step. Apply the same presence check (name only, never the value) and the same failure rules as task 17.
-  - Run `npm run verify:jev-image --workspace continuous-evidence -- image-url`. It sends one request in the array form with a text part and an `image_url` part carrying the Fixture_Image and one `noul` question that depends on both parts.
-  - Record, from the script output only: date, the request shape used (and the fact that the fetched API reference documents no `image_url` shape, so the shape is best effort), HTTP status, sanitized error text when rejected, the answer when accepted, and whether the answer used both parts. Status `confirmed` when accepted and both parts were used, otherwise `not supported` with the evidence.
+  - Run `npm run verify:jev-image --workspace continuous-evidence -- image-url`. It sends two requests in the array form (text part and `image_url` part with the Fixture_Image, one `noul` question): a claim true for the fixture and a claim false for it.
+  - Record, from the script output only: date, the request shape used (and the fact that the fetched API reference documents no `image_url` shape, so the shape is best effort), HTTP status, sanitized error text when rejected, the answer when accepted, and the noul for both claims. Status `confirmed` when true noul >= 0.5, false noul <= 0.5 and the gap is >= 0.3, otherwise `not supported` with the evidence.
   - If the key is missing or no HTTP response is obtained, record the real failure and the matching `not tested (blocked: ...)` status and report this task as failed. Do not ask the user and do not fabricate a result.
   - Do not change the request shape of the gateway. If the form is confirmed, record adopting it as a recommendation only.
   - _Requirements: 16.1, 16.3, 16.4, 16.5, 16.6, 18.3, 18.4, 18.5, 18.7_
@@ -355,7 +355,7 @@ Conventions used by these tasks:
   - This task is fully agent-run, with no user step. If any item is not met, fix it before moving on, or report the task as failed. Do not open a pull request while any item is unmet.
   - _Requirements: 19.1, 19.10, 19.11, 19.12, 20.1, 20.2, 20.3, 20.4, 20.8, 20.9, 20.11_
 
-- [-] 22. Create the pull request body and open the pull request (agent-run)
+- [x] 22. Create the pull request body and open the pull request (agent-run)
   - Create `.kiro/specs/jev-gateway/pr-body.md` with: the line `Closes #5`; every item of the issue #5 checklist with its recorded evidence; the traceability table from task 21; the three Findings_Document answers with their Answer_Status. If the direct provider used the blocked status, state explicitly that this item of the "Done when" condition of issue #5 is deferred to the Follow_Up_Issue and link it (a deliberate narrowing for the direct provider only). The body contains no API key and no other secret value.
   - Check that Gate A, Gate B and Gate C hold. If any does not hold, stop, do not push and report the failure.
   - Without asking the user: create a feature branch from `main`, stage only files of this feature by name (never `.env`), commit, push the branch, and open the pull request against `main` of `rfxlamia/ce` with `gh pr create --base main --body-file .kiro/specs/jev-gateway/pr-body.md`.
@@ -383,9 +383,9 @@ Mapping of the issue #5 checklist to requirements and tasks. The evidence column
 | `TypeSafe-Danger-Zone-Images` not needed on the JSON path (already checked) | 3.5, 20.3 | 5.1, 5.4, 10.2, 21 | spike diagnostic samples (header ON/OFF); transport-json.test.ts `omits TypeSafe-Danger-Zone-Images for openrouter even when requested` and `sends TypeSafe-Danger-Zone-Images only for typesafe with the option on` (added in task 21); header logic transport-json.ts L177-180 |
 | Upstream report typesafe-ai/typesafe-sdk-js#27 (already checked) | 20.3 | 21 | https://github.com/typesafe-ai/typesafe-sdk-js/issues/27 (linked in issue #5 and findings doc) |
 | Final-image latency, p50 and p95 over 20 samples | 14, 15 | 14.1, 14.2, 15.1, 17, 20 | confirmed: p50 837 ms, p95 1281 ms, 20/20 ok (jev-gateway-verification.md Item 1; samples/20261125T142607Z-gateway/); properties/p20-latency-stats |
-| `image_url` array form | 14, 16 | 14.1, 15.1, 18, 20 | not supported (not shown to use both parts); recommendation: do not adopt (findings doc Item 2; samples/20261125T142750Z-gateway/) |
+| `image_url` array form | 14, 16 | 14.1, 15.1, 18, 20 | confirmed: true-claim noul 0.99, false-claim noul 0.01; undocumented shape, not adopted (findings doc Item 2; samples/20261125T150639Z-gateway/; supersedes 20261125T142750Z-gateway/) |
 | Direct `typesafe` provider | 14, 17 | 15.1, 19, 20 | not tested (blocked: TYPESAFE_API_KEY not set); follow-up rfxlamia/ce#25 (findings doc Item 3) |
-| All tests keyless with the fake gateway | 19 | 7, 11, 13.3, 16, 21 | keyless run, keys unset: `npm run build`, `typecheck`, `npm test` pass; 61 files, 403 tests (+1 added in task 21) |
+| All tests keyless with the fake gateway | 19 | 7, 11, 13.3, 16, 21 | keyless run, keys unset: `npm run build`, `typecheck`, `npm test` pass; 61 files, 406 tests (+1 added in task 21, +3 in the task 18 redo) |
 
 ## Notes
 
