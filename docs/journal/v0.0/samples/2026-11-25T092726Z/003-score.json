@@ -1,0 +1,76 @@
+{
+  "requestType": "score",
+  "request": {
+    "state": {
+      "page": "Checkout",
+      "elements": [
+        {
+          "id": "e1",
+          "role": "button",
+          "name": "Place order",
+          "enabled": true
+        },
+        {
+          "id": "e2",
+          "role": "link",
+          "name": "Back to cart",
+          "enabled": true
+        },
+        {
+          "id": "e3",
+          "role": "textbox",
+          "name": "Coupon code",
+          "enabled": true
+        }
+      ],
+      "lastAction": "none"
+    },
+    "questions": {
+      "readiness": {
+        "type": "score",
+        "instructions": "How ready is this page for the user to finish checkout?",
+        "criteria": [
+          "Not ready: nothing actionable",
+          "Partly ready: some actions available",
+          "Ready: the primary action is available"
+        ]
+      }
+    },
+    "model": "typesafe/jev-1.14"
+  },
+  "response": {
+    "model": "typesafe/jev-1.14-20261014",
+    "answers": {
+      "readiness": {
+        "type": "score",
+        "score": 1.99,
+        "legend": {
+          "0": "Not ready: nothing actionable",
+          "1": "Partly ready: some actions available",
+          "2": "Ready: the primary action is available"
+        },
+        "probabilities": {
+          "0": 0,
+          "1": 0.01,
+          "2": 0.99
+        },
+        "confidence": 0.98
+      }
+    },
+    "usage": {
+      "input_tokens": 444,
+      "output_tokens": 18,
+      "cost": 0.000018648,
+      "is_byok": false,
+      "cost_details": {
+        "upstream_inference_cost": 0.000018648,
+        "upstream_inference_prompt_cost": 0.000018648,
+        "upstream_inference_completions_cost": 0
+      }
+    },
+    "id": "gen-dec-1795598813-IpzLLqgi1Z8L1NG5plXF",
+    "provider": "TypeSafe"
+  },
+  "modelId": "typesafe/jev-1.14-20261014",
+  "latencyMs": 813.467459
+}

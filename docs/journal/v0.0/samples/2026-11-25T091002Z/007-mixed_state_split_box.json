@@ -1,0 +1,20 @@
+{
+  "requestType": "mixed_state_split_box",
+  "request": {
+    "model": "jev-preview",
+    "headers": {
+      "TypeSafe-Danger-Zone-Images": "true"
+    },
+    "state": {
+      "text": "Claim: the demo page renders a main heading. A screenshot of the page is attached.",
+      "screenshot": "<image: demo-app-screenshot.png>"
+    },
+    "questions": {
+      "box": "The main heading of the page"
+    }
+  },
+  "response": null,
+  "modelId": "none",
+  "latencyMs": 372.77550000000065,
+  "imageRef": "007-mixed_state_split_box.png"
+}

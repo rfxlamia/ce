@@ -1,0 +1,34 @@
+{
+  "requestType": "diagnostic",
+  "label": "diag: image noul only, pinned model, images header ON",
+  "request": {
+    "model": "typesafe/jev-1.14",
+    "transport": "sdk",
+    "headers": {
+      "TypeSafe-Danger-Zone-Images": "true"
+    },
+    "state": {
+      "text": "Claim: the demo page renders a main heading. A screenshot of the page is attached.",
+      "screenshot": "<image: demo-app-screenshot.png>"
+    },
+    "questions": {
+      "noul": "Does the screenshot show a page with a visible heading?"
+    }
+  },
+  "response": {
+    "error": {
+      "class": "BadRequestError",
+      "status": 400,
+      "message": "400 invalid content-type: multipart/form-data; boundary=5e17e9d3ab0e975e9d1242c82b5d19df",
+      "body": {
+        "error": {
+          "message": "invalid content-type: multipart/form-data; boundary=5e17e9d3ab0e975e9d1242c82b5d19df",
+          "code": 400
+        },
+        "user_id": "user_31kMnp8LF3fA7tFCGn1nRbfyKcU"
+      }
+    }
+  },
+  "modelId": "none",
+  "latencyMs": 356.7402920000004
+}

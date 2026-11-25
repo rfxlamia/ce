@@ -1,0 +1,21 @@
+{
+  "requestType": "mixed_state",
+  "request": {
+    "model": "jev-preview",
+    "headers": {
+      "TypeSafe-Danger-Zone-Images": "true"
+    },
+    "state": {
+      "text": "Claim: the demo page renders a main heading. A screenshot of the page is attached.",
+      "screenshot": "<image: demo-app-screenshot.png>"
+    },
+    "questions": {
+      "noul": "Does the screenshot show a page with a visible heading?",
+      "box": "The main heading of the page"
+    }
+  },
+  "response": null,
+  "modelId": "none",
+  "latencyMs": 408.6298750000001,
+  "imageRef": "004-mixed_state.png"
+}

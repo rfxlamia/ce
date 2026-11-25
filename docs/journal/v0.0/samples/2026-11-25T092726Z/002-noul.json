@@ -1,0 +1,60 @@
+{
+  "requestType": "noul",
+  "request": {
+    "state": {
+      "page": "Checkout",
+      "elements": [
+        {
+          "id": "e1",
+          "role": "button",
+          "name": "Place order",
+          "enabled": true
+        },
+        {
+          "id": "e2",
+          "role": "link",
+          "name": "Back to cart",
+          "enabled": true
+        },
+        {
+          "id": "e3",
+          "role": "textbox",
+          "name": "Coupon code",
+          "enabled": true
+        }
+      ],
+      "lastAction": "none"
+    },
+    "questions": {
+      "has_button": {
+        "type": "noul",
+        "instructions": "Does the page contain a button named \"Place order\"?"
+      }
+    },
+    "model": "typesafe/jev-1.14"
+  },
+  "response": {
+    "model": "typesafe/jev-1.14-20261014",
+    "answers": {
+      "has_button": {
+        "type": "noul",
+        "noul": 1
+      }
+    },
+    "usage": {
+      "input_tokens": 403,
+      "output_tokens": 21,
+      "cost": 0.000016926,
+      "is_byok": false,
+      "cost_details": {
+        "upstream_inference_cost": 0.000016926,
+        "upstream_inference_prompt_cost": 0.000016926,
+        "upstream_inference_completions_cost": 0
+      }
+    },
+    "id": "gen-dec-1795598813-hDcjOwm91qN3JJagkRW7",
+    "provider": "TypeSafe"
+  },
+  "modelId": "typesafe/jev-1.14-20261014",
+  "latencyMs": 861.5723750000002
+}

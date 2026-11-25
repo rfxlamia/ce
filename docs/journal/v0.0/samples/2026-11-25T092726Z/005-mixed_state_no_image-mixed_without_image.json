@@ -1,0 +1,31 @@
+{
+  "requestType": "mixed_state_no_image",
+  "label": "mixed without image",
+  "request": {
+    "model": "jev-preview",
+    "transport": "sdk",
+    "headers": {},
+    "state": {
+      "text": "Claim: the demo page renders a main heading. A screenshot of the page is attached."
+    },
+    "questions": {
+      "noul": "Does the screenshot show a page with a visible heading?",
+      "box": "The main heading of the page"
+    }
+  },
+  "response": {
+    "error": {
+      "class": "BadRequestError",
+      "status": 400,
+      "message": "400 Model typesafe/jev-preview does not exist",
+      "body": {
+        "error": {
+          "message": "Model typesafe/jev-preview does not exist",
+          "code": 400
+        }
+      }
+    }
+  },
+  "modelId": "none",
+  "latencyMs": 354.2491249999998
+}

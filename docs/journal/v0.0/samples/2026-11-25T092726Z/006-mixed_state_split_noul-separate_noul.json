@@ -1,0 +1,35 @@
+{
+  "requestType": "mixed_state_split_noul",
+  "label": "separate noul",
+  "request": {
+    "model": "typesafe/jev-1.14",
+    "transport": "sdk",
+    "headers": {
+      "TypeSafe-Danger-Zone-Images": "true"
+    },
+    "state": {
+      "text": "Claim: the demo page renders a main heading. A screenshot of the page is attached.",
+      "screenshot": "<image: demo-app-screenshot.png>"
+    },
+    "questions": {
+      "noul": "Does the screenshot show a page with a visible heading?"
+    }
+  },
+  "response": {
+    "error": {
+      "class": "BadRequestError",
+      "status": 400,
+      "message": "400 invalid content-type: multipart/form-data; boundary=a8e019cd2327d6e0a21a3c00635d6f6c",
+      "body": {
+        "error": {
+          "message": "invalid content-type: multipart/form-data; boundary=a8e019cd2327d6e0a21a3c00635d6f6c",
+          "code": 400
+        },
+        "user_id": "user_31kMnp8LF3fA7tFCGn1nRbfyKcU"
+      }
+    }
+  },
+  "modelId": "none",
+  "latencyMs": 522.3239579999995,
+  "imageRef": "006-mixed_state_split_noul-separate_noul.png"
+}

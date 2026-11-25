@@ -1,0 +1,41 @@
+{
+  "requestType": "diagnostic",
+  "label": "diag: final-image noul+box, pinned model, images header ON",
+  "request": {
+    "state": {
+      "image": "fixtures/demo-app-screenshot.png",
+      "bytes": 22806,
+      "encoding": "multipart/form-data (SDK)"
+    },
+    "questions": {
+      "done": {
+        "type": "noul",
+        "instructions": "Does the page show that the draft was saved?"
+      },
+      "subject": {
+        "type": "box",
+        "instructions": "The save confirmation message."
+      }
+    },
+    "model": "typesafe/jev-1.14",
+    "headers": {
+      "TypeSafe-Danger-Zone-Images": "true"
+    }
+  },
+  "response": {
+    "error": {
+      "class": "BadRequestError",
+      "status": 400,
+      "message": "400 invalid content-type: multipart/form-data; boundary=8a77e0563981c3ca7c5eb17d0ed70803",
+      "body": {
+        "error": {
+          "message": "invalid content-type: multipart/form-data; boundary=8a77e0563981c3ca7c5eb17d0ed70803",
+          "code": 400
+        },
+        "user_id": "user_31kMnp8LF3fA7tFCGn1nRbfyKcU"
+      }
+    }
+  },
+  "modelId": "none",
+  "latencyMs": 736.6959160000006
+}
