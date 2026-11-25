@@ -57,7 +57,7 @@ packages/ce/src/
     resolve.ts          → ChangeContext
   jev/
     gateway.ts          JevGateway interface + TypeSafe implementation
-                        (changed: image requests need a raw JSON transport, see below)
+                        (changed: HybridJevGateway, SDK for text, raw JSON for images, see below)
     catalog.ts          versioned question catalog (all question text lives here)
     fake.ts             recorded/fixture gateway for tests and eval
     log.ts              jev-calls.jsonl writer (no state contents)
@@ -91,8 +91,12 @@ OpenRouter by default via `baseURL: https://openrouter.ai/api`), `zod`,
 > `400 invalid content-type`. The same request succeeds as raw JSON with a
 > `data_base64` asset. `jev/gateway.ts` therefore uses the SDK for text-only
 > requests and a raw JSON transport for image requests, or an SDK version or
-> option that avoids multipart. The choice is open and is made in the gateway
-> spec.
+> option that avoids multipart. This is decided: a hybrid gateway, SDK for
+> text-only requests and raw JSON for requests with an image, behind one
+> `JevGateway` interface. Only `jev/` knows about the two transports. See
+> [`.kiro/steering/jev-gateway-decision.md`](../../../.kiro/steering/jev-gateway-decision.md)
+> (issue #5). The SDK failure is reported upstream
+> (typesafe-ai/typesafe-sdk-js#27).
 
 ## 3. Data model
 
@@ -160,9 +164,11 @@ mode. Box requires `typesafe/jev-1.14` (or `~typesafe/jev-latest`).
 > section 2). Confirmed: Box works on the pinned `typesafe/jev-1.14` (sample
 > `014`). Changed: the SDK docs suggest `jev-preview` for Box, but that name is
 > rejected on this route (`Model typesafe/jev-preview does not exist`), so all
-> question types use the pinned model. Reopened: the single request combining
-> `noul` and `box` on one image was not tested on a working transport. Only
-> single-question image requests were shown to work.
+> question types use the pinned model. Confirmed by a manual follow-up
+> (findings, Addendum; not in the sample dirs): a single raw JSON request
+> combining `noul` and `box` on one image works on the pinned model, so the
+> two image questions go in one request. The `image_url` array form is still
+> untested.
 `runtime.next_action` options are built from the observation: one option per
 visible+enabled element (`e12: button "Menu"`), observed same-origin links,
 configured routes, plus `done` and `give_up`. If more than 240 candidates
@@ -196,12 +202,13 @@ final: one image request {state_reached, locate_subject (Box)} on final screensh
 ```
 
 > **Changed by the spike** ([findings](./spike-jev-openrouter.md), sections 2
-> and 3). Only single-question image requests (`noul` alone, `box` alone) were
-> shown to work, and only over raw JSON. Until a combined request is tested,
-> the final step may be split into one `noul` request and one `box` request.
-> Through the SDK the final image request fails with a 400, so the fallback
-> "resolve from text signals" is an expected path until the gateway uses the
-> raw transport. Final-image latency is not determined (no successful sample).
+> and 3, and Addendum). The final step is one raw JSON request with `noul` and
+> `box`; it does not need to be split (manual follow-up, not in the sample
+> dirs). Through the SDK the final image request fails with a 400, so the
+> gateway sends image requests over raw JSON. If the image request still
+> fails (`JevImageError`), the run resolves from text signals and the report
+> omits the Box highlight. Final-image latency over raw JSON is not measured
+> (two manual calls are not a sample set).
 > The text-only loop step (`next_action` with 100 options) measured p50
 > 767 to 785 ms and p95 864 to 957 ms over 20 samples per run, well inside the
 > 7.5 s per-step budget (confirmed).
@@ -259,8 +266,8 @@ runtime:
 jev:
   provider: openrouter          # openrouter (OPENROUTER_API_KEY) | typesafe (TYPESAFE_API_KEY)
   model: typesafe/jev-1.14      # confirmed; responses return a dated id, e.g. typesafe/jev-1.14-20261014
-  # open: whether to send TypeSafe-Danger-Zone-Images: true on image requests
-  # (its necessity on the raw JSON path is untested; see spike findings)
+  # TypeSafe-Danger-Zone-Images header: not needed on the raw JSON route
+  # (one request shape, 2 calls; see spike findings, Addendum)
 output:
   dir: .ce/runs
   fail-on: [error]
@@ -336,7 +343,7 @@ Resolved:
   loop and off the critical path: if the final image request fails, the run
   still resolves from text signals. (Confirmed as the right approach by the
   spike; the earlier item "Image + text state in one request, supported via
-  `image_url` parts" is reopened, see Open item 2.)
+  `image_url` parts" is reopened, see Open item 1.)
 - ~~Judge access to Jev~~ — OpenRouter needs no TypeSafe signup; judges use
   their own OpenRouter key or the demo key in the private Devpost field.
 
@@ -350,12 +357,17 @@ Resolved by the spike ([findings](./spike-jev-openrouter.md)):
 - ~~Latency per loop step~~ — confirmed for the text-only `next_action`
   request: p95 864 to 957 ms against a 7.5 s budget.
 
+Resolved by the spike addendum (manual follow-up, not in the sample dirs):
+- ~~Transport for image requests~~ — decided: hybrid gateway, SDK for text,
+  raw JSON (`data_base64` asset) for images
+  ([decision](../../../.kiro/steering/jev-gateway-decision.md), issue #5).
+  The SDK multipart failure is reported upstream (typesafe-sdk-js#27).
+- ~~Single request combining `noul` and `box`~~ — works over raw JSON on the
+  pinned model; no split request.
+- ~~`TypeSafe-Danger-Zone-Images` header~~ — not needed on the raw JSON route
+  (one request shape, 2 calls).
+
 Open:
-1. Transport for image requests: the SDK 0.7.0 sends multipart and OpenRouter
-   rejects it. Choose raw JSON (`data_base64` asset) or an SDK change in the
-   gateway spec.
-2. Image + text state in one request: the `image_url` array form is untested,
-   as is a single request combining `noul` and `box`.
-3. Final-image latency (p50, p95) has no successful sample. Rerun on the raw
-   JSON transport. Also untested: the `typesafe` provider, and whether the
-   `TypeSafe-Danger-Zone-Images` header is required on the raw path.
+1. Image + text state in one request: the `image_url` array form is untested.
+2. Final-image latency (p50, p95) over raw JSON is not measured. Also
+   untested: the `typesafe` provider.

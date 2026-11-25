@@ -74,7 +74,7 @@ Second finding, separate from the first: the model name `jev-preview` is not acc
 
 Run 1 failures: `not confirmed` from run 1's own files, because they did not capture the error text. They match run 2 in request shape (SDK transport, image, same models), so the same cause is the most likely explanation, but run 1 does not prove it.
 
-Not tested, so not confirmed: raw JSON with `jev-preview`; raw JSON with the header OFF (whether the header is required); a single raw request combining `noul` and `box`; text plus image in the `image_url` array form described in `design.md` section 12; the `typesafe` provider.
+Not tested in runs 1 and 2, so not confirmed by the samples: raw JSON with `jev-preview`; raw JSON with the header OFF (whether the header is required); a single raw request combining `noul` and `box`; text plus image in the `image_url` array form described in `design.md` section 12; the `typesafe` provider. **Since resolved or narrowed by the [Addendum](#addendum-2026-11-25-manual-follow-up):** the header-OFF and combined `noul` plus `box` cases were tested manually (works). `jev-preview` over raw JSON, the `image_url` array form and the `typesafe` provider are still untested.
 
 ### Box check
 
@@ -84,7 +84,9 @@ Box encloses subject: **yes, approximately.** This is an agent judgment from rea
 
 ### Status
 
-**Status:** `confirmed with differences`. Image input and `box` and `noul` answers work on the Pinned_Model through OpenRouter, but only when sent as raw JSON. The SDK 0.7.0 image path does not work on this route, `jev-preview` is not a valid model name here, and a combined `noul` plus `box` image request and the image-removed comparison were not completed on a working transport.
+**Status:** `confirmed with differences`. Image input and `box` and `noul` answers work on the Pinned_Model through OpenRouter, but only when sent as raw JSON. The SDK 0.7.0 image path does not work on this route, `jev-preview` is not a valid model name here, and a combined `noul` plus `box` image request and the image-removed comparison were not completed on a working transport. This is the status of runs 1 and 2 as recorded.
+
+**Status after the Addendum:** `confirmed with differences`, now including the combined request. A single raw JSON request with `noul` and `box` on one image works on the Pinned_Model, with the image header ON and OFF. The image-removed comparison remains not completed. See the [Addendum](#addendum-2026-11-25-manual-follow-up); those results are not in the sample directories.
 
 ## 3. Latency
 
@@ -144,14 +146,37 @@ The Model_Id of every successful response was read from the `model` field of the
 
 ## Design consequences
 
-None of these edit `SPEC.md`. No contradiction with `SPEC.md` was found. This document does not edit `design.md`.
+None of these edit `SPEC.md`. No contradiction with `SPEC.md` was found. Items 1 to 9 were written from runs 1 and 2; items 3, 4, 5 and 9 were revised after the [Addendum](#addendum-2026-11-25-manual-follow-up), and the revisions are marked. `design.md` has been updated to match the revised list.
 
 1. **design.md section 4 (Jev question catalog), the paragraph after the table.** The statement that Box requires `typesafe/jev-1.14` is supported by sample `014`. Add that the harness's `jev-preview` override is wrong on this route and that the pinned model is used for all question types.
-2. **design.md section 12 (Open questions, resolved list).** The entry "Image + text state in one request, supported via OpenRouter (array of text and `image_url` parts)" is not supported by the samples. Image input worked only as a raw JSON `data_base64` asset. Reopen the item: the `image_url` array form is untested, and a combined `noul` plus `box` image request is untested.
-3. **design.md section 2 (Package layout), `jev/gateway.ts`.** The gateway cannot rely on the SDK 0.7.0 image path through OpenRouter. It needs a raw JSON image transport, or an SDK version or option that avoids multipart. Choose and record this.
-4. **design.md section 5 (Runtime loop), final step.** The final image request is the only image call. Its fallback ("if the final image request fails, the run still resolves from text signals", section 12) is now an expected path, not a rare one, until the transport is fixed. State that the final request may need to be split into one `noul` request and one `box` request, since only single-question image requests were shown to work.
-5. **design.md section 7 (Configuration), `jev:` block.** Add whether the image header `TypeSafe-Danger-Zone-Images` is sent. Its necessity on the raw path is not tested. Keep `jev.model: typesafe/jev-1.14` and record that responses return a dated Model_Id such as `typesafe/jev-1.14-20261014`, which `run.json` should store.
+2. **design.md section 12 (Open questions, resolved list).** The entry "Image + text state in one request, supported via OpenRouter (array of text and `image_url` parts)" is not supported by the samples. Image input worked only as a raw JSON `data_base64` asset. Reopen the item: the `image_url` array form is untested. (The combined `noul` plus `box` request, listed as untested here originally, works over raw JSON per the Addendum.)
+3. **design.md section 2 (Package layout), `jev/gateway.ts`.** The gateway cannot rely on the SDK 0.7.0 image path through OpenRouter. *Revised:* the decision is made. Hybrid gateway, SDK for text-only requests and raw JSON for image requests, recorded in `.kiro/steering/jev-gateway-decision.md` (issue #5).
+4. **design.md section 5 (Runtime loop), final step.** The final image request is the only image call. Its fallback ("if the final image request fails, the run still resolves from text signals", section 12) stays as a recoverable path (`JevImageError`). *Revised:* the split into one `noul` request and one `box` request is not needed. The final step is one request with `noul` and `box`.
+5. **design.md section 7 (Configuration), `jev:` block.** Keep `jev.model: typesafe/jev-1.14` and record that responses return a dated Model_Id such as `typesafe/jev-1.14-20261014`, which `run.json` should store. *Revised:* the image header `TypeSafe-Danger-Zone-Images` is not needed on the raw JSON route (tested on one request shape, 2 calls), so the header open item is removed.
 6. **design.md section 7 (Configuration), `runtime.timeout` and `runtime.max-steps`.** Next_Action p95 of 864 ms (run 2) and 957 ms (run 1) fits the 7.5 s per-step budget with wide margin. No change needed for the loop budget. Do not state a Final_Image budget fit until it is measured on a working transport.
 7. **design.md section 11 (Testing strategy), Fake Jev.** Fixtures for `jev/fake.ts` can be taken from these samples for `choice`, `noul`, `score`, `next_action` and the raw-JSON `box` answer. Add a case that simulates the multipart 400 so the "final image fails" path is tested.
 8. **design.md section 10 (Error handling).** A 400 from the image request must be handled as a recoverable Jev failure for the final step, separate from `RateLimitError`.
-9. **Follow-up measurement (no design section).** Rerun the Final_Image latency on the raw JSON transport, and test the `typesafe` provider, before the Final_Image budget row is filled in.
+9. **Follow-up measurement (no design section).** Rerun the Final_Image latency on the raw JSON transport, and test the `typesafe` provider and the `image_url` array form, before the Final_Image budget row is filled in. Still open after the Addendum.
+
+## Addendum (2026-11-25): manual follow-up
+
+Written after the sections above. The statements in this addendum come from a manual live follow-up, not from the harness. They are **not in the sample directories** (`samples/2026-11-25T091002Z`, `samples/2026-11-25T092726Z`) and cannot be checked against them. The run 1 and run 2 evidence above is unchanged. Where this addendum narrows a "not tested" statement above, the original wording is kept and marked.
+
+### Facts
+
+1. **Combined request works over raw JSON.** One raw JSON request with `noul` and `box` on one image succeeded on `typesafe/jev-1.14` (HTTP 200). `noul` was 0.99. `box` was `{top 0.13, bottom 0.18, left 0.01, right 0.22}` with confidence 0.91.
+2. **The image header is not needed on this route.** The same request succeeded with the `TypeSafe-Danger-Zone-Images` header both ON and OFF. This was tested on this one request shape only (2 calls). It is not shown for other question types or models.
+3. **The split request is not needed.** Because the combined request works, the final image step does not have to be split into separate `noul` and `box` requests.
+4. **SDK still fails.** Through `@typesafe-ai/sdk` 0.7.0, both `noul+box` and `noul` only fail with `400 invalid content-type: multipart/form-data`. This agrees with run 2. Reported upstream: https://github.com/typesafe-ai/typesafe-sdk-js/issues/27.
+5. **Decision recorded.** Hybrid gateway: SDK for text-only requests, raw JSON for requests with an image. See `.kiro/steering/jev-gateway-decision.md` (tracked in issue #5).
+
+### Effect on earlier statements
+
+- Section 2 "Not tested" list: the header-OFF case and the combined `noul` plus `box` request are now tested (works). The Section 2 status line is updated.
+- Section 3: the two raw JSON calls above are not a sample set and give no Final_Image p50 or p95. The earlier "indicative only" note stands.
+
+### Still unmeasured
+
+- Final_Image latency over raw JSON (p50 and p95, 20 samples). The calls above are not a sample set.
+- The `typesafe` provider (`TYPESAFE_API_KEY`).
+- The `image_url` array form described in `design.md` section 12.
