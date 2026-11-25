@@ -1,0 +1,227 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Add `test` scripts and the vitest dev dependency": [
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795588970073
+      },
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795588979705
+      },
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589070707
+      }
+    ],
+    "1.2 Install dependencies and verify the scripts": [
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795588970171
+      },
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589075699
+      },
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589188505
+      }
+    ],
+    "2.1 Create `.kiro/steering/product.md`": [
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795588970248
+      },
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589076664
+      },
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589189856
+      }
+    ],
+    "2.2 Create `.kiro/steering/tech.md`": [
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795588970296
+      },
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589077009
+      },
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589188975
+      }
+    ],
+    "2.3 Create `.kiro/steering/structure.md`": [
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795588970337
+      },
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589077763
+      },
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589188094
+      }
+    ],
+    "3.1 Create `.kiro/hooks/quality-on-save.json`": [
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795588970394
+      },
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589078176
+      },
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589187213
+      }
+    ],
+    "3.2 Create `.kiro/hooks/spec-review.json`": [
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795588970432
+      },
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589078898
+      },
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589273854
+      }
+    ],
+    "4.1 Create `.kiro/settings/mcp.json`": [
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795588970483
+      },
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589079350
+      },
+      {
+        "executionId": "77633117-e509-4e32-8d63-bd8f8c43f7d6",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589802140
+      }
+    ],
+    "5. Checkpoint - Ensure all files are in place": [
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795588970518
+      },
+      {
+        "executionId": "77633117-e509-4e32-8d63-bd8f8c43f7d6",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589806966
+      },
+      {
+        "executionId": "77633117-e509-4e32-8d63-bd8f8c43f7d6",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589866328
+      }
+    ],
+    "6.1 Run the automated checks from the design's Testing Strategy": [
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795588970564
+      },
+      {
+        "executionId": "77633117-e509-4e32-8d63-bd8f8c43f7d6",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589870801
+      },
+      {
+        "executionId": "77633117-e509-4e32-8d63-bd8f8c43f7d6",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589943917
+      }
+    ],
+    "7. Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795588970615
+      },
+      {
+        "executionId": "77633117-e509-4e32-8d63-bd8f8c43f7d6",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589944363
+      },
+      {
+        "executionId": "77633117-e509-4e32-8d63-bd8f8c43f7d6",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795590052629
+      }
+    ],
+    "1. Add the test script and vitest setup": [
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589188547
+      }
+    ],
+    "2. Write the steering documents": [
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589189890
+      }
+    ],
+    "3. Create the hooks": [
+      {
+        "executionId": "7c59a173-7ada-43d7-be67-7e6bed236ed8",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589273912
+      }
+    ],
+    "4. Create the MCP configuration": [
+      {
+        "executionId": "77633117-e509-4e32-8d63-bd8f8c43f7d6",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589802260
+      }
+    ],
+    "6. Verify the deliverables": [
+      {
+        "executionId": "77633117-e509-4e32-8d63-bd8f8c43f7d6",
+        "chatSessionId": "sess_99570653-375f-47f7-91fc-bd707a654a6e",
+        "timestamp": 1795589943986
+      }
+    ]
+  }
+}
