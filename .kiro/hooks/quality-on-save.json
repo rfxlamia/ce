@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Typecheck and test on save",
+      "trigger": "PostFileSave",
+      "matcher": "packages/.*\\.tsx?$",
+      "action": {
+        "type": "agent",
+        "prompt": "A TypeScript file under packages/ was saved. From the repository root run `npm run typecheck`, and if it succeeds run `npm test`. If typecheck fails, report the compiler output (file, line, message). If tests fail, report each failing test name and its message. If both pass, report one line saying so. Do not modify any file and do not ask for a Jev API key."
+      }
+    }
+  ]
+}

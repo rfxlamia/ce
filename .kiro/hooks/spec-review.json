@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "SPEC conformance review",
+      "trigger": "Stop",
+      "action": {
+        "type": "agent",
+        "prompt": "SPEC conformance review. First check whether any code under packages/, examples/, or action/ changed in the working tree (use `git status --porcelain` and `git diff`). If no code under those directories changed, do nothing and produce no output. Otherwise: (1) Read SPEC.md and extract every line that contains the capitalized keyword MUST or MUST NOT, keeping the section number of each line. (2) Read the changed code: the output of `git diff` plus untracked files under packages/, examples/, and action/. (3) Compare the changed code against each extracted MUST and MUST NOT line. (4) For each conflict, report the SPEC.md section number, the quoted requirement, the file path, and the line range of the conflicting code. (5) If you find no conflict, report that no conflict was found and list the SPEC.md sections you checked. (6) Treat SPEC.md as the authority over docs/journal/v0.0/; if the two disagree, follow SPEC.md. (7) Report findings only. Do not edit any file."
+      }
+    }
+  ]
+}
