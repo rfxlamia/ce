@@ -1,0 +1,190 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "number",
+      "const": 0
+    },
+    "target": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "This generated schema does not restrict the URL scheme to http or https and is looser than ConfigSchema on this rule. ConfigSchema in config/schema.ts is authoritative."
+        },
+        "start": {
+          "type": "string"
+        },
+        "ready": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "timeout": {
+              "type": "string",
+              "pattern": "^[1-9]\\d*(ms|s|m)$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "routes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "base": {
+          "type": "string"
+        },
+        "include": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "redact": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "This generated schema does not check that each item compiles as a RegExp and is looser than ConfigSchema on this rule. ConfigSchema in config/schema.ts is authoritative."
+          }
+        },
+        "checks": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "assessment": {
+      "type": "object",
+      "properties": {
+        "thresholds": {
+          "type": "object",
+          "properties": {
+            "claim": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "observable": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "adequate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "uncertainty-band": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "on-uncertain": {
+          "type": "string",
+          "enum": [
+            "evidence",
+            "skip"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "max-steps": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "timeout": {
+          "type": "string",
+          "pattern": "^[1-9]\\d*(ms|s|m)$"
+        },
+        "viewport": {
+          "type": "object",
+          "properties": {
+            "width": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "height": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "additionalProperties": false
+        },
+        "fixtures": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "jev": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "openrouter",
+            "typesafe"
+          ]
+        },
+        "model": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "dir": {
+          "type": "string"
+        },
+        "fail-on": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "error",
+              "unsupported",
+              "evidenced-not-reached"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
