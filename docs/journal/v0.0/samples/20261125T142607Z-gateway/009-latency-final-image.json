@@ -1,0 +1,14 @@
+{
+  "probe": "latency-final-image",
+  "ok": true,
+  "latencyMs": 854.6769999999997,
+  "model": "typesafe/jev-1.14-20261014",
+  "usage": {
+    "input_tokens": 3014,
+    "output_tokens": 40
+  },
+  "questionNames": [
+    "state_reached",
+    "locate_subject"
+  ]
+}

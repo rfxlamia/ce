@@ -15,7 +15,9 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
-    "generate:config-schema": "tsx src/scripts/generate-config-schema.ts"
+    "generate:config-schema": "tsx src/scripts/generate-config-schema.ts",
+    "verify:jev-image": "tsx --env-file-if-exists=../../.env src/scripts/verify-jev-image.ts",
+    "update:catalog-snapshot": "tsx src/scripts/update-catalog-snapshot.ts"
   },
   "engines": {
     "node": ">=22.12"
@@ -30,6 +32,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@typesafe-ai/sdk": "0.7.0",
     "yaml": "^2.0.0",
     "zod": "^4.0.0"
   }
