@@ -31,3 +31,8 @@ export async function run(): Promise<RunResult> {
   // agent harness.
   throw new Error('CE v0 implementation spike: not implemented yet');
 }
+
+export { loadConfig } from './config/load.js';
+export { requireJevCredentials } from './config/credentials.js';
+export type { ConfigMeta, LoadedConfig } from './config/load.js';
+export type { EffectiveConfig } from './config/schema.js';
