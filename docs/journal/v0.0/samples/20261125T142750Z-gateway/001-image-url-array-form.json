@@ -1,0 +1,13 @@
+{
+  "probe": "image-url-array-form",
+  "ok": true,
+  "latencyMs": 1440.291833,
+  "model": "typesafe/jev-1.14-20261014",
+  "usage": {
+    "input_tokens": 3016,
+    "output_tokens": 22
+  },
+  "questionNames": [
+    "state_reached"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "assess.checks_adequate@1": "d8b13059bafb7aac23580ec72a748a9420938c7a259c736fa827ddae867b0321",
+  "assess.runtime_observable@1": "dad6cdc018f31e463d1c78566c56ed59a1996e00b7d7549a9d6614bbfef64c69",
+  "assess.surface@1": "0718199302d59a2a166d5897065496734c976e68fb2031160ddb64d1f22f8d7a",
+  "claim.is_behavior@1": "5a8279960c369053ed39e185fd17b10d9f903bac067cc20fd93051f222d35cef",
+  "runtime.locate_subject@1": "2c49e6765bc176a7c7bf1b8107ec84cd646bf9c145dee58758106e919cf65d3e",
+  "runtime.next_action@1": "432e1a0d4d61b1c35a6ba4a13036696bf6bedbf97b320c56ba6ef1e17bc73c8a",
+  "runtime.state_reached_dom@1": "3acf4e1d513cabd43f2a5db3d1b1690d561375bd3e3f1f43397600aa82395d0b",
+  "runtime.state_reached@1": "07b49a935ddcc63620fddaec4f9a30ffd7fc1d848eab3e1458f068674f087a8a"
+}

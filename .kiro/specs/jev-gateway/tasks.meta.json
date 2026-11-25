@@ -1,0 +1,1066 @@
+{
+  "pbtResults": {
+    "5.3 Write property test for image format detection": {
+      "status": "passed",
+      "lastRunTimestamp": 1795613789189
+    },
+    "9.10 Write property test for the OpenRouter model form": {
+      "status": "passed",
+      "lastRunTimestamp": 1795615331460
+    },
+    "9.9 Write property test for model resolution": {
+      "status": "passed",
+      "lastRunTimestamp": 1795615331704
+    }
+  },
+  "executionHistory": {
+    "1. Add the SDK dependency, the fixture image and test scaffolding": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612933205
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612947721
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612999698
+      }
+    ],
+    "2.1 Implement `StageError` in `packages/ce/src/errors.ts`": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612933248
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613004698
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613083090
+      }
+    ],
+    "2.2 Implement `packages/ce/src/jev/errors.ts`": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612933370
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613005215
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613084013
+      }
+    ],
+    "2.3 Write unit tests for the error classes": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612933402
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613090574
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613238682
+      }
+    ],
+    "3.1 Implement `packages/ce/src/jev/hash.ts`": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612933436
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613090694
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613238988
+      }
+    ],
+    "3.2 Write property test for hash determinism and distinctness": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612933493
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613248970
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613396997
+      }
+    ],
+    "3.3 Write property test for image determinism": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612933531
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613249720
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613396245
+      }
+    ],
+    "4.1 Implement `packages/ce/src/jev/catalog.ts`": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612933627
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613091130
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613239787
+      }
+    ],
+    "4.2 Add the catalog snapshot and its test and update script": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612933664
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613248372
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613395419
+      }
+    ],
+    "4.3 Write property test for option preservation": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612933713
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613410685
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613574788
+      }
+    ],
+    "4.4 Write unit tests for the catalog and the image reference format": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612933753
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613410762
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613574858
+      }
+    ],
+    "5.1 Implement `packages/ce/src/jev/transport-json.ts`": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612933803
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613247645
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613395768
+      }
+    ],
+    "5.2 Implement `packages/ce/src/jev/transport-sdk.ts`": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612933920
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613247823
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613397684
+      }
+    ],
+    "5.3 Write property test for image format detection": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612933967
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613692318
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613846107
+      }
+    ],
+    "5.4 Write unit tests for the JSON transport": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934013
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613693261
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613846763
+      }
+    ],
+    "5.5 Write the single unit test for the SDK client configuration": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934052
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613693760
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613847516
+      }
+    ],
+    "6.1 Implement `packages/ce/src/jev/log.ts`": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934099
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613091825
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613240411
+      }
+    ],
+    "6.2 Write property test for the log round-trip": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934145
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613411303
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613687025
+      }
+    ],
+    "6.3 Write property test for concurrent appends": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934245
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613412382
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613575250
+      }
+    ],
+    "6.4 Write unit tests for the call log": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934285
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613412621
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613576050
+      }
+    ],
+    "7. Checkpoint - Ensure build, typecheck and tests pass": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934334
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613854135
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795614504845
+      }
+    ],
+    "8.1 Implement routing, classification, model ids and logging in `packages/ce/src/jev/gateway.ts`": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934370
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795614510652
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795614709050
+      }
+    ],
+    "8.2 Add pacing, retries and the one-image rule to `gateway.ts`": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934427
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795614709882
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795614848113
+      }
+    ],
+    "8.3 Add `PINNED_MODELS` and `createJevGateway` to `gateway.ts`": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934535
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795614848632
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795614958530
+      }
+    ],
+    "9.1 Write property test for routing": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934596
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795614972703
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615172882
+      }
+    ],
+    "9.2 Write property test for one request per attempt": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934636
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795614972924
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615173028
+      }
+    ],
+    "9.3 Write property test for failure classification": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934678
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795614973001
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615173149
+      }
+    ],
+    "9.4 Write property test for the attempt bound": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934729
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795614973585
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615173655
+      }
+    ],
+    "9.5 Write property test for `Retry-After` parsing": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934824
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795614974207
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615174443
+      }
+    ],
+    "9.6 Write property test for one image per gateway": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934869
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615191262
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615345288
+      }
+    ],
+    "9.7 Write property test for bounded concurrency": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934911
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615192000
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615346059
+      }
+    ],
+    "9.8 Write property test for `modelIds()`": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934950
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615192673
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615347133
+      }
+    ],
+    "9.9 Write property test for model resolution": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612934993
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615193534
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615347692
+      }
+    ],
+    "9.10 Write property test for the OpenRouter model form": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612935032
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615194102
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615348299
+      }
+    ],
+    "9.11 Write property test for missing credentials": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612935146
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615353965
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615535058
+      }
+    ],
+    "9.12 Write property test for the no-contents rule": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612935194
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615354498
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615535215
+      }
+    ],
+    "10.1 Write unit tests for `HybridJevGateway`": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612935234
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615355650
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615535323
+      }
+    ],
+    "10.2 Write unit tests for `createJevGateway`": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612935278
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615355948
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615535970
+      }
+    ],
+    "11. Checkpoint - Ensure build, typecheck and tests pass": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612935327
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615541498
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615616799
+      }
+    ],
+    "12.1 Implement `packages/ce/src/jev/fake.ts`": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612935435
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615623697
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615865925
+      }
+    ],
+    "12.2 Create `packages/ce/src/jev/fixtures/recordings.json`": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612935514
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615624037
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615866039
+      }
+    ],
+    "12.3 Write property test for fake replay": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612935551
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615873610
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616127245
+      }
+    ],
+    "12.4 Write unit tests for the fake gateway": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612935602
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615873740
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616128009
+      }
+    ],
+    "13.1 Export from `packages/ce/src/index.ts`": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612935655
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615874407
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616126397
+      }
+    ],
+    "13.2 Write unit test for the public API": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612935754
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616403632
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616524315
+      }
+    ],
+    "13.3 Write the architecture test": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612935889
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616403698
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616525036
+      }
+    ],
+    "14.1 Implement `packages/ce/src/jev/probe.ts`": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612935983
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615624450
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615866734
+      }
+    ],
+    "14.2 Write property test for latency statistics": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612936073
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615875218
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616125426
+      }
+    ],
+    "14.3 Write unit tests for the Probe_Library": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612936186
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616134895
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616396126
+      }
+    ],
+    "15.1 Implement `packages/ce/src/scripts/verify-jev-image.ts` and its npm script": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612936283
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615875904
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616128831
+      }
+    ],
+    "16. Checkpoint - Ensure build, typecheck and tests pass keyless": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612936483
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616530667
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616700324
+      }
+    ],
+    "17. Run the live verification: final-image latency (needs `OPENROUTER_API_KEY`, agent-run)": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612936550
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616728276
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616830032
+      }
+    ],
+    "18. Run the live verification: `image_url` array form (needs `OPENROUTER_API_KEY`, agent-run)": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612936617
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616830945
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616930787
+      }
+    ],
+    "19. Run the live verification: direct `typesafe` provider (needs `TYPESAFE_API_KEY` if present, agent-run)": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612936684
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616930941
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795617860605
+      }
+    ],
+    "20. Write the Findings_Document": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612936753
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795617860789
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795617918527
+      }
+    ],
+    "21. Final checkpoint - Verify every checkbox of issue #5 and produce the traceability table": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612936901
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795617918914
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795618064145
+      }
+    ],
+    "22. Create the pull request body and open the pull request (agent-run)": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795612936965
+      },
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795618089878
+      }
+    ],
+    "2. Implement the shared error classes": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613238760
+      }
+    ],
+    "3. Implement the state hash": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613397024
+      }
+    ],
+    "4. Implement the question catalog and its snapshot": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613574900
+      }
+    ],
+    "6. Implement the call log": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613687095
+      }
+    ],
+    "5. Implement the two transports": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795613847570
+      }
+    ],
+    "8. Implement the gateway": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795614958582
+      }
+    ],
+    "9. Write property tests for the gateway": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615535258
+      }
+    ],
+    "10. Write unit tests for the gateway and the factory": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795615536017
+      }
+    ],
+    "12. Implement the fake gateway and its fixtures": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616128117
+      }
+    ],
+    "15. Implement the Verification_Script": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616128875
+      }
+    ],
+    "14. Implement the Probe_Library": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616396177
+      }
+    ],
+    "13. Expose the public API and enforce module boundaries": [
+      {
+        "executionId": "5807b36e-5d29-4564-8732-7c793dde6f6c",
+        "chatSessionId": "sess_d0ca8774-a309-4404-8425-7908171fc04a",
+        "timestamp": 1795616525128
+      }
+    ]
+  }
+}

@@ -36,3 +36,9 @@ export { loadConfig } from './config/load.js';
 export { requireJevCredentials } from './config/credentials.js';
 export type { ConfigMeta, LoadedConfig } from './config/load.js';
 export type { EffectiveConfig } from './config/schema.js';
+
+export { createJevGateway } from './jev/gateway.js';
+export type { AskOptions, JevGateway } from './jev/gateway.js';
+export { FakeJevGateway, FakeRecordingMissingError } from './jev/fake.js';
+export { JevImageError, JevUsageError, RateLimitError } from './jev/errors.js';
+export { StageError } from './errors.js';
