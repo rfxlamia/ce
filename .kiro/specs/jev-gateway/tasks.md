@@ -322,7 +322,7 @@ Conventions used by these tasks:
   - If the key is missing: record `not tested (blocked: OPENROUTER_API_KEY not set)` in the Findings_Document and report this task as failed. If no request returns an HTTP response (connection failure, timeout or script error): record the sanitized real error and `not tested (blocked: live call failed)` and report this task as failed. Do not ask the user. Never invent, estimate or copy a number, and never mark the item `confirmed` or `not supported` without a real HTTP response (Requirement 18 criteria 4 and 5).
   - _Requirements: 15.1, 15.2, 15.5, 15.6, 18.3, 18.4, 18.5, 18.7_
 
-- [-] 18. Run the live verification: `image_url` array form (needs `OPENROUTER_API_KEY`, agent-run)
+- [x] 18. Run the live verification: `image_url` array form (needs `OPENROUTER_API_KEY`, agent-run)
   - The agent runs this task itself. No user step. Apply the same presence check (name only, never the value) and the same failure rules as task 17.
   - Run `npm run verify:jev-image --workspace continuous-evidence -- image-url`. It sends two requests in the array form (text part and `image_url` part with the Fixture_Image, one `noul` question): a claim true for the fixture and a claim false for it.
   - Record, from the script output only: date, the request shape used (and the fact that the fetched API reference documents no `image_url` shape, so the shape is best effort), HTTP status, sanitized error text when rejected, the answer when accepted, and the noul for both claims. Status `confirmed` when true noul >= 0.5, false noul <= 0.5 and the gap is >= 0.3, otherwise `not supported` with the evidence.
