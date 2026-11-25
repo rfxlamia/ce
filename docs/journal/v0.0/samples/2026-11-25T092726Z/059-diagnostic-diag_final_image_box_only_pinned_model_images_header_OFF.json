@@ -1,0 +1,35 @@
+{
+  "requestType": "diagnostic",
+  "label": "diag: final-image box only, pinned model, images header OFF",
+  "request": {
+    "state": {
+      "image": "fixtures/demo-app-screenshot.png",
+      "bytes": 22806,
+      "encoding": "multipart/form-data (SDK)"
+    },
+    "questions": {
+      "subject": {
+        "type": "box",
+        "instructions": "The save confirmation message."
+      }
+    },
+    "model": "typesafe/jev-1.14",
+    "headers": {}
+  },
+  "response": {
+    "error": {
+      "class": "BadRequestError",
+      "status": 400,
+      "message": "400 invalid content-type: multipart/form-data; boundary=2301e0a73bc61749d70abd21f7460ff8",
+      "body": {
+        "error": {
+          "message": "invalid content-type: multipart/form-data; boundary=2301e0a73bc61749d70abd21f7460ff8",
+          "code": 400
+        },
+        "user_id": "user_31kMnp8LF3fA7tFCGn1nRbfyKcU"
+      }
+    }
+  },
+  "modelId": "none",
+  "latencyMs": 587.2995420000007
+}

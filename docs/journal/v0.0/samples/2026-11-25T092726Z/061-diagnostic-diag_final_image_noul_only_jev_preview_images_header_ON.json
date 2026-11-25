@@ -1,0 +1,37 @@
+{
+  "requestType": "diagnostic",
+  "label": "diag: final-image noul only, jev-preview, images header ON",
+  "request": {
+    "state": {
+      "image": "fixtures/demo-app-screenshot.png",
+      "bytes": 22806,
+      "encoding": "multipart/form-data (SDK)"
+    },
+    "questions": {
+      "done": {
+        "type": "noul",
+        "instructions": "Does the page show that the draft was saved?"
+      }
+    },
+    "model": "jev-preview",
+    "headers": {
+      "TypeSafe-Danger-Zone-Images": "true"
+    }
+  },
+  "response": {
+    "error": {
+      "class": "BadRequestError",
+      "status": 400,
+      "message": "400 invalid content-type: multipart/form-data; boundary=696b659f2e80b0d4ef6a03678f4c99fb",
+      "body": {
+        "error": {
+          "message": "invalid content-type: multipart/form-data; boundary=696b659f2e80b0d4ef6a03678f4c99fb",
+          "code": 400
+        },
+        "user_id": "user_31kMnp8LF3fA7tFCGn1nRbfyKcU"
+      }
+    }
+  },
+  "modelId": "none",
+  "latencyMs": 386.70008300000336
+}

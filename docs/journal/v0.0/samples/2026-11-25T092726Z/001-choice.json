@@ -1,0 +1,71 @@
+{
+  "requestType": "choice",
+  "request": {
+    "state": {
+      "page": "Checkout",
+      "elements": [
+        {
+          "id": "e1",
+          "role": "button",
+          "name": "Place order",
+          "enabled": true
+        },
+        {
+          "id": "e2",
+          "role": "link",
+          "name": "Back to cart",
+          "enabled": true
+        },
+        {
+          "id": "e3",
+          "role": "textbox",
+          "name": "Coupon code",
+          "enabled": true
+        }
+      ],
+      "lastAction": "none"
+    },
+    "questions": {
+      "next": {
+        "type": "choice",
+        "instructions": "Which element should be activated to complete the purchase?",
+        "criteria": {
+          "e1": "Place order button",
+          "e2": "Back to cart link",
+          "e3": "Coupon code textbox"
+        }
+      }
+    },
+    "model": "typesafe/jev-1.14"
+  },
+  "response": {
+    "model": "typesafe/jev-1.14-20261014",
+    "answers": {
+      "next": {
+        "type": "choice",
+        "choice": "e1",
+        "probabilities": {
+          "e1": 1,
+          "e2": 0,
+          "e3": 0
+        },
+        "confidence": 1
+      }
+    },
+    "usage": {
+      "input_tokens": 458,
+      "output_tokens": 42,
+      "cost": 0.000019236,
+      "is_byok": false,
+      "cost_details": {
+        "upstream_inference_cost": 0.000019236,
+        "upstream_inference_prompt_cost": 0.000019236,
+        "upstream_inference_completions_cost": 0
+      }
+    },
+    "id": "gen-dec-1795598812-316jrJAWt0qunOFxrVmm",
+    "provider": "TypeSafe"
+  },
+  "modelId": "typesafe/jev-1.14-20261014",
+  "latencyMs": 1325.867667
+}

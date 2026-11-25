@@ -1,0 +1,32 @@
+{
+  "requestType": "diagnostic",
+  "label": "diag: box only, pinned model, images header OFF",
+  "request": {
+    "model": "typesafe/jev-1.14",
+    "transport": "sdk",
+    "headers": {},
+    "state": {
+      "text": "Claim: the demo page renders a main heading. A screenshot of the page is attached.",
+      "screenshot": "<image: demo-app-screenshot.png>"
+    },
+    "questions": {
+      "box": "The main heading of the page"
+    }
+  },
+  "response": {
+    "error": {
+      "class": "BadRequestError",
+      "status": 400,
+      "message": "400 invalid content-type: multipart/form-data; boundary=a255e630e3d9042735cf2bd96fef0f88",
+      "body": {
+        "error": {
+          "message": "invalid content-type: multipart/form-data; boundary=a255e630e3d9042735cf2bd96fef0f88",
+          "code": 400
+        },
+        "user_id": "user_31kMnp8LF3fA7tFCGn1nRbfyKcU"
+      }
+    }
+  },
+  "modelId": "none",
+  "latencyMs": 366.29208299999937
+}

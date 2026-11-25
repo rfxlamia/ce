@@ -57,6 +57,7 @@ packages/ce/src/
     resolve.ts          → ChangeContext
   jev/
     gateway.ts          JevGateway interface + TypeSafe implementation
+                        (changed: HybridJevGateway, SDK for text, raw JSON for images, see below)
     catalog.ts          versioned question catalog (all question text lives here)
     fake.ts             recorded/fixture gateway for tests and eval
     log.ts              jev-calls.jsonl writer (no state contents)
@@ -82,6 +83,20 @@ schemas/                run.schema.json, ce.schema.json (generated)
 Dependencies: `playwright` (Chromium only), `@typesafe-ai/sdk` (pointed at
 OpenRouter by default via `baseURL: https://openrouter.ai/api`), `zod`,
 `yaml`, `fast-check` (dev), `vitest` (dev). No framework, no daemon.
+
+> **Changed by the spike** ([findings](./spike-jev-openrouter.md), sections 1
+> and 2). `@typesafe-ai/sdk` 0.7.0 works through OpenRouter for text-only
+> `choice`, `noul`, and `score` (confirmed). Any SDK request that contains an
+> image is sent as `multipart/form-data` and OpenRouter rejects it with
+> `400 invalid content-type`. The same request succeeds as raw JSON with a
+> `data_base64` asset. `jev/gateway.ts` therefore uses the SDK for text-only
+> requests and a raw JSON transport for image requests, or an SDK version or
+> option that avoids multipart. This is decided: a hybrid gateway, SDK for
+> text-only requests and raw JSON for requests with an image, behind one
+> `JevGateway` interface. Only `jev/` knows about the two transports. See
+> [`.kiro/steering/jev-gateway-decision.md`](../../../.kiro/steering/jev-gateway-decision.md)
+> (issue #5). The SDK failure is reported upstream
+> (typesafe-ai/typesafe-sdk-js#27).
 
 ## 3. Data model
 
@@ -144,6 +159,16 @@ All questions about one state go into a single request. The loop stays
 text-only for speed; image questions run once on the final screenshot, since
 every request with an image runs in Jev's slower, less accurate long-context
 mode. Box requires `typesafe/jev-1.14` (or `~typesafe/jev-latest`).
+
+> **Confirmed / changed by the spike** ([findings](./spike-jev-openrouter.md),
+> section 2). Confirmed: Box works on the pinned `typesafe/jev-1.14` (sample
+> `014`). Changed: the SDK docs suggest `jev-preview` for Box, but that name is
+> rejected on this route (`Model typesafe/jev-preview does not exist`), so all
+> question types use the pinned model. Confirmed by a manual follow-up
+> (findings, Addendum; not in the sample dirs): a single raw JSON request
+> combining `noul` and `box` on one image works on the pinned model, so the
+> two image questions go in one request. The `image_url` array form is still
+> untested.
 `runtime.next_action` options are built from the observation: one option per
 visible+enabled element (`e12: button "Menu"`), observed same-origin links,
 configured routes, plus `done` and `give_up`. If more than 240 candidates
@@ -175,6 +200,18 @@ repeat until steps = maxSteps or time budget spent:
   obs = observe(page)                       screenshot after each action
 final: one image request {state_reached, locate_subject (Box)} on final screenshot
 ```
+
+> **Changed by the spike** ([findings](./spike-jev-openrouter.md), sections 2
+> and 3, and Addendum). The final step is one raw JSON request with `noul` and
+> `box`; it does not need to be split (manual follow-up, not in the sample
+> dirs). Through the SDK the final image request fails with a 400, so the
+> gateway sends image requests over raw JSON. If the image request still
+> fails (`JevImageError`), the run resolves from text signals and the report
+> omits the Box highlight. Final-image latency over raw JSON is not measured
+> (two manual calls are not a sample set).
+> The text-only loop step (`next_action` with 100 options) measured p50
+> 767 to 785 ms and p95 864 to 957 ms over 20 samples per run, well inside the
+> 7.5 s per-step budget (confirmed).
 
 Safety bounds: same-origin navigation only unless `runtime.allow-origins`
 lists more; no form submission to non-target origins; `fill` values only from
@@ -228,7 +265,9 @@ runtime:
   fixtures: { email: demo@example.com }
 jev:
   provider: openrouter          # openrouter (OPENROUTER_API_KEY) | typesafe (TYPESAFE_API_KEY)
-  model: typesafe/jev-1.14
+  model: typesafe/jev-1.14      # confirmed; responses return a dated id, e.g. typesafe/jev-1.14-20261014
+  # TypeSafe-Danger-Zone-Images header: not needed on the raw JSON route
+  # (one request shape, 2 calls; see spike findings, Addendum)
 output:
   dir: .ce/runs
   fail-on: [error]
@@ -236,6 +275,11 @@ output:
 
 The zod schema is the single source; `ce.schema.json` is generated from it so
 editors autocomplete `ce.yml`.
+
+The spike ([findings](./spike-jev-openrouter.md), sections 3 and 4) confirms
+`runtime.max-steps: 12` with `timeout: 90s` (7.5 s per step) for the text loop.
+A pinned `jev.model` resolves to a dated Model_Id in the response `model`
+field. `run.json` stores that returned id in `jevModel`, not the requested one.
 
 ## 8. GitHub Action
 
@@ -270,6 +314,11 @@ the top, resolves `ERROR`, and still writes `run.json` with completed stages.
 Jev `RateLimitError` after SDK retries → `ERROR(stage)`. Browser crash →
 `ERROR` with last screenshot kept.
 
+> **Changed by the spike** ([findings](./spike-jev-openrouter.md), section 2).
+> A 400 on the final image request is a recoverable Jev failure: the run
+> resolves from text signals and records the failure in `run.json`. It is
+> handled separately from `RateLimitError` and does not resolve `ERROR`.
+
 ## 11. Testing strategy
 
 - **Unit:** providers, redaction, budget, candidates, decision combiner.
@@ -277,7 +326,10 @@ Jev `RateLimitError` after SDK retries → `ERROR(stage)`. Browser crash →
   generated secret and is idempotent; candidates are always substrings of the
   context; `next_action` never yields a ref absent from the observation.
 - **Fake Jev:** `jev/fake.ts` replays recorded answers keyed by question id +
-  state hash; all CI tests run keyless.
+  state hash; all CI tests run keyless. Fixtures can be taken from the spike
+  samples (`choice`, `noul`, `score`, `next_action`, raw-JSON `box`; see
+  [findings](./spike-jev-openrouter.md)). Add a case that simulates the
+  multipart 400 so the "final image request fails" path is tested.
 - **E2E:** demo-app scenarios — logic change covered by tests → `SKIPPED`;
   "fix dropdown clipping in modal" → `EVIDENCED`; backend-only change with no
   check → `UNSUPPORTED`.
@@ -287,16 +339,35 @@ Jev `RateLimitError` after SDK retries → `ERROR(stage)`. Browser crash →
 ## 12. Open questions
 
 Resolved:
-- ~~Image + text state in one request~~ — supported via OpenRouter (state is
-  an array of text and `image_url` parts). Image input and Box are early
-  features in Jev, so they are kept out of the loop and off the critical path:
-  if the final image request fails, the run still resolves from text signals.
+- Image input and Box are early features in Jev, so they are kept out of the
+  loop and off the critical path: if the final image request fails, the run
+  still resolves from text signals. (Confirmed as the right approach by the
+  spike; the earlier item "Image + text state in one request, supported via
+  `image_url` parts" is reopened, see Open item 1.)
 - ~~Judge access to Jev~~ — OpenRouter needs no TypeSafe signup; judges use
   their own OpenRouter key or the demo key in the private Devpost field.
 
 - ~~R7.4 mapping~~ — decided: `EVIDENCED` with `finalState: not_reached`,
   keeping SPEC's four outcomes untouched.
 
+Resolved by the spike ([findings](./spike-jev-openrouter.md)):
+- ~~OpenRouter response shape matches the SDK types for `choice`/`noul`~~ —
+  confirmed; `score` also conforms. `box` returned a usable answer over raw
+  JSON (sample `014`).
+- ~~Latency per loop step~~ — confirmed for the text-only `next_action`
+  request: p95 864 to 957 ms against a 7.5 s budget.
+
+Resolved by the spike addendum (manual follow-up, not in the sample dirs):
+- ~~Transport for image requests~~ — decided: hybrid gateway, SDK for text,
+  raw JSON (`data_base64` asset) for images
+  ([decision](../../../.kiro/steering/jev-gateway-decision.md), issue #5).
+  The SDK multipart failure is reported upstream (typesafe-sdk-js#27).
+- ~~Single request combining `noul` and `box`~~ — works over raw JSON on the
+  pinned model; no split request.
+- ~~`TypeSafe-Danger-Zone-Images` header~~ — not needed on the raw JSON route
+  (one request shape, 2 calls).
+
 Open:
-1. Spike task: confirm the OpenRouter System One response shape matches the
-   SDK types for `choice`/`noul`/`box`, and measure latency per loop step.
+1. Image + text state in one request: the `image_url` array form is untested.
+2. Final-image latency (p50, p95) over raw JSON is not measured. Also
+   untested: the `typesafe` provider.

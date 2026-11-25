@@ -1,0 +1,42 @@
+{
+  "requestType": "diagnostic",
+  "label": "diag: raw JSON data_base64 asset, image noul only, pinned model, header ON",
+  "request": {
+    "model": "typesafe/jev-1.14",
+    "transport": "raw-json",
+    "headers": {
+      "TypeSafe-Danger-Zone-Images": "true"
+    },
+    "state": {
+      "text": "Claim: the demo page renders a main heading. A screenshot of the page is attached.",
+      "screenshot": "<image: demo-app-screenshot.png>"
+    },
+    "questions": {
+      "noul": "Does the screenshot show a page with a visible heading?"
+    }
+  },
+  "response": {
+    "model": "typesafe/jev-1.14-20261014",
+    "answers": {
+      "noul": {
+        "type": "noul",
+        "noul": 0.98
+      }
+    },
+    "usage": {
+      "input_tokens": 2972,
+      "output_tokens": 21,
+      "cost": 0.000124824,
+      "is_byok": false,
+      "cost_details": {
+        "upstream_inference_cost": 0.000124824,
+        "upstream_inference_prompt_cost": 0.000124824,
+        "upstream_inference_completions_cost": 0
+      }
+    },
+    "id": "gen-dec-1795598819-JIHaN65llg5nWRta9Ead",
+    "provider": "TypeSafe"
+  },
+  "modelId": "typesafe/jev-1.14-20261014",
+  "latencyMs": 772.5144170000003
+}

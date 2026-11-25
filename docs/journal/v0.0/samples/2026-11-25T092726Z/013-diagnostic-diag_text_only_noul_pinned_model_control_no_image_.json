@@ -1,0 +1,39 @@
+{
+  "requestType": "diagnostic",
+  "label": "diag: text-only noul, pinned model (control, no image)",
+  "request": {
+    "model": "typesafe/jev-1.14",
+    "transport": "sdk",
+    "headers": {},
+    "state": {
+      "text": "Claim: the demo page renders a main heading. A screenshot of the page is attached."
+    },
+    "questions": {
+      "noul": "Does the screenshot show a page with a visible heading?"
+    }
+  },
+  "response": {
+    "model": "typesafe/jev-1.14-20261014",
+    "answers": {
+      "noul": {
+        "type": "noul",
+        "noul": 0.64
+      }
+    },
+    "usage": {
+      "input_tokens": 301,
+      "output_tokens": 21,
+      "cost": 0.000012642,
+      "is_byok": false,
+      "cost_details": {
+        "upstream_inference_cost": 0.000012642,
+        "upstream_inference_prompt_cost": 0.000012642,
+        "upstream_inference_completions_cost": 0
+      }
+    },
+    "id": "gen-dec-1795598818-0osN56DkIXsAI9Sl7uP8",
+    "provider": "TypeSafe"
+  },
+  "modelId": "typesafe/jev-1.14-20261014",
+  "latencyMs": 732.6704579999996
+}

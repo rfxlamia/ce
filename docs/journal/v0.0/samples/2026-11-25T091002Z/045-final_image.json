@@ -1,0 +1,27 @@
+{
+  "requestType": "final_image",
+  "request": {
+    "state": {
+      "image": "fixtures/demo-app-screenshot.png",
+      "bytes": 22806,
+      "encoding": "data URL (image/png)"
+    },
+    "questions": {
+      "done": {
+        "type": "noul",
+        "instructions": "Does the page show that the draft was saved?"
+      },
+      "subject": {
+        "type": "box",
+        "instructions": "The save confirmation message."
+      }
+    },
+    "model": "jev-preview",
+    "headers": {
+      "TypeSafe-Danger-Zone-Images": "true"
+    }
+  },
+  "response": null,
+  "modelId": "none",
+  "latencyMs": 442.6746669999993
+}

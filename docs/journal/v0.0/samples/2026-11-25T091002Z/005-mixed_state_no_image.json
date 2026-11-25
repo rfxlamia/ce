@@ -1,0 +1,17 @@
+{
+  "requestType": "mixed_state_no_image",
+  "request": {
+    "model": "jev-preview",
+    "headers": {},
+    "state": {
+      "text": "Claim: the demo page renders a main heading. A screenshot of the page is attached."
+    },
+    "questions": {
+      "noul": "Does the screenshot show a page with a visible heading?",
+      "box": "The main heading of the page"
+    }
+  },
+  "response": null,
+  "modelId": "none",
+  "latencyMs": 326.1611660000003
+}

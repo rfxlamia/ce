@@ -1,0 +1,36 @@
+{
+  "requestType": "mixed_state",
+  "label": "mixed with image",
+  "request": {
+    "model": "jev-preview",
+    "transport": "sdk",
+    "headers": {
+      "TypeSafe-Danger-Zone-Images": "true"
+    },
+    "state": {
+      "text": "Claim: the demo page renders a main heading. A screenshot of the page is attached.",
+      "screenshot": "<image: demo-app-screenshot.png>"
+    },
+    "questions": {
+      "noul": "Does the screenshot show a page with a visible heading?",
+      "box": "The main heading of the page"
+    }
+  },
+  "response": {
+    "error": {
+      "class": "BadRequestError",
+      "status": 400,
+      "message": "400 invalid content-type: multipart/form-data; boundary=aba29e8d7344f6f19fa99e6832358a6f",
+      "body": {
+        "error": {
+          "message": "invalid content-type: multipart/form-data; boundary=aba29e8d7344f6f19fa99e6832358a6f",
+          "code": 400
+        },
+        "user_id": "user_31kMnp8LF3fA7tFCGn1nRbfyKcU"
+      }
+    }
+  },
+  "modelId": "none",
+  "latencyMs": 394.94291599999997,
+  "imageRef": "004-mixed_state-mixed_with_image.png"
+}
