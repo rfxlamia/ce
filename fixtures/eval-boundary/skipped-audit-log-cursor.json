@@ -1,0 +1,55 @@
+{
+  "id": "skipped-audit-log-cursor",
+  "description": "Skipped: the cursor test is quarantined; its check has status skipped.",
+  "change": {
+    "title": "Paginate GET /audit-logs with a cursor parameter",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Paginate GET /audit-logs with a cursor parameter"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/routes/auditLogs.ts",
+        "status": "modified",
+        "patch": "@@ -6,2 +6,2 @@\n-  const rows = await db.auditLogs.findMany({ take: 100 });\n-  res.json(rows);\n+  const rows = await db.auditLogs.findMany({ take: 100, cursor: req.query.cursor ? { id: req.query.cursor } : undefined, skip: req.query.cursor ? 1 : 0 });\n+  res.json({ rows, nextCursor: rows.length === 100 ? rows[99].id : null });"
+      },
+      {
+        "path": "test/api/audit-logs.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,7 @@\n+describe.skip(\"[quarantined] audit log pagination\", () => {\n+  it(\"returns the next page from nextCursor\", async () => {\n+    const first = await request(app).get(\"/audit-logs\");\n+    const second = await request(app).get(`/audit-logs?cursor=${first.body.nextCursor}`);\n+    expect(second.body.rows[0].id).not.toBe(first.body.rows[0].id);\n+  });\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/api/health.test.ts > returns ok",
+      "status": "passed"
+    },
+    {
+      "name": "test/api/audit-logs.test.ts > [quarantined] audit log pagination > returns the next page from nextCursor",
+      "status": "skipped"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Paginate GET /audit-logs with a cursor parameter": true
+    },
+    "runtimeObservable": {
+      "Paginate GET /audit-logs with a cursor parameter": true
+    },
+    "checksAdequate": {
+      "Paginate GET /audit-logs with a cursor parameter": false
+    },
+    "surface": {
+      "Paginate GET /audit-logs with a cursor parameter": "http_api"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

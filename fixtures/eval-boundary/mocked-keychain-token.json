@@ -1,0 +1,51 @@
+{
+  "id": "mocked-keychain-token",
+  "description": "Mocked boundary: resolveToken, which holds the new keychain lookup, is mocked, so the keychain path never runs.",
+  "change": {
+    "title": "Read the API token from the system keychain when --token is not given",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Read the API token from the system keychain when --token is not given"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/auth/resolveToken.ts",
+        "status": "modified",
+        "patch": "@@ -3,3 +3,3 @@\n export async function resolveToken(flag?: string) {\n-  return flag ?? process.env.APP_TOKEN;\n+  return flag ?? process.env.APP_TOKEN ?? (await keychain.get(\"app-cli\", \"token\"));\n }"
+      },
+      {
+        "path": "test/commands/whoami.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,5 @@\n+vi.mock(\"../../src/auth/resolveToken\", () => ({ resolveToken: async () => \"tok\" }));\n+it(\"prints the current user\", async () => {\n+  const out = await runCli([\"whoami\"]);\n+  expect(out.stdout).toContain(\"signed in as ada\");\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/commands/whoami.test.ts > prints the current user",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Read the API token from the system keychain when --token is not given": true
+    },
+    "runtimeObservable": {
+      "Read the API token from the system keychain when --token is not given": true
+    },
+    "checksAdequate": {
+      "Read the API token from the system keychain when --token is not given": false
+    },
+    "surface": {
+      "Read the API token from the system keychain when --token is not given": "cli"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

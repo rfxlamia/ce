@@ -1,0 +1,51 @@
+{
+  "id": "pos-migrate-dry-run",
+  "description": "Positive: the test runs --dry-run, checks the listed actions and that the database is untouched.",
+  "change": {
+    "title": "Accept a --dry-run flag that lists migrations without applying them",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Accept a --dry-run flag that lists migrations without applying them"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/commands/migrate.ts",
+        "status": "modified",
+        "patch": "@@ -11,2 +11,3 @@\n for (const m of pending) {\n+  if (opts.dryRun) { console.log(`would apply ${m.name}`); continue; }\n   await apply(m);"
+      },
+      {
+        "path": "test/commands/migrate.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,5 @@\n+it(\"migrate options\", async () => {\n+  const { stdout } = await runCli([\"migrate\", \"--dry-run\"], { db });\n+  expect(stdout).toContain(\"would apply 0007_add_index\");\n+  expect(await db.appliedMigrations()).toHaveLength(6);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/commands/migrate.test.ts > migrate options",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Accept a --dry-run flag that lists migrations without applying them": true
+    },
+    "runtimeObservable": {
+      "Accept a --dry-run flag that lists migrations without applying them": true
+    },
+    "checksAdequate": {
+      "Accept a --dry-run flag that lists migrations without applying them": true
+    },
+    "surface": {
+      "Accept a --dry-run flag that lists migrations without applying them": "cli"
+    },
+    "claimStatus": "identified",
+    "required": false
+  }
+}

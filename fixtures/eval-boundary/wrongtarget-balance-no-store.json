@@ -1,0 +1,51 @@
+{
+  "id": "wrongtarget-balance-no-store",
+  "description": "Wrong target: the test asserts the balance value, not the Cache-Control header.",
+  "change": {
+    "title": "Set Cache-Control no-store on GET /account/balance",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Set Cache-Control no-store on GET /account/balance"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/routes/account.ts",
+        "status": "modified",
+        "patch": "@@ -15,2 +15,3 @@\n router.get(\"/account/balance\", async (req, res) => {\n+  res.set(\"Cache-Control\", \"no-store\");\n   res.json({ balance: await ledger.balance(req.user.id) });"
+      },
+      {
+        "path": "test/api/account.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,5 @@\n+it(\"returns the account balance\", async () => {\n+  const res = await request(app).get(\"/account/balance\").set(auth(user));\n+  expect(res.status).toBe(200);\n+  expect(res.body.balance).toBe(1250);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/api/account.test.ts > returns the account balance",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Set Cache-Control no-store on GET /account/balance": true
+    },
+    "runtimeObservable": {
+      "Set Cache-Control no-store on GET /account/balance": true
+    },
+    "checksAdequate": {
+      "Set Cache-Control no-store on GET /account/balance": false
+    },
+    "surface": {
+      "Set Cache-Control no-store on GET /account/balance": "http_api"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

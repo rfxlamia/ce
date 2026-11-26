@@ -1,0 +1,55 @@
+{
+  "id": "skipped-dropdown-outside-click",
+  "description": "Skipped: the only test of the behavior is marked skip; its check has status skipped.",
+  "change": {
+    "title": "Close the dropdown menu when the user clicks outside it",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Close the dropdown menu when the user clicks outside it"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/ui/Dropdown.tsx",
+        "status": "modified",
+        "patch": "@@ -7,2 +7,3 @@\n   const ref = useRef<HTMLDivElement>(null);\n+  useOnClickOutside(ref, () => setOpen(false));\n   return <div ref={ref}>{open && <Menu />}</div>;"
+      },
+      {
+        "path": "e2e/dropdown.spec.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,6 @@\n+test.skip(\"closes the dropdown on outside click\", async ({ page }) => {\n+  await page.goto(\"/\");\n+  await page.getByRole(\"button\", { name: \"Account\" }).click();\n+  await page.mouse.click(5, 5);\n+  await expect(page.getByRole(\"menu\")).toBeHidden();\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "e2e/header.spec.ts > renders the account button",
+      "status": "passed"
+    },
+    {
+      "name": "e2e/dropdown.spec.ts > closes the dropdown on outside click",
+      "status": "skipped"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Close the dropdown menu when the user clicks outside it": true
+    },
+    "runtimeObservable": {
+      "Close the dropdown menu when the user clicks outside it": true
+    },
+    "checksAdequate": {
+      "Close the dropdown menu when the user clicks outside it": false
+    },
+    "surface": {
+      "Close the dropdown menu when the user clicks outside it": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "id": "renderonly-watch-refresh",
+  "description": "Render only: the test snapshots one render of the table; refreshing over time is never observed.",
+  "change": {
+    "title": "Refresh the status table every two seconds in watch mode",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Refresh the status table every two seconds in watch mode"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/commands/status.ts",
+        "status": "modified",
+        "patch": "@@ -9,1 +9,2 @@\n render(await fetchStatus());\n+if (opts.watch) setInterval(async () => render(await fetchStatus()), 2000);"
+      },
+      {
+        "path": "test/commands/status.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,4 @@\n+it(\"renders the status table\", async () => {\n+  const out = await runCli([\"status\"]);\n+  expect(out.stdout).toMatchSnapshot();\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/commands/status.test.ts > renders the status table",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Refresh the status table every two seconds in watch mode": true
+    },
+    "runtimeObservable": {
+      "Refresh the status table every two seconds in watch mode": true
+    },
+    "checksAdequate": {
+      "Refresh the status table every two seconds in watch mode": false
+    },
+    "surface": {
+      "Refresh the status table every two seconds in watch mode": "cli"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

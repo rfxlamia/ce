@@ -1,0 +1,51 @@
+{
+  "id": "happypath-sync-hidden-files",
+  "description": "Happy path only: the test directory has no hidden files, so skipping them is never exercised.",
+  "change": {
+    "title": "Skip hidden files when the sync command walks a directory",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Skip hidden files when the sync command walks a directory"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/sync/walk.ts",
+        "status": "modified",
+        "patch": "@@ -6,2 +6,3 @@\n for (const entry of await readdir(dir, { withFileTypes: true })) {\n+  if (entry.name.startsWith(\".\")) continue;\n   yield join(dir, entry.name);"
+      },
+      {
+        "path": "test/sync/sync.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,5 @@\n+it(\"uploads every file in the directory\", async () => {\n+  const dir = await makeTree({ \"a.txt\": \"1\", \"b/c.txt\": \"2\" });\n+  const out = await runCli([\"sync\", dir]);\n+  expect(out.stdout).toContain(\"Uploaded 2 files\");\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/sync/sync.test.ts > uploads every file in the directory",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Skip hidden files when the sync command walks a directory": true
+    },
+    "runtimeObservable": {
+      "Skip hidden files when the sync command walks a directory": true
+    },
+    "checksAdequate": {
+      "Skip hidden files when the sync command walks a directory": false
+    },
+    "surface": {
+      "Skip hidden files when the sync command walks a directory": "cli"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

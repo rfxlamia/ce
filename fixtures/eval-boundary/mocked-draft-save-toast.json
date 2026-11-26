@@ -1,0 +1,51 @@
+{
+  "id": "mocked-draft-save-toast",
+  "description": "Mocked boundary: the toast module is mocked out, so the failure toast is never rendered or asserted.",
+  "change": {
+    "title": "Show an error toast when saving the draft fails",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Show an error toast when saving the draft fails"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/editor/useSaveDraft.ts",
+        "status": "modified",
+        "patch": "@@ -10,3 +10,5 @@\n   try {\n     await api.saveDraft(draft);\n-  } catch {}\n+  } catch {\n+    toast.error(\"Could not save the draft. Try again.\");\n+  }"
+      },
+      {
+        "path": "src/editor/useSaveDraft.test.tsx",
+        "status": "added",
+        "patch": "@@ -0,0 +1,6 @@\n+vi.mock(\"../ui/toast\", () => ({ toast: { error: vi.fn() } }));\n+it(\"calls the save endpoint even when it fails\", async () => {\n+  api.saveDraft = vi.fn().mockRejectedValue(new Error(\"500\"));\n+  await act(() => renderHook(useSaveDraft).result.current.save(draft));\n+  expect(api.saveDraft).toHaveBeenCalledWith(draft);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "src/editor/useSaveDraft.test.tsx > calls the save endpoint even when it fails",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Show an error toast when saving the draft fails": true
+    },
+    "runtimeObservable": {
+      "Show an error toast when saving the draft fails": true
+    },
+    "checksAdequate": {
+      "Show an error toast when saving the draft fails": false
+    },
+    "surface": {
+      "Show an error toast when saving the draft fails": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

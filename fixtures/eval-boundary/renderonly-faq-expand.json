@@ -1,0 +1,51 @@
+{
+  "id": "renderonly-faq-expand",
+  "description": "Render only: the snapshot captures the collapsed FAQ; no click is performed.",
+  "change": {
+    "title": "Expand the FAQ answer when its question is clicked",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Expand the FAQ answer when its question is clicked"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/help/FaqItem.tsx",
+        "status": "modified",
+        "patch": "@@ -3,3 +3,4 @@\n export function FaqItem({ q, a }: Props) {\n+  const [open, setOpen] = useState(false);\n-  return <div><h3>{q}</h3><p hidden>{a}</p></div>;\n+  return <div><h3 onClick={() => setOpen(!open)}>{q}</h3><p hidden={!open}>{a}</p></div>;\n }"
+      },
+      {
+        "path": "src/help/FaqItem.test.tsx",
+        "status": "added",
+        "patch": "@@ -0,0 +1,4 @@\n+it(\"renders a FAQ item\", () => {\n+  const { container } = render(<FaqItem q=\"How do refunds work?\" a=\"Within 14 days.\" />);\n+  expect(container).toMatchSnapshot();\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "src/help/FaqItem.test.tsx > renders a FAQ item",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Expand the FAQ answer when its question is clicked": true
+    },
+    "runtimeObservable": {
+      "Expand the FAQ answer when its question is clicked": true
+    },
+    "checksAdequate": {
+      "Expand the FAQ answer when its question is clicked": false
+    },
+    "surface": {
+      "Expand the FAQ answer when its question is clicked": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

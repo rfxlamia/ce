@@ -1,0 +1,51 @@
+{
+  "id": "happypath-inbox-empty-state",
+  "description": "Happy path only: the test seeds three messages; the empty state is never rendered.",
+  "change": {
+    "title": "Show an empty state message when the inbox has no messages",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Show an empty state message when the inbox has no messages"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/inbox/InboxList.tsx",
+        "status": "modified",
+        "patch": "@@ -4,2 +4,3 @@\n export function InboxList({ messages }: Props) {\n+  if (messages.length === 0) return <p data-testid=\"inbox-empty\">You are all caught up.</p>;\n   return <ul>{messages.map((m) => <InboxRow key={m.id} message={m} />)}</ul>;"
+      },
+      {
+        "path": "e2e/inbox.spec.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,5 @@\n+test(\"lists inbox messages\", async ({ page }) => {\n+  await seedMessages(3);\n+  await page.goto(\"/inbox\");\n+  await expect(page.getByRole(\"listitem\")).toHaveCount(3);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "e2e/inbox.spec.ts > lists inbox messages",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Show an empty state message when the inbox has no messages": true
+    },
+    "runtimeObservable": {
+      "Show an empty state message when the inbox has no messages": true
+    },
+    "checksAdequate": {
+      "Show an empty state message when the inbox has no messages": false
+    },
+    "surface": {
+      "Show an empty state message when the inbox has no messages": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

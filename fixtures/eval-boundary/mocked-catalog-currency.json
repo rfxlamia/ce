@@ -1,0 +1,51 @@
+{
+  "id": "mocked-catalog-currency",
+  "description": "Mocked boundary: the convert function is mocked to identity, so no conversion is checked.",
+  "change": {
+    "title": "Convert catalog prices to the user currency on GET /catalog",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Convert catalog prices to the user currency on GET /catalog"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/routes/catalog.ts",
+        "status": "modified",
+        "patch": "@@ -8,2 +8,3 @@\n   const items = await db.catalog.list();\n-  res.json(items);\n+  const currency = req.user?.currency ?? \"USD\";\n+  res.json(await Promise.all(items.map(async (i) => ({ ...i, price: await convert(i.price, currency) }))));"
+      },
+      {
+        "path": "test/api/catalog.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,6 @@\n+vi.mock(\"../../src/fx/convert\", () => ({ convert: async (v: number) => v }));\n+it(\"lists catalog prices for a EUR user\", async () => {\n+  const res = await request(app).get(\"/catalog\").set(auth({ currency: \"EUR\" }));\n+  expect(res.status).toBe(200);\n+  expect(res.body).toHaveLength(12);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/api/catalog.test.ts > lists catalog prices for a EUR user",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Convert catalog prices to the user currency on GET /catalog": true
+    },
+    "runtimeObservable": {
+      "Convert catalog prices to the user currency on GET /catalog": true
+    },
+    "checksAdequate": {
+      "Convert catalog prices to the user currency on GET /catalog": false
+    },
+    "surface": {
+      "Convert catalog prices to the user currency on GET /catalog": "http_api"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "id": "skipped-lockfile-exit-3",
+  "description": "Skipped: the exit-code test is skipped on CI; its check has status skipped.",
+  "change": {
+    "title": "Exit with code 3 when the lockfile is out of date",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Exit with code 3 when the lockfile is out of date"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/commands/install.ts",
+        "status": "modified",
+        "patch": "@@ -18,1 +18,5 @@\n const lock = await readLockfile(cwd);\n+if (opts.frozen && !lockMatches(lock, manifest)) {\n+  console.error(\"Lockfile is out of date\");\n+  process.exit(3);\n+}"
+      },
+      {
+        "path": "test/commands/install.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,4 @@\n+it.skipIf(process.env.CI)(\"exits with code 3 on a stale lockfile\", async () => {\n+  const r = await execa(\"node\", [\"dist/cli.js\", \"install\", \"--frozen\"], { cwd: fixture(\"stale-lock\"), reject: false });\n+  expect(r.exitCode).toBe(3);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/commands/install.test.ts > installs from the lockfile",
+      "status": "passed"
+    },
+    {
+      "name": "test/commands/install.test.ts > exits with code 3 on a stale lockfile",
+      "status": "skipped"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Exit with code 3 when the lockfile is out of date": true
+    },
+    "runtimeObservable": {
+      "Exit with code 3 when the lockfile is out of date": true
+    },
+    "checksAdequate": {
+      "Exit with code 3 when the lockfile is out of date": false
+    },
+    "surface": {
+      "Exit with code 3 when the lockfile is out of date": "cli"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}
