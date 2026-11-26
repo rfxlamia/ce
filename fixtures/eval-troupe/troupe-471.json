@@ -1,0 +1,221 @@
+{
+  "id": "troupe-471",
+  "description": "Real change: https://github.com/gnoviawan/troupe/pull/471 at head 7e2e8b6d987938ecbb47746575a713bba6d6685d, merged 2026-07-30T09:36:54Z. Regression fixed by https://github.com/gnoviawan/troupe/pull/472. MIT, see NOTICE.",
+  "change": {
+    "title": "fix(remote): gate tunnel QR on edge reachability + clear stale URL on cloudflared exit",
+    "description": "## Summary\n\nScanning the remote-access QR right after toggling remote access on opened to **\"This site can't be reached\"** on the phone. Root cause (two failure modes, both in the recently-merged scan-to-connect feature #469):\n\n1. **Edge-race:** `start_quick_tunnel` attached the trycloudflare URL to the QR the instant cloudflared *printed* it — before the edge route + phone-DNS had converged. Scanning in the first few seconds hit an unreachable hostname.\n2. **Staleness:** `RemoteServerState::status()` never checked the cloudflared child. If cloudflared exited after the QR appeared, the 3s renderer poller kept serving a dead URL → \"can't be reached\". The tunnel path also logged nothing (errors were returned to the renderer via `IpcResult` but never hit `termul.log`), making it invisible.\n\nThis PR gates the QR on **real edge reachability**, clears the stale URL when cloudflared dies, and adds full lifecycle logging.\n\n## Related Issue\n\nThere is no related issue — this bug was reported directly by the maintainer while testing the scan-to-connect feature shipped in #469. The symptom is reproducible from the prod `termul.log` (the shared-live server bouncing across ports `63905→63921→64931` with **zero** cloudflared lines) plus the live process state at diagnosis time (cloudflared PID 19544 healthy, edge `/ready` `readyConnections:1`, origin `:64931` serving 200) — i.e. the server/origin were fine; the scanned URL was stale or pre-edge-live.\n\n## Type of Change\n\n- [x] fix: bug fix\n\n## What Changed\n\n- **`src-tauri/src/remote/cloudflared.rs`** — new `probe_tunnel_ready(url)`: after cloudflared prints the URL, HTTP-GETs the public trycloudflare URL (reqwest + rustls, both already deps) until it returns 2xx — proving the edge→cloudflared→origin path the phone will use is actually live (cloudflared's local `/ready` only proves the edge *connection*, not that the hostname routes). Both the per-request timeout **and** the retry sleep are capped to the remaining deadline so the probe can't overshoot the documented bound. On timeout the child is killed and `REMOTE_TUNNEL_FAILED \"tunnel URL not reachable within 10s\"` is surfaced (server drained). Added `log::info/warn/error` for spawn / url-obtained / ready / kill / probe-failure / timeout so the lifecycle is visible in `termul.log` (silent before).\n- **`src-tauri/src/remote/host.rs`** — `attach_tunnel` now spawns a **watchdog task** that owns the cloudflared `Child`, `wait()`s for natural exit, and flips an `AtomicBool`. `status()` (stays **sync** — zero caller changes) reads the flag and, on death, clears `tunnel_url` so the existing 3s renderer poller drops the stale QR. `stop()` + `Drop` abort the watchdog so the child is reaped via `kill_on_drop`. (Chose a watchdog over making `status()` async to avoid holding a `!Send` `std::MutexGuard` across `.await` — Tauri command futures must be `Send` — and to keep `remote_server_start`/`_status` + all existing tests unchanged.)\n- **`src/renderer/components/RemoteAccessPopover.tsx`** — tracks `sawUrl`; when running with no `tunnelUrl` it now shows **\"Tunnel disconnected — toggle off and on to retry\"** if a URL was previously seen, vs **\"Starting tunnel…\"** on the first connect. Honest UI after a mid-session cloudflared death.\n\n## How It Was Tested\n\n- [x] `bun run ci` (Biome lint + format + imports, strict mode)\n- [x] `bun run typecheck`\n- [x] `bun run test` — 2514 passed / 1 skipped\n- [x] `cargo clippy --all-targets -- -D warnings` (in src-tauri) — clean\n- [x] `cargo test` (in src-tauri) — 499 passed / 2 ignored\n- [ ] Manual verification — live process state (cloudflared PID, edge `/ready`, origin `/health`) confirmed during diagnosis; probe + staleness paths are unit-tested. End-to-end phone-scan is left for the maintainer to confirm.\n\nNew unit tests:\n- `probe_returns_err_for_unreachable_url_near_deadline` (cloudflared.rs) — proves the probe gives up near its deadline against an unreachable URL (never hangs) and surfaces the \"not reachable within Ns\" error.\n- `probe_bounded_by_deadline_against_hanging_listener` (cloudflared.rs) — a local listener that accepts but never responds exercises the per-request-timeout + capped-retry-sleep path; asserts total wait hugs the 2s deadline (< 3s).\n- `status_clears_tunnel_url_when_cloudflared_child_exits` (host.rs) — attaches a real short-lived exit-0 child, asserts `status()` clears `tunnel_url` once the child exits (multi-thread runtime so the watchdog runs).\n\n## Screenshots or Recordings\n\nN/A — behavior/edge-case fix; the QR component is unchanged (same `QRCodeSVG`). The only UI delta is the disconnected-state copy.\n\n## CI & Review Gate\n\n- [x] All CI checks pass — PR Validation (Validate PR Description/Title, Lint/Typecheck/Test, Rust Checks, ACP Registry, Web Client Build, Standalone Server Build, Rust Windows Smoke, Verify Tauri Frontend Build), CodeQL, Secret Scan, Dependency Review all green on run 30530424556.\n- [x] Code review comments from CodeRabbit addressed/resolved — the one actionable inline comment (probe per-request timeout overshoot) is fixed in 1357cd5f; its two 🟡 follow-ups (cap the retry sleep; cover the hanging-request path in tests) are fixed in 7e2e8b6d. Reply posted to the inline thread. CodeRabbit was rate-limited for its final pass; the comments are addressed in code regardless.\n- [x] No unresolved review findings remain\n\n## Checklist\n\n- [x] PR title follows the conventional commit format used by this repo\n- [x] I linked the related issue or explained why none exists\n- [x] I updated docs when needed (inline code comments; no external doc change needed)\n- [x] I added or updated tests when needed\n- [x] I verified the change does not introduce unrelated modifications (3 files, all in the remote/tunnel path)\n- [x] I read AGENTS.md / CLAUDE.md and followed the contributor guidelines",
+    "commits": [
+      {
+        "sha": "84b9c9d",
+        "message": "fix(remote): gate tunnel QR on edge reachability + clear stale URL on cloudflared exit\n\nScanning the remote-access QR right after toggling on opened to \"This site\ncan't be reached\": cloudflared's trycloudflare URL was surfaced the instant it\nwas printed, before the edge route was live, and a dead cloudflared left a\nstale URL in the QR.\n\n- cloudflared.rs: HTTP-probe the public URL (reqwest, rustls) until 2xx before\n  attaching the tunnel URL; log the full cloudflared lifecycle (spawn/url/ready/\n  kill/errors) so failures aren't invisible in termul.log.\n- host.rs: a watchdog task owns the cloudflared child and flips an AtomicBool\n  on exit; status() (sync) clears the stale tunnel_url so the 3s renderer\n  poller drops the QR. stop()/Drop abort the watchdog (child reaped via\n  kill_on_drop).\n- RemoteAccessPopover.tsx: distinguish \"Starting tunnel…\" from \"Tunnel\n  disconnected — toggle off and on to retry\" once a URL was seen then lost.\n\nFixes the edge-race + staleness causes of the scan-to-connect failure."
+      },
+      {
+        "sha": "3cbaab2",
+        "message": "chore: retrigger CI (Validate PR Description reruns against the original event payload; a synchronize event re-validates against the fixed body)"
+      },
+      {
+        "sha": "1357cd5",
+        "message": "fix(remote): cap tunnel probe per-request timeout to remaining deadline budget\n\nAddresses CodeRabbit: the hard-coded 3s per-request timeout could let a\nstraggler near the deadline push total wait ~3s past the documented bound\n(worst case ~13s for a 10s deadline). Each GET now caps its timeout to\nmin(3s, remaining budget) so the probe can't overshoot by a full request."
+      },
+      {
+        "sha": "7e2e8b6",
+        "message": "fix(remote): cap probe retry sleep + cover hanging-request path in tests\n\nAddresses CodeRabbit follow-ups:\n- Cap the retry sleep to min(interval, remaining) so a sleep started near the\n  deadline can't push total wait past the bound by a full interval.\n- Add a hanging-listener test that exercises the per-request-timeout path\n  (the port-1 instant-refuse test can't), and tighten the deadline assertion."
+      }
+    ],
+    "files": [
+      {
+        "path": "src-tauri/src/remote/cloudflared.rs",
+        "status": "modified",
+        "patch": "@@ -156,6 +156,79 @@ pub struct QuickTunnel {\n     pub child: Child,\n }\n \n+/// Deadline for the post-URL reachability probe (see [`probe_tunnel_ready`]).\n+/// cloudflared prints the trycloudflare URL *before* the edge route is live;\n+/// this bounds how long we wait for the edge → origin path to return 2xx before\n+/// giving up + surfacing a \"not reachable\" error so the popover never offers a\n+/// dead QR.\n+const TUNNEL_READY_PROBE_TIMEOUT_SECS: u64 = 10;\n+/// Probe interval — balances responsiveness against edge/request load.\n+const TUNNEL_READY_PROBE_INTERVAL_MS: u64 = 500;\n+\n+/// HTTP-probe the public trycloudflare URL until the edge routes to the origin\n+/// (2xx) or [`TUNNEL_READY_PROBE_TIMEOUT_SECS`] elapses. The probe round-trips\n+/// desktop → trycloudflare edge → cloudflared → localhost origin, exercising\n+/// the full path the phone will use — so a 2xx here is the only signal that the\n+/// QR will actually load (vs. cloudflared's \"URL created\" log line, which\n+/// fires before the edge route + phone-DNS converge and yields \"This site\n+/// can't be reached\" for an eager scan).\n+///\n+/// `reqwest` (rustls, already a dep) is the client — no new crate.\n+async fn probe_tunnel_ready(url: &str) -> Result<(), String> {\n+    probe_tunnel_ready_with(\n+        url,\n+        std::time::Duration::from_secs(TUNNEL_READY_PROBE_TIMEOUT_SECS),\n+        std::time::Duration::from_millis(TUNNEL_READY_PROBE_INTERVAL_MS),\n+    )\n+    .await\n+}\n+\n+/// Parameterized probe core so tests can run a short deadline against a\n+/// definitely-unreachable URL without waiting the full 10s.\n+async fn probe_tunnel_ready_with(\n+    url: &str,\n+    timeout: std::time::Duration,\n+    interval: std::time::Duration,\n+) -> Result<(), String> {\n+    // No global client timeout — each request is capped to the *remaining*\n+    // deadline budget inside the loop, so a straggler near the deadline can't\n+    // push total wait past `timeout`. A hung send() still yields: reqwest errors\n+    // on the per-request timeout → reachable=false → the loop re-checks the\n+    // deadline + exits.\n+    let client = reqwest::Client::builder()\n+        .build()\n+        .map_err(|e| format!(\"tunnel probe client build failed: {e}\"))?;\n+    let deadline = std::time::Instant::now() + timeout;\n+    while std::time::Instant::now() < deadline {\n+        // Cap each GET to the remaining budget (≤3s) so the probe can't\n+        // overshoot the documented `timeout` bound by a full request's duration.\n+        let per_request_timeout = deadline\n+            .saturating_duration_since(std::time::Instant::now())\n+            .min(std::time::Duration::from_secs(3));\n+        // Any 2xx means the edge is routing to the origin. Non-2xx / network\n+        // errors (edge not yet routing, NXDOMAIN, origin refused, per-request\n+        // timeout) → retry until the deadline.\n+        let reachable = client\n+            .get(url)\n+            .timeout(per_request_timeout)\n+            .send()\n+            .await\n+            .map(|resp| resp.status().is_success())\n+            .unwrap_or(false);\n+        if reachable {\n+            return Ok(());\n+        }\n+        // Cap the retry sleep by the remaining deadline so a sleep started near\n+        // the deadline can't push total wait past `timeout` by a full interval.\n+        let remaining = deadline.saturating_duration_since(std::time::Instant::now());\n+        tokio::time::sleep(interval.min(remaining)).await;\n+    }\n+    Err(format!(\n+        \"tunnel URL not reachable within {}s\",\n+        timeout.as_secs()\n+    ))\n+}\n+\n /// Spawn `cloudflared tunnel --url http://localhost:{port}` and wait (up to\n /// [`TUNNEL_URL_TIMEOUT_SECS`]) for the ephemeral trycloudflare URL.\n ///\n@@ -181,7 +254,14 @@ pub async fn start_quick_tunnel(port: u16) -> Result<QuickTunnel, String> {\n \n     let mut child = command\n         .spawn()\n-        .map_err(|e| format!(\"cloudflared binary not found at {path}: {e}\"))?;\n+        .map_err(|e| {\n+            log::error!(\"cloudflared failed to spawn at {path}: {e}\");\n+            format!(\"cloudflared binary not found at {path}: {e}\")\n+        })?;\n+    log::info!(\n+        \"cloudflared spawned (pid={:?}) from {path}; waiting for tunnel URL…\",\n+        child.id()\n+    );\n \n     let stdout = child\n         .stdout\n@@ -204,14 +284,31 @@ pub async fn start_quick_tunnel(port: u16) -> Result<QuickTunnel, String> {\n     )\n     .await\n     {\n-        Ok(Ok(url)) => Ok(QuickTunnel { url, child }),\n+        Ok(Ok(url)) => {\n+            log::info!(\n+                \"cloudflared tunnel URL obtained ({url}); probing edge reachability…\"\n+            );\n+            // cloudflared prints the URL before the edge route is live; an\n+            // eager QR yields \"This site can't be reached\" in the first few\n+            // seconds. Probe the public URL end-to-end until it returns 2xx —\n+            // the only signal proving the phone will succeed.\n+            if let Err(e) = probe_tunnel_ready(&url).await {\n+                let _ = child.kill().await;\n+                log::warn!(\"cloudflared tunnel probe failed: {e}\");\n+                return Err(e);\n+            }\n+            log::info!(\"cloudflared tunnel reachable — edge routes to origin\");\n+            Ok(QuickTunnel { url, child })\n+        }\n         // Sender dropped without sending → cloudflared exited before printing.\n         Ok(Err(_)) => {\n             let _ = child.kill().await;\n+            log::warn!(\"cloudflared exited before producing a tunnel URL\");\n             Err(\"cloudflared exited before producing a tunnel URL\".to_string())\n         }\n         Err(_) => {\n             let _ = child.kill().await;\n+            log::warn!(\"tunnel URL not received within {TUNNEL_URL_TIMEOUT_SECS}s\");\n             Err(format!(\n                 \"tunnel URL not received within {TUNNEL_URL_TIMEOUT_SECS}s\"\n             ))\n@@ -307,4 +404,72 @@ mod tests {\n             .find(\"redirect to https://example.com/path\")\n             .is_none());\n     }\n+\n+    #[tokio::test]\n+    async fn probe_returns_err_for_unreachable_url_near_deadline() {\n+        // Port 1 on loopback → connection refused (fast), so each GET returns\n+        // immediately; the 2s deadline bounds total elapsed time. Asserts the\n+        // probe gives up near the deadline (never hangs) + surfaces the error.\n+        let start = std::time::Instant::now();\n+        let result = probe_tunnel_ready_with(\n+            \"http://127.0.0.1:1/\",\n+            std::time::Duration::from_secs(2),\n+            std::time::Duration::from_millis(250),\n+        )\n+        .await;\n+        assert!(result.is_err(), \"unreachable URL must not be reported ready\");\n+        // Tight bound: the deadline + capped retry sleep can't overshoot by a\n+        // full interval, so ~2s + small epsilon — well under 3s.\n+        assert!(\n+            start.elapsed() < std::time::Duration::from_secs(3),\n+            \"probe must give up near the deadline, not hang; took {:?}\",\n+            start.elapsed()\n+        );\n+        assert!(result.unwrap_err().contains(\"not reachable within 2s\"));\n+    }\n+\n+    #[tokio::test(flavor = \"multi_thread\", worker_threads = 2)]\n+    async fn probe_bounded_by_deadline_against_hanging_listener() {\n+        // A listener that accepts the TCP connection but never sends an HTTP\n+        // response — so the only thing that unblocks each GET is the probe's\n+        // per-request timeout. This exercises the timeout + capped-retry-sleep\n+        // path the port-1 (instant-refuse) test can't.\n+        let addr = spawn_hanging_listener().await;\n+        let url = format!(\"http://{addr}/\");\n+        let start = std::time::Instant::now();\n+        let result = probe_tunnel_ready_with(\n+            &url,\n+            std::time::Duration::from_secs(2),\n+            std::time::Duration::from_millis(500),\n+        )\n+        .await;\n+        assert!(result.is_err(), \"hanging listener must not be reported ready\");\n+        // The per-request timeout is capped to the remaining deadline, so total\n+        // wait must hug the 2s bound — not the 3s per-request default.\n+        assert!(\n+            start.elapsed() < std::time::Duration::from_secs(3),\n+            \"probe overshot the deadline: {:?}\",\n+            start.elapsed()\n+        );\n+    }\n+\n+    /// A local TCP listener that accepts connections but never sends an HTTP\n+    /// response, so a probe client's per-request timeout is the only unblock.\n+    async fn spawn_hanging_listener() -> std::net::SocketAddr {\n+        let listener = tokio::net::TcpListener::bind(\"127.0.0.1:0\")\n+            .await\n+            .expect(\"bind hanging listener\");\n+        let addr = listener.local_addr().expect(\"local addr\");\n+        tokio::spawn(async move {\n+            // Accept connections but never send an HTTP response — a probe\n+            // client's per-request timeout is the only unblock.\n+            while let Ok((stream, _)) = listener.accept().await {\n+                tokio::spawn(async move {\n+                    let _ = tokio::time::sleep(std::time::Duration::from_secs(120)).await;\n+                    drop(stream);\n+                });\n+            }\n+        });\n+        addr\n+    }\n }"
+      },
+      {
+        "path": "src-tauri/src/remote/host.rs",
+        "status": "modified",
+        "patch": "@@ -157,9 +157,16 @@ struct RemoteServer {\n     bind_mode: RemoteBindMode,\n     /// Ephemeral trycloudflare URL (set when the quick-tunnel came up).\n     tunnel_url: Option<String>,\n-    /// Live `cloudflared` child. Killed in `stop()`; `kill_on_drop(true)` is\n-    /// the safety net for the panic/abort path where `stop()` never runs.\n-    tunnel_child: Option<Child>,\n+    /// `true` once the cloudflared watchdog observed the child exit. Read by\n+    /// `status()` (sync) to drop the stale `tunnel_url` so the renderer poller\n+    /// clears the QR (it would otherwise offer a link that yields \"This site\n+    /// can't be reached\"). `None` when no tunnel is attached.\n+    tunnel_dead: Option<std::sync::Arc<std::sync::atomic::AtomicBool>>,\n+    /// The watchdog task owning the cloudflared child: it `wait()`s for exit\n+    /// then flips `tunnel_dead`. Aborted on `stop()`/`Drop` so the owned child\n+    /// is reaped via `kill_on_drop` — the child is NOT held here directly,\n+    /// which keeps `status()` sync (no try_wait-across-`.await` dance).\n+    tunnel_watchdog: Option<tokio::task::JoinHandle<()>>,\n }\n \n impl RemoteServer {\n@@ -176,12 +183,18 @@ impl Drop for RemoteServer {\n     fn drop(&mut self) {\n         // Best-effort graceful shutdown on drop (e.g. app exit). Signal the\n         // serve task to drain; the JoinHandle is left to the runtime to reap\n-        // (awaiting it in `Drop` isn't possible — `Drop` is sync). The\n-        // cloudflared `tunnel_child` is dropped here too — its `kill_on_drop`\n-        // guarantees the process is reaped even when `stop()` never ran.\n+        // (awaiting it in `Drop` isn't possible — `Drop` is sync).\n         if let Some(tx) = self.shutdown_tx.take() {\n             let _ = tx.send(());\n         }\n+        // Abort the cloudflared watchdog so the child it owns is reaped via\n+        // `kill_on_drop` (the child lives inside the watchdog task; aborting\n+        // drops its future → drops the child). Without this, dropping the\n+        // JoinHandle would detach the task and the cloudflared process could\n+        // outlive the server on a hard exit where `stop()` never ran.\n+        if let Some(handle) = self.tunnel_watchdog.take() {\n+            handle.abort();\n+        }\n     }\n }\n \n@@ -313,11 +326,13 @@ impl RemoteServerState {\n             serve_handle: Some(serve_handle),\n             addr,\n             bind_mode,\n-            // Tunnel URL + child are attached after `cloudflared::start_quick_tunnel`\n-            // resolves in `remote_server_start` — keeps this method testable without\n-            // a real cloudflared binary (the lifecycle tests bind/stop/status here).\n+            // Tunnel URL + watchdog are attached after\n+            // `cloudflared::start_quick_tunnel` resolves in\n+            // `remote_server_start` — keeps this method testable without a real\n+            // cloudflared binary (the lifecycle tests bind/stop/status here).\n             tunnel_url: None,\n-            tunnel_child: None,\n+            tunnel_dead: None,\n+            tunnel_watchdog: None,\n         });\n         Ok(status)\n     }\n@@ -332,15 +347,17 @@ impl RemoteServerState {\n         let server = { self.inner.lock().unwrap().take() };\n         match server {\n             Some(mut server) => {\n-                // Kill the cloudflared child first so the public tunnel stops\n-                // forwarding new traffic before Axum drains existing conns.\n-                // (kill_on_drop would also reap it on Drop, but an explicit\n-                // kill here lets us await + log failures, and the child stays\n-                // owned until this call so Drop can't race us.)\n-                if let Some(mut child) = server.tunnel_child.take() {\n-                    if let Err(e) = child.kill().await {\n-                        warn!(\"cloudflared child kill failed during stop: {e}\");\n-                    }\n+                // Abort the cloudflared watchdog so the owned child is reaped\n+                // via `kill_on_drop` (the child lives inside the watchdog task;\n+                // aborting drops its future → drops the child). Done before\n+                // Axum drains so the public tunnel stops forwarding new traffic\n+                // before existing conns flush. An already-exited child (the\n+                // watchdog already completed) is a no-op.\n+                if let Some(handle) = server.tunnel_watchdog.take() {\n+                    handle.abort();\n+                    // Await completion of the abort so the child is reaped\n+                    // before we proceed (returns Err(Cancelled) — ignored).\n+                    let _ = handle.await;\n                 }\n                 // Signal drain, then await the serve task so Axum finishes\n                 // flushing before the caller proceeds (e.g. app exit →\n@@ -365,20 +382,37 @@ impl RemoteServerState {\n     }\n \n     /// Current status of the in-process web server.\n+    ///\n+    /// Also detects a dead cloudflared child: if the watchdog flag reports the\n+    /// child has exited, the public trycloudflare URL no longer routes, so the\n+    /// stale `tunnel_url` is cleared — the renderer poller then drops the QR\n+    /// (it would otherwise offer a link that yields \"This site can't be\n+    /// reached\"). Stays sync (reads an `AtomicBool`) so callers need no\n+    /// `.await`.\n     pub fn status(&self) -> RemoteStatus {\n-        let slot = self.inner.lock().unwrap();\n-        match slot.as_ref() {\n-            // If the spawned serve task has exited (error/panic), don't keep\n-            // reporting `running` with a dead listener — surface stopped so the\n-            // UI doesn't lie about a server the phone can't reach.\n-            Some(server) if !server.task_finished() => RemoteStatus::running(\n-                server.addr,\n-                server.bind_mode,\n-                server.tunnel_url.clone(),\n-            ),\n-            Some(_) => RemoteStatus::stopped(),\n-            None => RemoteStatus::stopped(),\n+        let mut slot = self.inner.lock().unwrap();\n+        let Some(server) = slot.as_mut() else {\n+            return RemoteStatus::stopped();\n+        };\n+        // If the spawned serve task has exited (error/panic), don't keep\n+        // reporting `running` with a dead listener — surface stopped so the\n+        // UI doesn't lie about a server the phone can't reach.\n+        if server.task_finished() {\n+            return RemoteStatus::stopped();\n+        }\n+        // Clear the tunnel URL once the cloudflared watchdog reports the child\n+        // dead (the public URL no longer routes). Logged once: the flag stays\n+        // set but `tunnel_url` is cleared here so subsequent polls skip the arm.\n+        if server\n+            .tunnel_dead\n+            .as_ref()\n+            .is_some_and(|flag| flag.load(std::sync::atomic::Ordering::Relaxed))\n+            && server.tunnel_url.is_some()\n+        {\n+            warn!(\"cloudflared tunnel child exited; clearing stale tunnel URL\");\n+            server.tunnel_url = None;\n         }\n+        RemoteStatus::running(server.addr, server.bind_mode, server.tunnel_url.clone())\n     }\n \n     /// Attach a started cloudflared quick-tunnel (URL + live child) to the\n@@ -395,8 +429,24 @@ impl RemoteServerState {\n         let mut slot = self.inner.lock().unwrap();\n         match slot.as_mut() {\n             Some(server) if !server.task_finished() => {\n+                let child = child.take().expect(\"child present after take\");\n+                let dead_flag =\n+                    std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));\n+                let flag = dead_flag.clone();\n+                // The watchdog owns the child: `wait()` for natural exit, then\n+                // flag death so the next `status()` poll clears the stale URL.\n+                // Aborted on `stop()`/`Drop`; at that point the owned child is\n+                // reaped via its `kill_on_drop`. Owning the child in a task\n+                // (not in `RemoteServer`) keeps `status()` sync — no\n+                // `try_wait`-across-`.await` + no `!Send` MutexGuard hazard.\n+                let watchdog = tokio::spawn(async move {\n+                    let mut child = child;\n+                    let _ = child.wait().await;\n+                    flag.store(true, std::sync::atomic::Ordering::Relaxed);\n+                });\n                 server.tunnel_url = Some(url);\n-                server.tunnel_child = child.take();\n+                server.tunnel_dead = Some(dead_flag);\n+                server.tunnel_watchdog = Some(watchdog);\n                 Ok(())\n             }\n             _ => {\n@@ -642,6 +692,69 @@ mod tests {\n         // call kill_all. This test guards the path end-to-end.)\n     }\n \n+    #[tokio::test(flavor = \"multi_thread\", worker_threads = 2)]\n+    async fn status_clears_tunnel_url_when_cloudflared_child_exits() {\n+        // The watchdog flips `tunnel_dead` once the child exits; `status()`\n+        // then clears `tunnel_url` so the renderer poller drops the stale QR\n+        // (it would otherwise offer a link that yields \"This site can't be\n+        // reached\").\n+        let (acp, relay, registry, chat_history_cache) = lifecycle_fixtures();\n+        let state = RemoteServerState::new();\n+        let _ = state\n+            .start(\n+                acp.clone(),\n+                relay.clone(),\n+                registry.clone(),\n+                chat_history_cache.clone(),\n+                RemoteBindMode::Localhost,\n+            )\n+            .await\n+            .expect(\"start\");\n+\n+        // Attach a tunnel child that exits almost immediately (cross-platform\n+        // exit-0). kill_on_drop mirrors the real start_quick_tunnel child.\n+        let mut cmd = quick_exit_command();\n+        cmd.kill_on_drop(true);\n+        let child = cmd.spawn().expect(\"spawn quick-exit child\");\n+        state\n+            .attach_tunnel(\"https://stale.trycloudflare.com\".to_string(), child)\n+            .expect(\"attach\");\n+\n+        // Poll status until the dead-child path clears the tunnel URL. The\n+        // child exits within a few ms; allow up to 1s for the OS + watchdog.\n+        let mut cleared = false;\n+        for _ in 0..20 {\n+            let s = state.status();\n+            if s.running && s.tunnel_url.is_none() {\n+                cleared = true;\n+                break;\n+            }\n+            tokio::time::sleep(std::time::Duration::from_millis(50)).await;\n+        }\n+        assert!(\n+            cleared,\n+            \"status() must clear tunnel_url once cloudflared exits\"\n+        );\n+\n+        let _ = state.stop().await;\n+    }\n+\n+    /// A cross-platform command that exits 0 almost immediately, for the\n+    /// dead-child staleness test.\n+    fn quick_exit_command() -> tokio::process::Command {\n+        #[cfg(target_os = \"windows\")]\n+        let mut c = tokio::process::Command::new(\"cmd\");\n+        #[cfg(target_os = \"windows\")]\n+        c.args([\"/c\", \"exit\", \"0\"]);\n+        #[cfg(not(target_os = \"windows\"))]\n+        let mut c = tokio::process::Command::new(\"true\");\n+\n+        c.stdin(std::process::Stdio::null())\n+            .stdout(std::process::Stdio::null())\n+            .stderr(std::process::Stdio::null());\n+        c\n+    }\n+\n     #[test]\n     fn serve_router_does_not_reference_kill_all() {\n         // Structural regression guard for the story's \"single most important"
+      },
+      {
+        "path": "src/renderer/components/RemoteAccessPopover.tsx",
+        "status": "modified",
+        "patch": "@@ -1,6 +1,6 @@\n import { AlertCircle, Check, Copy, Monitor, ShieldAlert } from 'lucide-react'\n import { QRCodeSVG } from 'qrcode.react'\n-import { useState } from 'react'\n+import { useEffect, useState } from 'react'\n import { toast } from 'sonner'\n import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'\n import { Switch } from '@/components/ui/switch'\n@@ -36,6 +36,14 @@ export function RemoteAccessPopover(): React.JSX.Element {\n   const isRunning = remoteStatus?.running ?? false\n   // The QR encodes the public tunnel URL only — never the localhost `url`.\n   const tunnelUrl = remoteStatus?.tunnelUrl ?? null\n+  // Track whether a tunnel URL was ever seen this session so the popover can\n+  // distinguish \"Starting tunnel…\" (never connected) from \"Tunnel\n+  // disconnected\" (was connected, now gone — the 3s status poll cleared it).\n+  const [sawUrl, setSawUrl] = useState(false)\n+  useEffect(() => {\n+    if (tunnelUrl) setSawUrl(true)\n+    if (!isRunning) setSawUrl(false)\n+  }, [tunnelUrl, isRunning])\n \n   const handleRemoteToggle = async (enable: boolean): Promise<void> => {\n     setRemoteBusy(true)\n@@ -178,7 +186,7 @@ export function RemoteAccessPopover(): React.JSX.Element {\n \n           {isRunning && !tunnelUrl && (\n             <div className=\"flex items-center justify-center text-xs text-muted-foreground py-2\">\n-              Starting tunnel…\n+              {sawUrl ? 'Tunnel disconnected — toggle off and on to retry' : 'Starting tunnel…'}\n             </div>\n           )}\n         </div>"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Web Client Build",
+      "status": "skipped"
+    },
+    {
+      "name": "ACP Registry Bundle Freshness",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "skipped"
+    },
+    {
+      "name": "Standalone Server Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "skipped"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Description",
+      "status": "passed"
+    },
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "skipped"
+    },
+    {
+      "name": "Web Client Build",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "passed"
+    },
+    {
+      "name": "ACP Registry Bundle Freshness",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Description",
+      "status": "passed"
+    },
+    {
+      "name": "Standalone Server Build",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "passed"
+    },
+    {
+      "name": "Review dependency changes",
+      "status": "passed"
+    },
+    {
+      "name": "Scan for leaked secrets",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "passed"
+    },
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "skipped"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "fix(remote): gate tunnel QR on edge reachability + clear stale URL on cloudflared exit": false,
+      "Scanning the remote-access QR right after toggling remote access on opened to **\"This site can't be reached\"** on the phone.": false,
+      "Root cause (two failure modes, both in the recently-merged scan-to-connect feature #469):": false,
+      "**Edge-race:** `start_quick_tunnel` attached the trycloudflare URL to the QR the instant cloudflared *printed* it — before the edge route + phone-DNS had converged.": false,
+      "Scanning in the first few seconds hit an unreachable hostname.": false,
+      "**Staleness:** `RemoteServerState::status()` never checked the cloudflared child.": false,
+      "If cloudflared exited after the QR appeared, the 3s renderer poller kept serving a dead URL → \"can't be reached\".": false,
+      "The tunnel path also logged nothing (errors were returned to the renderer via `IpcResult` but never hit `termul.log`), making it invisible.": false,
+      "This PR gates the QR on **real edge reachability**, clears the stale URL when cloudflared dies, and adds full lifecycle logging.": true,
+      "There is no related issue — this bug was reported directly by the maintainer while testing the scan-to-connect feature shipped in #469.": false,
+      "The symptom is reproducible from the prod `termul.log` (the shared-live server bouncing across ports `63905→63921→64931` with **zero** cloudflared lines) plus the live process state at diagnosis time (cloudflared PID 19544 healthy, edge `/ready` `readyConnections:1`, origin `:64931` serving 200) — i.e.": false,
+      "the server/origin were fine; the scanned URL was stale or pre-edge-live.": false,
+      "[x] fix: bug fix": false,
+      "**`src-tauri/src/remote/cloudflared.rs`** — new `probe_tunnel_ready(url)`: after cloudflared prints the URL, HTTP-GETs the public trycloudflare URL (reqwest + rustls, both already deps) until it returns 2xx — proving the edge→cloudflared→origin path the phone will use is actually live (cloudflared's local `/ready` only proves the edge *connection*, not that the hostname routes).": false,
+      "Both the per-request timeout **and** the retry sleep are capped to the remaining deadline so the probe can't overshoot the documented bound.": false,
+      "On timeout the child is killed and `REMOTE_TUNNEL_FAILED \"tunnel URL not reachable within 10s\"` is surfaced (server drained).": true,
+      "Added `log::info/warn/error` for spawn / url-obtained / ready / kill / probe-failure / timeout so the lifecycle is visible in `termul.log` (silent before).": false,
+      "**`src-tauri/src/remote/host.rs`** — `attach_tunnel` now spawns a **watchdog task** that owns the cloudflared `Child`, `wait()`s for natural exit, and flips an `AtomicBool`.": false,
+      "`status()` (stays **sync** — zero caller changes) reads the flag and, on death, clears `tunnel_url` so the existing 3s renderer poller drops the stale QR.": false,
+      "`stop()` + `Drop` abort the watchdog so the child is reaped via `kill_on_drop`.": false,
+      "(Chose a watchdog over making `status()` async to avoid holding a `!Send` `std::MutexGuard` across `.await` — Tauri command futures must be `Send` — and to keep `remote_server_start`/`_status` + all existing tests unchanged.)": false,
+      "**`src/renderer/components/RemoteAccessPopover.tsx`** — tracks `sawUrl`; when running with no `tunnelUrl` it now shows **\"Tunnel disconnected — toggle off and on to retry\"** if a URL was previously seen, vs **\"Starting tunnel…\"** on the first connect.": false,
+      "Honest UI after a mid-session cloudflared death.": false,
+      "[x] `bun run ci` (Biome lint + format + imports, strict mode)": false,
+      "[x] `bun run typecheck`": false,
+      "[x] `bun run test` — 2514 passed / 1 skipped": false,
+      "[x] `cargo clippy --all-targets -- -D warnings` (in src-tauri) — clean": false,
+      "[x] `cargo test` (in src-tauri) — 499 passed / 2 ignored": false,
+      "[ ] Manual verification — live process state (cloudflared PID, edge `/ready`, origin `/health`) confirmed during diagnosis; probe + staleness paths are unit-tested.": false,
+      "End-to-end phone-scan is left for the maintainer to confirm.": false,
+      "New unit tests:": false,
+      "`probe_returns_err_for_unreachable_url_near_deadline` (cloudflared.rs) — proves the probe gives up near its deadline against an unreachable URL (never hangs) and surfaces the \"not reachable within Ns\" error.": false,
+      "`probe_bounded_by_deadline_against_hanging_listener` (cloudflared.rs) — a local listener that accepts but never responds exercises the per-request-timeout + capped-retry-sleep path; asserts total wait hugs the 2s deadline (< 3s).": false,
+      "`status_clears_tunnel_url_when_cloudflared_child_exits` (host.rs) — attaches a real short-lived exit-0 child, asserts `status()` clears `tunnel_url` once the child exits (multi-thread runtime so the watchdog runs).": false,
+      "N/A — behavior/edge-case fix; the QR component is unchanged (same `QRCodeSVG`).": false,
+      "The only UI delta is the disconnected-state copy.": false,
+      "[x] All CI checks pass — PR Validation (Validate PR Description/Title, Lint/Typecheck/Test, Rust Checks, ACP Registry, Web Client Build, Standalone Server Build, Rust Windows Smoke, Verify Tauri Frontend Build), CodeQL, Secret Scan, Dependency Review all green on run 30530424556.": false,
+      "[x] Code review comments from CodeRabbit addressed/resolved — the one actionable inline comment (probe per-request timeout overshoot) is fixed in 1357cd5f; its two 🟡 follow-ups (cap the retry sleep; cover the hanging-request path in tests) are fixed in 7e2e8b6d.": false,
+      "Reply posted to the inline thread.": false,
+      "CodeRabbit was rate-limited for its final pass; the comments are addressed in code regardless.": false,
+      "[x] No unresolved review findings remain": false,
+      "[x] PR title follows the conventional commit format used by this repo": false,
+      "[x] I linked the related issue or explained why none exists": false,
+      "[x] I updated docs when needed (inline code comments; no external doc change needed)": false,
+      "[x] I added or updated tests when needed": false,
+      "[x] I verified the change does not introduce unrelated modifications (3 files, all in the remote/tunnel path)": false,
+      "[x] I read AGENTS.md / CLAUDE.md and followed the contributor guidelines": false,
+      "Scanning the remote-access QR right after toggling on opened to \"This site\ncan't be reached\": cloudflared's trycloudflare URL was surfaced the instant it\nwas printed, before the edge route was live, and a dead cloudflared left a\nstale URL in the QR.": false,
+      "cloudflared.rs: HTTP-probe the public URL (reqwest, rustls) until 2xx before\n  attaching the tunnel URL; log the full cloudflared lifecycle (spawn/url/ready/\n  kill/errors) so failures aren't invisible in termul.log.": false,
+      "host.rs: a watchdog task owns the cloudflared child and flips an AtomicBool\n  on exit; status() (sync) clears the stale tunnel_url so the 3s renderer\n  poller drops the QR.": false
+    },
+    "runtimeObservable": {
+      "This PR gates the QR on **real edge reachability**, clears the stale URL when cloudflared dies, and adds full lifecycle logging.": true,
+      "On timeout the child is killed and `REMOTE_TUNNEL_FAILED \"tunnel URL not reachable within 10s\"` is surfaced (server drained).": true
+    },
+    "checksAdequate": {
+      "This PR gates the QR on **real edge reachability**, clears the stale URL when cloudflared dies, and adds full lifecycle logging.": false,
+      "On timeout the child is killed and `REMOTE_TUNNEL_FAILED \"tunnel URL not reachable within 10s\"` is surfaced (server drained).": false
+    },
+    "surface": {
+      "This PR gates the QR on **real edge reachability**, clears the stale URL when cloudflared dies, and adds full lifecycle logging.": "native_app",
+      "On timeout the child is killed and `REMOTE_TUNNEL_FAILED \"tunnel URL not reachable within 10s\"` is surfaced (server drained).": "native_app"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

@@ -1,0 +1,238 @@
+{
+  "id": "troupe-1275",
+  "description": "Real change: https://github.com/gnoviawan/troupe/pull/1275 at head 1c66204881ea51bd244ecd826cf29afee89b7f1b, merged 2026-10-16T23:06:20Z. Regression fixed by https://github.com/gnoviawan/troupe/pull/1291. MIT, see NOTICE.",
+  "change": {
+    "title": "fix(acp): parse native-binary npm shims so the Claude CLI probe launches",
+    "description": "## Summary\n\nSwitching to the managed `claude-acp` agent on Windows failed with\n**\\\"Agent unavailable — Could not start \\\"node\\\". Check that the binary exists and is on your PATH.\\\"**\neven though Node.js was installed and on PATH.\n\nTwo defects combined to produce that message:\n\n1. **Windows shim parser gap.** Newer `@anthropic-ai/claude-code` npm\n   packages install `claude.cmd` as a *native-binary* shim — a single\n   quoted token invoking the bundled PE image:\n   `\"%dp0%\\node_modules\\@anthropic-ai\\claude-code\\bin\\claude.exe\"   %*`.\n   `parse_npm_cmd_shim` only understood the classic two-quoted\n   `\"<node.exe>\" \"<script>\" %*` form, so the pre-spawn `claude auth\n   status` probe in `claude_cli_command` failed with\n   `program not found or not executable: …\\npm\\claude.cmd`.\n2. **Renderer misattribution.** `formatAcpSpawnError` matched that\n   resolver error and rewrote it against `config.command` (`\"node\"`,\n   from the managed install), producing the misleading \"Could not start\n   node\" message.\n\n## Related Issue\n\nNo related issue — reproduced live on Windows: the installed `claude.cmd`\n(Anthropic's current npm layout) failed to parse, verified against the\nreal file at `%APPDATA%\\npm\\claude.cmd`. Searched open and closed PRs —\nno prior fix for native-binary npm shims.\n\n## Type of Change\n\n- [x] fix: bug fix\n\n## What Changed\n\n- `src-tauri/src/pty/manager/resolve.rs`: `parse_npm_cmd_shim` accepts the\n  single-quoted-executable form `\"<exe>\" %*`. Guarded: the token must\n  resolve to an existing directly-executable image (`.exe`/`.com`/`.scr`)\n  and the remainder of the line must be a clean `%*` tail, so quoted\n  scripts and lines carrying literal flags/redirects are still skipped.\n  Resolution returns the exe with no prepended args.\n- `src-tauri/src/pty/manager/tests.rs`: new Windows tests — native-binary\n  shim parses to its exe, the full `resolve_spawn_program` path rewrites\n  it, and single-quote forms with a script target or literal flags are\n  rejected.\n- `src/renderer/lib/agents/acp-spawn-errors.ts`: when a resolver error\n  names a file after the last `: ` that differs from `config.command`\n  (e.g. `claude.cmd` vs `node`), the original wording is kept verbatim\n  instead of blaming the wrong binary.\n- `acp-spawn-errors.test.ts`: covers the path and bare-name variants and\n  confirms errors naming the spawned command still get the friendly text.\n\n## How It Was Tested\n\n- [x] `bun run ci` (Biome check on touched files — clean)\n- [x] `bun run test` — `acp-spawn-errors.test.ts` 36/36 pass\n- [x] `cargo clippy --lib --tests` — clean (only pre-existing warnings in unrelated files)\n- [x] `cargo check --lib` / `--tests` — clean\n- [x] Manual verification: the verbatim parser resolves the machine's real\n      `%APPDATA%\\npm\\claude.cmd` to its bundled `claude.exe`; new shim\n      tests pass in a standalone harness. Full `cargo test` binary could\n      not link locally (16 GB machine; debug link OOMs) — left to CI.\n\n## Screenshots or Recordings\n\nN/A — no UI change (error text only).\n\n## CI & Review Gate\n\n- [x] All CI checks pass (PR Validation, Rust Checks, Build Verification, Security Scans)\n- [x] Code review comments from CodeRabbit / Claude have been addressed or resolved\n- [x] No unresolved review findings remain\n\n## Checklist\n\n- [x] My PR title follows the conventional commit format used by this repo\n- [x] I linked the related issue or explained why none exists\n- [x] I updated docs when needed — not needed (no docs for shim internals)\n- [x] I added or updated tests when needed\n- [x] I verified the change does not introduce unrelated modifications (the pre-existing `.gitignore` edit stays out of this PR)\n- [x] I read AGENTS.md and followed the contributor guidelines\n\nGenerated with [Devin](https://devin.ai)\n\n<!-- This is an auto-generated description by cubic. -->\n---\n## Summary by cubic\nFixes the Windows `claude-acp` agent startup failure on newer Anthropic packages by parsing native-binary npm shims and no longer blaming the wrong binary.\n\nNewer `@anthropic-ai/claude-code` packages install a `claude.cmd` that invokes the bundled `claude.exe` directly (`\"<exe>\" %*`, a single quoted token) instead of the classic `\"<node.exe>\" \"<script>\" %*` pair. The shim parser skipped that form, the pre-spawn auth probe failed, and the renderer rewrote the resolver error against the managed agent's command — reporting `Could not start \"node\"` even though node was on PATH.\n\n**Changes**\n- `parse_npm_cmd_shim` now accepts a lone quoted executable, only when it resolves to a directly-executable image and the tail is a clean `%*`.\n- Resolver errors that name a different file than the spawned command are kept verbatim instead of being rewritten.\n\n<sup>Written for commit 1c66204881ea51bd244ecd826cf29afee89b7f1b. Summary will update on new commits.</sup>\n\n<a href=\"https://cubic.dev/pr/gnoviawan/termul/pull/1275?utm_source=github\" target=\"_blank\" rel=\"noopener noreferrer\" data-no-image-dialog=\"true\"><picture><source media=\"(prefers-color-scheme: dark)\" srcset=\"https://www.cubic.dev/buttons/review-in-cubic-dark.svg\"><source media=\"(prefers-color-scheme: light)\" srcset=\"https://www.cubic.dev/buttons/review-in-cubic-light.svg\"><img alt=\"View guided diff\" src=\"https://www.cubic.dev/buttons/review-in-cubic-light.svg\"></picture></a> <a href=\"https://www.cubic.dev/action/auto-fix/pr/gnoviawan/termul/1275?returnTo=https%3A%2F%2Fgithub.com%2Fgnoviawan%2Ftermul%2Fpull%2F1275&source=description\" target=\"_blank\" rel=\"noopener noreferrer\" data-no-image-dialog=\"true\"><picture><source media=\"(prefers-color-scheme: dark)\" srcset=\"https://www.cubic.dev/buttons/turn-on-auto-fix-dark.svg\"><source media=\"(prefers-color-scheme: light)\" srcset=\"https://www.cubic.dev/buttons/turn-on-auto-fix-light.svg\"><img alt=\"Turn on auto-fix\" src=\"https://www.cubic.dev/buttons/turn-on-auto-fix-light.svg\"></picture></a>\n\n<!-- End of auto-generated description by cubic. -->",
+    "commits": [
+      {
+        "sha": "1c66204",
+        "message": "fix(acp): parse native-binary npm shims so the Claude CLI probe launches\n\nNewer @<user>/claude-code packages install a claude.cmd that invokes\nthe bundled claude.exe directly — \"<exe>\" %* with a single quoted token —\ninstead of the classic \"<node.exe>\" \"<script>\" %* pair. parse_npm_cmd_shim\nskipped that form, so the pre-spawn auth probe failed and the renderer\nrewrote the resolver error against the managed agent's command, reporting\n'Could not start \"node\"' although node itself resolved fine.\n\nExtend the parser to accept a lone quoted executable tail and keep the\nprobe error verbatim when the file it names is not the spawned command.\n\nGenerated with [Devin](https://devin.ai)"
+      }
+    ],
+    "files": [
+      {
+        "path": "src-tauri/src/pty/manager/resolve.rs",
+        "status": "modified",
+        "patch": "@@ -172,15 +172,28 @@ pub(super) fn parse_npm_cmd_shim(shim_path: &str) -> Option<ResolvedProgram> {\n         }\n         // Extract quoted strings: \"...\"\n         let quotes: Vec<&str> = line.split('\"').collect();\n-        // The invocation pattern uses two quoted paths:\n+        // The interpreter+script form carries two quoted paths:\n         //   index 1 = executable (node.exe path)\n         //   index 3 = script path\n-        if quotes.len() < 5 {\n+        // A single quoted token is the native-binary form shipped by npm\n+        // packages that bundle a PE image (e.g. Anthropic's claude.cmd:\n+        //   \"%dp0%\\node_modules\\...\\bin\\claude.exe\" %*).\n+        if quotes.len() < 3 {\n             continue;\n         }\n         let raw_exe = quotes[1].trim();\n-        let raw_script = quotes[3].trim();\n-        if raw_exe.is_empty() || raw_script.is_empty() {\n+        let raw_script = if quotes.len() >= 5 {\n+            quotes[3].trim()\n+        } else {\n+            \"\"\n+        };\n+        if raw_exe.is_empty() || (quotes.len() >= 5 && raw_script.is_empty()) {\n+            continue;\n+        }\n+        // With no second quoted token the program is invoked bare — accept\n+        // only a clean `%*` tail so literal batch tokens (flags, redirects)\n+        // are not silently dropped from the rewritten spawn argv.\n+        if raw_script.is_empty() && quotes[2..].concat().trim() != \"%*\" {\n             continue;\n         }\n \n@@ -203,15 +216,20 @@ pub(super) fn parse_npm_cmd_shim(shim_path: &str) -> Option<ResolvedProgram> {\n         } else {\n             exe_path_str\n         };\n-        let script_path_str = resolve_dp0(raw_script);\n-\n         let exe_path = std::path::Path::new(&exe_path_str);\n-        let script_path = std::path::Path::new(&script_path_str);\n-\n         // The executable must exist and be a directly-executable image.\n         if !exe_path.exists() || !is_directly_executable_windows(&exe_path_str) {\n             continue;\n         }\n+\n+        // Native-binary shim (`\"<exe>\" %*`): nothing is prepended — the\n+        // image already is the agent's entrypoint.\n+        if raw_script.is_empty() {\n+            return Some(ResolvedProgram::new(exe_path_str));\n+        }\n+\n+        let script_path_str = resolve_dp0(raw_script);\n+        let script_path = std::path::Path::new(&script_path_str);\n         // The script should exist (not strictly required but a good check).\n         if !script_path.exists() {\n             continue;"
+      },
+      {
+        "path": "src-tauri/src/pty/manager/tests.rs",
+        "status": "modified",
+        "patch": "@@ -305,6 +305,105 @@ fn parse_npm_cmd_shim_rewrites_npm_launcher_with_set_indirection() {\n     let _ = std::fs::remove_dir_all(&dir);\n }\n \n+#[cfg(target_os = \"windows\")]\n+#[test]\n+fn parse_npm_cmd_shim_resolves_native_binary_shim() {\n+    // Anthropic's native Claude Code package ships a .cmd that invokes the\n+    // bundled PE image directly — one quoted path, no interpreter/script\n+    // pair:\n+    //   \"%dp0%\\node_modules\\@anthropic-ai\\claude-code\\bin\\claude.exe\"   %*\n+    let dir = std::env::temp_dir().join(\"termul-test-native-bin-shim\");\n+    let _ = std::fs::remove_dir_all(&dir);\n+    std::fs::create_dir_all(dir.join(\"node_modules\\\\@anthropic-ai\\\\claude-code\\\\bin\")).unwrap();\n+    std::fs::write(\n+        dir.join(\"node_modules\\\\@anthropic-ai\\\\claude-code\\\\bin\\\\claude.exe\"),\n+        b\"MZ\",\n+    )\n+    .unwrap();\n+\n+    let shim_path = dir.join(\"claude.cmd\");\n+    let shim_content =\n+        \"@ECHO off\\r\\nGOTO start\\r\\n:find_dp0\\r\\nSET dp0=%~dp0\\r\\nEXIT /b\\r\\n:start\\r\\n\\\n+            SETLOCAL\\r\\nCALL :find_dp0\\r\\n\\r\\n\\\n+            \\\"%dp0%\\\\node_modules\\\\@anthropic-ai\\\\claude-code\\\\bin\\\\claude.exe\\\"   %*\\r\\n\";\n+    std::fs::write(&shim_path, shim_content).unwrap();\n+\n+    let resolved = parse_npm_cmd_shim(shim_path.to_str().unwrap())\n+        .expect(\"native-binary .cmd shim should resolve\");\n+    assert!(\n+        resolved.program.ends_with(\"claude.exe\"),\n+        \"expected the bundled claude.exe, got: {}\",\n+        resolved.program\n+    );\n+    assert!(\n+        resolved.prepend_args.is_empty(),\n+        \"native-binary shim must not prepend args, got: {:?}\",\n+        resolved.prepend_args\n+    );\n+\n+    let _ = std::fs::remove_dir_all(&dir);\n+}\n+\n+#[cfg(target_os = \"windows\")]\n+#[test]\n+fn resolve_spawn_program_rewrites_native_binary_cmd_shim() {\n+    // The same single-quote form through the public resolver entrypoint\n+    // (explicit path), the way `claude_cli_command` hands the shim over.\n+    let dir = std::env::temp_dir().join(\"termul-test-resolve-native-bin-shim\");\n+    let _ = std::fs::remove_dir_all(&dir);\n+    std::fs::create_dir_all(dir.join(\"node_modules\\\\pkg\\\\bin\")).unwrap();\n+    std::fs::write(dir.join(\"node_modules\\\\pkg\\\\bin\\\\tool.exe\"), b\"MZ\").unwrap();\n+\n+    let shim_path = dir.join(\"tool.cmd\");\n+    let shim_content = \"@ECHO off\\r\\n\\\"%dp0%\\\\node_modules\\\\pkg\\\\bin\\\\tool.exe\\\"   %*\\r\\n\";\n+    std::fs::write(&shim_path, shim_content).unwrap();\n+\n+    let resolved = resolve_spawn_program(shim_path.to_str().unwrap())\n+        .expect(\"native-binary .cmd shim should resolve\");\n+    assert!(\n+        resolved.program.ends_with(\"tool.exe\"),\n+        \"expected tool.exe, got: {}\",\n+        resolved.program\n+    );\n+    assert!(\n+        resolved.prepend_args.is_empty(),\n+        \"native-binary shim must not prepend args, got: {:?}\",\n+        resolved.prepend_args\n+    );\n+\n+    let _ = std::fs::remove_dir_all(&dir);\n+}\n+\n+#[cfg(target_os = \"windows\")]\n+#[test]\n+fn parse_npm_cmd_shim_rejects_single_quote_non_pe_and_flagged_forms() {\n+    let dir = std::env::temp_dir().join(\"termul-test-native-bin-reject\");\n+    let _ = std::fs::remove_dir_all(&dir);\n+    std::fs::create_dir_all(&dir).unwrap();\n+    std::fs::write(dir.join(\"tool.exe\"), b\"MZ\").unwrap();\n+    std::fs::write(dir.join(\"tool.js\"), b\"\").unwrap();\n+\n+    // A quoted *script* alone is not a spawnable image — must not be\n+    // mistaken for the native-binary form.\n+    let script_shim = dir.join(\"script.cmd\");\n+    std::fs::write(&script_shim, \"\\\"%dp0%\\\\tool.js\\\" %*\\r\\n\").unwrap();\n+    assert!(\n+        parse_npm_cmd_shim(script_shim.to_str().unwrap()).is_none(),\n+        \"a quoted script with no interpreter must not resolve\"\n+    );\n+\n+    // `\"%dp0%\\tool.exe\" --flag %*` carries a literal argv token that a\n+    // rewritten spawn would silently drop — refuse rather than misparse.\n+    let flagged_shim = dir.join(\"flagged.cmd\");\n+    std::fs::write(&flagged_shim, \"\\\"%dp0%\\\\tool.exe\\\" --service %*\\r\\n\").unwrap();\n+    assert!(\n+        parse_npm_cmd_shim(flagged_shim.to_str().unwrap()).is_none(),\n+        \"a bare-exe line with literal flags must not resolve\"\n+    );\n+\n+    let _ = std::fs::remove_dir_all(&dir);\n+}\n+\n #[cfg(target_os = \"windows\")]\n #[test]\n fn parse_powershell_cmd_shim_rewrites_cursor_agent_style() {"
+      },
+      {
+        "path": "src/renderer/lib/agents/acp-spawn-errors.test.ts",
+        "status": "modified",
+        "patch": "@@ -30,6 +30,32 @@ describe('formatAcpSpawnError', () => {\n       /\"cursor-agent\"/\n     )\n   })\n+\n+  it('keeps a resolver error that names a different binary verbatim', () => {\n+    // Managed claude-acp spawns `node`, but a failed *pre-spawn* probe of the\n+    // system claude.cmd names the shim — rewriting it against `node` would\n+    // blame the wrong binary.\n+    const raw =\n+      'program not found or not executable: C:\\\\Users\\\\u\\\\AppData\\\\Roaming\\\\npm\\\\claude.cmd'\n+    expect(formatAcpSpawnError(raw, { command: 'node' })).toBe(raw)\n+    const result = classifySetupError(raw, { command: 'node' })\n+    expect(result.category).toBe('spawn')\n+    expect(result.detail).toBe(raw)\n+\n+    // The bare-name variant — e.g. the claude CLI probe failing to find\n+    // `claude` on PATH — names a different program than the spawned `node`.\n+    const bare = 'program not found on PATH: claude'\n+    expect(formatAcpSpawnError(bare, { command: 'node' })).toBe(bare)\n+  })\n+\n+  it('still rewrites a resolver failure that names the command itself', () => {\n+    expect(formatAcpSpawnError('program not found on PATH: node', { command: 'node' })).toBe(\n+      'Could not start \"node\". Check that the binary exists and is on your PATH.'\n+    )\n+    expect(formatAcpSpawnError('spawn C:\\\\tools\\\\node.exe ENOENT', { command: 'node' })).toBe(\n+      'Could not start \"node\". Check that the binary exists and is on your PATH.'\n+    )\n+  })\n })\n \n describe('AmbiguousAuthError', () => {"
+      },
+      {
+        "path": "src/renderer/lib/agents/acp-spawn-errors.ts",
+        "status": "modified",
+        "patch": "@@ -21,6 +21,25 @@ export function formatAcpSpawnError(raw: unknown, config?: Pick<AgentConfig, 'co\n   const message = definiteSpawnRejectionMessage(raw)\n   if (!ENOENT_PATTERN.test(message)) return message\n \n+  // Resolver-level failures already name the file they could not prepare\n+  // after the last colon (e.g. `program not found or not executable:\n+  // C:\\…\\npm\\claude.cmd`). When that file is not the spawned command —\n+  // managed `claude-acp` runs `node` while its *pre-spawn CLI probe* is the\n+  // piece that failed — rewriting against `config.command` would blame the\n+  // wrong binary, so the resolver's own wording stays.\n+  const lastColon = message.lastIndexOf(': ')\n+  if (lastColon >= 0) {\n+    const namedPath = message\n+      .slice(lastColon + 2)\n+      .trim()\n+      .replace(/^\"|\"$/g, '')\n+    const namedBase = namedPath.split(/[\\\\/]/).filter(Boolean).pop()\n+    const commandBase = config?.command?.split(/[\\\\/]/).pop()\n+    if (namedBase && commandBase && namedBase.toLowerCase() !== commandBase.toLowerCase()) {\n+      return message\n+    }\n+  }\n+\n   if (config?.command === 'npx') {\n     return 'Could not run npx. Install Node.js and ensure npx is on your PATH, then try again.'\n   }"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "skipped"
+    },
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Standalone Server Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "skipped"
+    },
+    {
+      "name": "Web Client Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "skipped"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Description",
+      "status": "passed"
+    },
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "skipped"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "skipped"
+    },
+    {
+      "name": "Web Client Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "skipped"
+    },
+    {
+      "name": "Standalone Server Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Validate PR Description",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "passed"
+    },
+    {
+      "name": "Scan for leaked secrets",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Description",
+      "status": "failed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Standalone Server Build",
+      "status": "passed"
+    },
+    {
+      "name": "Web Client Build",
+      "status": "passed"
+    },
+    {
+      "name": "Review dependency changes",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "skipped"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "skipped"
+    },
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "skipped"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "fix(acp): parse native-binary npm shims so the Claude CLI probe launches": false,
+      "Switching to the managed `claude-acp` agent on Windows failed with\n**\\\"Agent unavailable — Could not start \\\"node\\\".": false,
+      "Check that the binary exists and is on your PATH.\\\"**\neven though Node.js was installed and on PATH.": false,
+      "Two defects combined to produce that message:": false,
+      "**Windows shim parser gap.** Newer `@anthropic-ai/claude-code` npm\n   packages install `claude.cmd` as a *native-binary* shim — a single\n   quoted token invoking the bundled PE image:\n   `\"%dp0%\\node_modules\\@anthropic-ai\\claude-code\\bin\\claude.exe\"   %*`.": false,
+      "`parse_npm_cmd_shim` only understood the classic two-quoted\n   `\"<node.exe>\" \"<script>\" %*` form, so the pre-spawn `claude auth\n   status` probe in `claude_cli_command` failed with\n   `program not found or not executable: …\\npm\\claude.cmd`.": false,
+      "**Renderer misattribution.** `formatAcpSpawnError` matched that\n   resolver error and rewrote it against `config.command` (`\"node\"`,\n   from the managed install), producing the misleading \"Could not start\n   node\" message.": false,
+      "No related issue — reproduced live on Windows: the installed `claude.cmd`\n(Anthropic's current npm layout) failed to parse, verified against the\nreal file at `%APPDATA%\\npm\\claude.cmd`.": false,
+      "Searched open and closed PRs —\nno prior fix for native-binary npm shims.": false,
+      "[x] fix: bug fix": false,
+      "`src-tauri/src/pty/manager/resolve.rs`: `parse_npm_cmd_shim` accepts the\n  single-quoted-executable form `\"<exe>\" %*`.": false,
+      "Guarded: the token must\n  resolve to an existing directly-executable image (`.exe`/`.com`/`.scr`)\n  and the remainder of the line must be a clean `%*` tail, so quoted\n  scripts and lines carrying literal flags/redirects are still skipped.": false,
+      "Resolution returns the exe with no prepended args.": false,
+      "`src-tauri/src/pty/manager/tests.rs`: new Windows tests — native-binary\n  shim parses to its exe, the full `resolve_spawn_program` path rewrites\n  it, and single-quote forms with a script target or literal flags are\n  rejected.": false,
+      "`src/renderer/lib/agents/acp-spawn-errors.ts`: when a resolver error\n  names a file after the last `: ` that differs from `config.command`\n  (e.g.": true,
+      "`claude.cmd` vs `node`), the original wording is kept verbatim\n  instead of blaming the wrong binary.": true,
+      "`acp-spawn-errors.test.ts`: covers the path and bare-name variants and\n  confirms errors naming the spawned command still get the friendly text.": false,
+      "[x] `bun run ci` (Biome check on touched files — clean)": false,
+      "[x] `bun run test` — `acp-spawn-errors.test.ts` 36/36 pass": false,
+      "[x] `cargo clippy --lib --tests` — clean (only pre-existing warnings in unrelated files)": false,
+      "[x] `cargo check --lib` / `--tests` — clean": false,
+      "[x] Manual verification: the verbatim parser resolves the machine's real\n      `%APPDATA%\\npm\\claude.cmd` to its bundled `claude.exe`; new shim\n      tests pass in a standalone harness.": false,
+      "Full `cargo test` binary could\n      not link locally (16 GB machine; debug link OOMs) — left to CI.": false,
+      "N/A — no UI change (error text only).": false,
+      "[x] All CI checks pass (PR Validation, Rust Checks, Build Verification, Security Scans)": false,
+      "[x] Code review comments from CodeRabbit / Claude have been addressed or resolved": false,
+      "[x] No unresolved review findings remain": false,
+      "[x] My PR title follows the conventional commit format used by this repo": false,
+      "[x] I linked the related issue or explained why none exists": false,
+      "[x] I updated docs when needed — not needed (no docs for shim internals)": false,
+      "[x] I added or updated tests when needed": false,
+      "[x] I verified the change does not introduce unrelated modifications (the pre-existing `.gitignore` edit stays out of this PR)": false,
+      "[x] I read AGENTS.md and followed the contributor guidelines": false,
+      "Generated with [Devin](https://devin.ai)": false,
+      "---": false,
+      "Fixes the Windows `claude-acp` agent startup failure on newer Anthropic packages by parsing native-binary npm shims and no longer blaming the wrong binary.": false,
+      "Newer `@anthropic-ai/claude-code` packages install a `claude.cmd` that invokes the bundled `claude.exe` directly (`\"<exe>\" %*`, a single quoted token) instead of the classic `\"<node.exe>\" \"<script>\" %*` pair.": false,
+      "The shim parser skipped that form, the pre-spawn auth probe failed, and the renderer rewrote the resolver error against the managed agent's command — reporting `Could not start \"node\"` even though node was on PATH.": false,
+      "**Changes**": false,
+      "`parse_npm_cmd_shim` now accepts a lone quoted executable, only when it resolves to a directly-executable image and the tail is a clean `%*`.": false,
+      "Resolver errors that name a different file than the spawned command are kept verbatim instead of being rewritten.": false,
+      "<sup>Written for commit 1c66204881ea51bd244ecd826cf29afee89b7f1b.": false,
+      "Summary will update on new commits.</sup>": false,
+      "<a href=\"https://cubic.dev/pr/gnoviawan/termul/pull/1275?utm_source=github\" target=\"_blank\" rel=\"noopener noreferrer\" data-no-image-dialog=\"true\"><picture><source media=\"(prefers-color-scheme: dark)\" srcset=\"https://www.cubic.dev/buttons/review-in-cubic-dark.svg\"><source media=\"(prefers-color-scheme: light)\" srcset=\"https://www.cubic.dev/buttons/review-in-cubic-light.svg\"><img alt=\"View guided diff\" src=\"https://www.cubic.dev/buttons/review-in-cubic-light.svg\"></picture></a> <a href=\"https://www.cubic.dev/action/auto-fix/pr/gnoviawan/termul/1275?returnTo=https%3A%2F%2Fgithub.com%2Fgnoviawan%2Ftermul%2Fpull%2F1275&source=description\" target=\"_blank\" rel=\"noopener noreferrer\" data-no-image-dialog=\"true\"><picture><source media=\"(prefers-color-scheme: dark)\" srcset=\"https://www.cubic.dev/buttons/turn-on-auto-fix-dark.svg\"><source media=\"(prefers-color-scheme: light)\" srcset=\"https://www.cubic.dev/buttons/turn-on-auto-fix-light.svg\"><img alt=\"Turn on auto-fix\" src=\"https://www.cubic.dev/buttons/turn-on-auto-fix-light.svg\"></picture></a>": false,
+      "Newer @<user>/claude-code packages install a claude.cmd that invokes\nthe bundled claude.exe directly — \"<exe>\" %* with a single quoted token —\ninstead of the classic \"<node.exe>\" \"<script>\" %* pair.": false,
+      "parse_npm_cmd_shim\nskipped that form, so the pre-spawn auth probe failed and the renderer\nrewrote the resolver error against the managed agent's command, reporting\n'Could not start \"node\"' although node itself resolved fine.": false,
+      "Extend the parser to accept a lone quoted executable tail and keep the\nprobe error verbatim when the file it names is not the spawned command.": false,
+      "Managed claude-acp spawns `node`, but a failed *pre-spawn* probe of the": false,
+      "system claude.cmd names the shim — rewriting it against `node` would": false,
+      "blame the wrong binary.": false
+    },
+    "runtimeObservable": {
+      "`src/renderer/lib/agents/acp-spawn-errors.ts`: when a resolver error\n  names a file after the last `: ` that differs from `config.command`\n  (e.g.": true,
+      "`claude.cmd` vs `node`), the original wording is kept verbatim\n  instead of blaming the wrong binary.": true
+    },
+    "checksAdequate": {
+      "`src/renderer/lib/agents/acp-spawn-errors.ts`: when a resolver error\n  names a file after the last `: ` that differs from `config.command`\n  (e.g.": false,
+      "`claude.cmd` vs `node`), the original wording is kept verbatim\n  instead of blaming the wrong binary.": false
+    },
+    "surface": {
+      "`src/renderer/lib/agents/acp-spawn-errors.ts`: when a resolver error\n  names a file after the last `: ` that differs from `config.command`\n  (e.g.": "native_app",
+      "`claude.cmd` vs `node`), the original wording is kept verbatim\n  instead of blaming the wrong binary.": "native_app"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

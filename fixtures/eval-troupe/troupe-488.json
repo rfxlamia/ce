@@ -1,0 +1,277 @@
+{
+  "id": "troupe-488",
+  "description": "Real change: https://github.com/gnoviawan/troupe/pull/488 at head a9e91c464b96225ff2b9c081c716480a699f6745, merged 2026-07-31T23:39:01Z. Regression fixed by https://github.com/gnoviawan/troupe/pull/727, https://github.com/gnoviawan/troupe/pull/723. MIT, see NOTICE.",
+  "change": {
+    "title": "feat(acp): open chat file paths in editor",
+    "description": "## Summary\n\nACP agent chat now recognizes file-path citations in prose and opens safe, resolvable files in Termul's editor on Ctrl/Cmd-click. It reuses the existing terminal resolver, preserves external-link confirmation, and keeps path handling desktop-only because the web client has no supported filesystem opener.\n\n## Related Issue\n\nCloses #329\n\nPrior related work: merged PR #110 provides the terminal file-link behavior; no ACP chat implementation PR was found. Closed PR #417 is for #331, not this issue.\n\n## Type of Change\n\n- [x] feat: new feature\n- [ ] fix: bug fix\n- [ ] docs: documentation only\n- [ ] style: formatting or non-functional styling changes\n- [ ] refactor: internal cleanup with no behavior change\n- [ ] perf: performance improvement\n- [ ] test: adds or updates tests\n- [ ] build: build or dependency changes\n- [ ] ci: CI/CD workflow changes\n- [ ] chore: maintenance or tooling\n- [ ] revert: reverts a previous change\n\n## What Changed\n\n- Detects path-shaped prose tokens and converts them into internal marker links without rewriting existing markdown links or code blocks.\n- Uses active session cwd/project root and `openFilePathFromTerminal`, including line/column navigation and root-boundary validation.\n- Requires Ctrl/Cmd-click, shows errors for unresolved paths, and keeps external links behind the existing safety modal.\n- Adds parser, punctuation, wrapper, and click behavior tests.\n\n## How It Was Tested\n\n- [x] `bun run ci` (Biome lint + format + imports, strict mode)\n- [x] `bun run typecheck`\n- [x] `bun run test` — 2,516 passed; 4 unrelated suites fail loading `material-icon-theme/icons/3d.svg?raw` through the shared symlinked dependency setup\n- [ ] `cargo clippy --all-targets -- -D warnings` (in src-tauri) — blocked by missing system GLib/DBus development packages\n- [ ] `cargo test` (in src-tauri) — blocked by missing system GLib/DBus development packages\n- [x] Manual verification completed\n- [ ] Not applicable\n\n## Screenshots or Recordings\n\nNot included; this change is validated through focused tests and desktop-only behavior is gated by the Tauri runtime.\n\n## CI & Review Gate\n\n- [ ] All CI checks pass (PR Validation, Rust Checks, Build Verification, Security Scans)\n- [ ] Code review comments from CodeRabbit / Claude have been addressed or resolved\n- [ ] No unresolved review findings remain\n\n## Checklist\n\n- [x] My PR title follows the conventional commit format used by this repo\n- [x] I linked the related issue or explained why none exists\n- [x] I updated docs when needed\n- [x] I added or updated tests when needed\n- [x] I verified the change does not introduce unrelated modifications\n- [x] I read AGENTS.md and followed the contributor guidelines\n- [x] A human reviewed the complete diff before submission\n\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n\n## Summary by CodeRabbit\n\n* **New Features**\n  * Chat messages now recognize file paths and make them interactive.\n  * Ctrl/Cmd-clicking a detected file path opens it in the editor using the relevant project context.\n  * Regular links continue to use the external-link confirmation flow.\n* **Bug Fixes**\n  * Improved file-path detection by avoiding single-token filenames, URL fragments, and trailing punctuation.\n  * Preserved existing links and code blocks during file-path conversion.\n* **Tests**\n  * Added coverage for file-path detection, link behavior, path encoding, and editor-opening interactions.\n\n<!-- end of auto-generated comment: release notes by coderabbit.ai -->",
+    "commits": [
+      {
+        "sha": "4e8b32d",
+        "message": "fix(file-explorer): stream filename search via rg --files to fix 0-count regression (gh-195)\n\nThe file-name search Tauri command used a synchronous single-threaded\nstd::fs::read_dir walk, which on large trees (and on Windows where rg's\nmulti-threaded walk is dramatically faster) made the 'Files' tab count\nflash 0 and never recover before the user gave up. The content search\nalready used a multi-threaded ripgrep spawn; mirror that architecture\nfor filename search and add a pending indicator so the count is not\na misleading 0 while the first batch is in flight.\n\nChanges:\n- Replace search_file_names with search_file_names_stream + search_file_names_cancel\n- Use rg --files --iglob '**/*{escaped_query}*' (escapes glob meta; ** for depth)\n- Stream search-file-names-batch and search-file-names-done events\n- Cap queries at MAX_SEARCH_QUERY_LEN (500) and surface the error\n- Cancel the in-flight filename stream on every new search, root change,\n  worktree change, and reset\n- Mirror content-stream's error/truncated propagation in the store\n- Render '…' while searchFileNameMatches is null; back to the real count\n  on the first batch\n- Reap the child, propagate non-zero exit status (other than 1), and\n  detect stdout read errors via manual iterator loop\n- Exclude Thumbs.db / desktop.ini / .DS_Store / .env\n\nCloses gnoviawan/termul#195"
+      },
+      {
+        "sha": "f9f2e2d",
+        "message": "fix(file-explorer): address review findings on streaming search (gh-195)\n\nApply 8 review patches from review-patches-triage.md to harden the\nstreaming file-search implementation that landed in 145935d:\n\n* Split the over-broad RG_SPAWN_FAILED code into RG_SPAWN_FAILED (real\n  spawn failure), RG_STDOUT_CAPTURE_FAILED (pipe-already-closed) and\n  RG_STREAM_FAILED (catch-all for stdout I/O errors and non-zero rg\n  exits other than the 'no matches' code 1).\n* Wire the new `code` field through the shared FilesystemApi type and\n  surface it in the renderer as `searchErrorCode`. Clear the slot in\n  every state transition (setRootPath, setWorktreeRoot, resetSearch,\n  searchInRoot early returns) so a stale code never leaks across\n  searches.\n* Make the content stream's spawn_blocking actually reap the child and\n  propagate its exit status into the trailing done event, mirroring\n  the filename stream.\n* Return Cow<'_, str> from strip_verbatim_prefix to avoid per-line\n  allocation in the rg-output hot path, and drop the unconditional\n  trim_start() that was incorrectly stripping leading whitespace from\n  relative paths.\n* Replace void IPC cancel calls with .catch() handlers at all 6 sites\n  so a stuck rg process is at least visible in the console.\n* Move the searchRequestId capture in the unmount cancel useEffect\n  from cleanup time to setup time, so a new search started between\n  setup and cleanup is not wrongly cancelled.\n* Drop the tautological 'chars().count()' test and add 4 Rust\n  coverage tests pinning the argv builder and event serde shapes.\n* Add 5 renderer regression tests (2 for the unmount cancel, 3 for\n  the new searchErrorCode reset behavior) with the supporting\n  vi.mock('@/lib/api') infrastructure and a static useFileExplorerStore\n  import.\n\nVerified: bun run ci (biome) clean, bun run typecheck clean,\nbun run test 1692/1692 passing (3 new), cargo clippy -D warnings\nclean, cargo test --lib 239/239 passing."
+      },
+      {
+        "sha": "01708e9",
+        "message": "fix(pty): adapt to Cow<str> return from strip_verbatim_prefix\n\nUpstream #352 added a call to `path_validation::strip_verbatim_prefix`\nin pty/manager.rs assuming it returned `String`, but the gh-195 patch\nround (e801aa3) changed the signature to `Cow<'_, str>` to avoid\nper-line allocation in the rg-output hot path.\n\nThe cmd.cwd() call requires AsRef<OsStr> and the TerminalInstance /\nTerminalInfo struct fields are typed as String, so the bare Cow\nreturn no longer compiles. Add `.into_owned()` to materialize a\nString at the single call site. This is the only use of\nstrip_verbatim_prefix in pty/, so a one-line fix is sufficient.\n\nVerified: cargo clippy --all-targets -- -D warnings clean, cargo\ntest --lib 239/239 passing."
+      },
+      {
+        "sha": "1e97021",
+        "message": "fix(file-explorer): address CodeRabbit review on gh-195 PR #364\n\nApply 4 inline findings and 1 nitpick from CodeRabbit review:\n\n* src-tauri/src/commands.rs: escape '{' and '}' in the filename search\n  argv builder. ripgrep's --iglob uses globset, which treats {a,b} as\n  alternation; the previous escape list (\\*\\?\\[\\]\\\\) was incomplete\n  and a literal query containing braces could be parsed as a glob\n  pattern. Test query and expected output updated to cover '{a,b}'.\n\n* src-tauri/src/commands.rs: always publish the trailing filename\n  batch, even when files.len() == last_batch_count == 0. The previous\n  condition (files.len() != last_batch_count) skipped emission for\n  zero-match results, so the renderer would only learn of the empty\n  result via the trailing done event. The store has a fallback that\n  clears the pending placeholder on done, but emitting the empty\n  batch is consistent with the contract and reduces flicker.\n\n* src/renderer/lib/tauri-filesystem-api.ts: onSearchFileNamesBatch\n  callback's event type declares 'truncated: boolean' but the Rust\n  SearchFileNamesBatchEvent emits it as Option<bool> (omitted on\n  mid-stream batches). Mirror the shared type contract (already\n  fixed in src/shared/types/ipc.types.ts in the patch round) into the\n  local listen<> generic.\n\n* src/renderer/lib/tauri-filesystem-api.ts: onSearchFileNamesDone\n  callback's event type is missing the optional 'code' field that\n  SearchFileNamesDoneEvent emits. Mirror it from the shared type\n  contract.\n\n* src/shared/types/ipc.types.ts: extract the duplicated error-code\n  union into a single SearchStreamErrorCode type alias and apply it\n  to both done event signatures. Also fix the stale JSDoc on the\n  filename done event: 'RG_SPAWN_FAILED' no longer covers stdout\n  capture / runtime failures — those are now RG_STDOUT_CAPTURE_FAILED\n  and RG_STREAM_FAILED respectively.\n\nVerified: bun run ci clean, bun run typecheck clean, bun run test\n1696/1696 passing, cargo clippy --all-targets -- -D warnings clean,\ncargo test --lib 239/239 passing."
+      },
+      {
+        "sha": "090b7da",
+        "message": "fix(shortcut): prevent Ctrl+W closing tabs when Agent Launcher is open (#365)\n\nThe Ctrl+W (⌘+W on macOS) keyboard shortcut in WorkspaceLayout unconditionally\ncalled closeActiveTab, which terminated the active terminal tab even when the\nAgent Launcher overlay was visible. Per the issue report, this caused accidental\nterminal termination when the user was in the middle of invoking the launcher.\n\nGuard the closeTab action with the existing isAgentLauncherOpen state so the\nshortcut is suppressed while the launcher overlay is shown. e.preventDefault()\nis also gated to avoid swallowing the keypress when the launcher should receive\nit.\n\nCloses gnoviawan/termul#365"
+      },
+      {
+        "sha": "9565a88",
+        "message": "fix(shortcut): address CodeRabbit review on #365\n\nApply 2 inline findings from CodeRabbit on PR #364 commit 090b7da:\n\n* WorkspaceLayout.tsx: move e.preventDefault() out of the isAgentLauncherOpen\n  conditional so the OS/webview default close behavior is always suppressed\n  for Ctrl+W / ⌘+W. The original placement only prevented default when the\n  launcher was closed, leaving the OS free to act on the keypress when the\n  launcher was open.\n\n* src/shared/types/ipc.types.ts: fix a stale JSDoc on the\n  onSearchContentDone.code field. It previously referenced\n  SearchFileNamesDoneEvent by mistake; replace with a generic pointer to\n  the SearchStreamErrorCode union that actually enumerates the values.\n\nVerified: bun run typecheck clean.\n\nCloses gnoviawan/termul#365"
+      },
+      {
+        "sha": "a601617",
+        "message": "fix(shortcut): close both keyboard and menu Cmd+W paths when Agent Launcher is open (#365)\n\nApply 2 follow-up findings from CodeRabbit on the #365 fix that were\nposted as outside-diff PR comments and not surfaced as inline threads:\n\n* src/renderer/layouts/WorkspaceLayout.tsx — add isAgentLauncherOpen to\n  the keydown effect dependency array (lines 1095-1119). The previous\n  closure read the value at effect-setup time, leaving a stale handler\n  that could bypass the guard after the launcher state changed mid-\n  session.\n\n* src/renderer/layouts/WorkspaceLayout.tsx — apply the same launcher-\n  open guard to the menu:close-tab event listener (lines 595-600). On\n  macOS the menu bar intercepts Cmd+W before the keydown handler\n  fires, so the keyboard guard alone leaves a path that still closes\n  the active tab when the launcher is open.\n\nVerified: bun run typecheck clean.\n\nCloses gnoviawan/termul#365"
+      },
+      {
+        "sha": "a014e3d",
+        "message": "Merge remote-tracking branch 'upstream/dev' into dev\n\n# Conflicts:\n#\tsrc-tauri/src/commands.rs"
+      },
+      {
+        "sha": "accc657",
+        "message": "fix(file-explorer): use theme primary color for SSH folder icons (#305)\n\nThe SSH and Remote file explorer folder icons were hardcoded to\ntext-blue-400, which did not follow the active color theme. When users\nswitched themes (Catppuccin, Gruvbox, Nord, light themes, etc.), the\nfolder icons stayed blue and no longer matched the rest of the UI.\n\nReplace the hardcoded blue with text-primary so folder icons follow\nthe active theme's --primary CSS variable, matching how file icons\nalready use text-muted-foreground.\n\nAffected files:\n- src/renderer/components/ssh/RemoteFileExplorer.tsx (line 198)\n- src/renderer/components/ssh/SSHFileExplorer.tsx (line 142)\n\nThe local file explorer (FileTreeNode.tsx) uses MaterialFileIcon\n(SVG-based) and was not affected by this issue.\n\nCloses gnoviawan/termul#305"
+      },
+      {
+        "sha": "54a5531",
+        "message": "Merge upstream/dev: stream filename search fix (#364)"
+      },
+      {
+        "sha": "d8c8b86",
+        "message": "fix(explorer): align Explorer header typography with Projects panel (#334)\n\nThe Explorer panel header used `font-semibold text-muted-foreground`\nwhile the Projects sidebar header used `text-sidebar-foreground` without\nsemibold weight, making the workspace chrome feel inconsistent.\n\nUpdate Explorer header classes to match Projects:\n- Remove `font-semibold` (Projects header doesn't use it)\n- Replace `text-muted-foreground` with `text-sidebar-foreground`\n  (matches Projects header for visual consistency)\n\nCloses gnoviawan/termul#334"
+      },
+      {
+        "sha": "71dc12d",
+        "message": "Merge branch 'gnoviawan:dev' into dev"
+      },
+      {
+        "sha": "75056b4",
+        "message": "feat(acp): open chat file paths in editor"
+      },
+      {
+        "sha": "fe3204b",
+        "message": "fix(acp): preserve safe chat link handling"
+      },
+      {
+        "sha": "7226311",
+        "message": "fix(acp): preserve safe chat link handling"
+      },
+      {
+        "sha": "1c4acd0",
+        "message": "fix(acp): preserve markdown path nodes"
+      },
+      {
+        "sha": "994c968",
+        "message": "fix(acp): avoid prose path false positives"
+      },
+      {
+        "sha": "85ba20f",
+        "message": "fix(acp): preserve external link safety"
+      },
+      {
+        "sha": "1c6d468",
+        "message": "fix(acp): trim wrapped prose path markers"
+      },
+      {
+        "sha": "30b3c25",
+        "message": "test(acp): cover wrapped prose paths"
+      },
+      {
+        "sha": "2ccdc8e",
+        "message": "fix(acp): trim trailing path punctuation"
+      },
+      {
+        "sha": "4d2be80",
+        "message": "test(acp): cover path punctuation"
+      },
+      {
+        "sha": "2456014",
+        "message": "refactor(acp): reuse path wrapper definitions"
+      },
+      {
+        "sha": "ed41140",
+        "message": "fix(acp): preserve markdown parsing with path links"
+      },
+      {
+        "sha": "db7c281",
+        "message": "perf(acp): stabilize chat file path context"
+      },
+      {
+        "sha": "a9e91c4",
+        "message": "fix(acp): trim unmatched path brackets"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/renderer/components/chat/AgentChatPanel.tsx",
+        "status": "modified",
+        "patch": "@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'\n import { useMobileWebShell } from '@/hooks/use-mobile-web-shell'\n import { useOskViewport } from '@/hooks/use-osk-viewport'\n import type { AvailableCommand, ContentBlock, PlanEntry, SessionId, ToolCall } from '@/lib/acp-api'\n+import { isTauriContext } from '@/lib/tauri-runtime'\n+import { getDefaultCwdForProject } from '@/lib/worktree-context'\n import { useAcpMessages, useAcpSession, useAcpStore, usePromptQueue } from '@/stores/acp-store'\n import { isAgentDeadError } from '@/stores/prompt-queue-orchestration'\n import { AgentConnectionLamp } from './AgentConnectionLamp'\n@@ -290,6 +292,18 @@ export function AgentChatPanel({\n     session?.lastError\n   ])\n \n+  const filePathContext = useMemo(\n+    () =>\n+      isTauriContext()\n+        ? {\n+            cwd: session?.cwd,\n+            projectRoot: session\n+              ? getDefaultCwdForProject(session.projectId) || session.cwd\n+              : undefined\n+          }\n+        : undefined,\n+    [session]\n+  )\n   const timeline = useMemo(\n     () => consolidateThoughtGroups(buildTimeline(messages, toolCalls)),\n     [messages, toolCalls]\n@@ -437,6 +451,7 @@ export function AgentChatPanel({\n         sessionId={session.id}\n         agentId={session.agentId}\n         showRunningIndicator={showRunningIndicator}\n+        filePathContext={filePathContext}\n         onEditMessage={seedComposer}\n         onRetry={canRetryLastUserTurn && !session.activeTurn ? handleRetry : undefined}\n       />"
+      },
+      {
+        "path": "src/renderer/components/chat/ChatMessage.test.tsx",
+        "status": "modified",
+        "patch": "@@ -5,13 +5,18 @@ import type { ChatMessage as ChatMessageType } from '@/stores/acp-store'\n import { ChatMessage } from './ChatMessage'\n \n const openUrlWithSystemBrowser = vi.fn(() => Promise.resolve({ success: true, data: undefined }))\n+const openFilePathFromTerminal = vi.fn(() => Promise.resolve({ ok: true as const }))\n \n vi.mock('@/lib/api', () => ({\n   openerApi: {\n     openUrlWithSystemBrowser: (...args: unknown[]) => openUrlWithSystemBrowser(...args)\n   }\n }))\n \n+vi.mock('@/lib/file-path-links', () => ({\n+  openFilePathFromTerminal: (...args: unknown[]) => openFilePathFromTerminal(...args)\n+}))\n+\n vi.mock('streamdown', async () => {\n   const React = await import('react')\n   type LinkSafety = {\n@@ -42,6 +47,7 @@ vi.mock('streamdown', async () => {\n     const url = 'https://example.com/docs'\n     const markdown = typeof children === 'string' ? children : ''\n     const CustomTable = components?.table as React.ElementType | undefined\n+    const CustomLink = components?.a as React.ElementType | undefined\n     const semanticFixture = markdown.startsWith('# Compact heading')\n \n     return (\n@@ -63,7 +69,14 @@ vi.mock('streamdown', async () => {\n         >\n           docs\n         </button>\n-        {semanticFixture ? (\n+        {markdown.startsWith('FILE_PATH:') && CustomLink ? (\n+          <CustomLink\n+            href=\"termul-file-path:src%2Frenderer%2FApp.tsx%3A42\"\n+            data-testid=\"file-path-link\"\n+          >\n+            src/renderer/App.tsx:42\n+          </CustomLink>\n+        ) : semanticFixture ? (\n           <>\n             <h1 data-streamdown=\"heading-1\">Compact heading</h1>\n             <ul data-streamdown=\"unordered-list\">\n@@ -110,6 +123,7 @@ vi.mock('streamdown', async () => {\n   const StreamdownContext = React.createContext({ controls: false, isAnimating: false })\n   return {\n     Streamdown: MockStreamdown,\n+    defaultRemarkPlugins: {},\n     StreamdownContext,\n     TableCopyDropdown: ({ children }: { children: ReactNode }) => <>{children}</>,\n     TableDownloadDropdown: ({ children }: { children: ReactNode }) => <>{children}</>\n@@ -137,6 +151,7 @@ function agentMessage(streaming: boolean): ChatMessageType {\n describe('ChatMessage', () => {\n   beforeEach(() => {\n     openUrlWithSystemBrowser.mockClear()\n+    openFilePathFromTerminal.mockClear()\n   })\n \n   it('shows the Streamdown caret while the live agent message is streaming', () => {\n@@ -229,6 +244,24 @@ describe('ChatMessage', () => {\n     expect(container.querySelector('.animate-caret-blink')).toBeInTheDocument()\n   })\n \n+  it('opens file citations only on Ctrl/Cmd-click', async () => {\n+    const message: ChatMessageType = {\n+      ...agentMessage(false),\n+      blocks: [{ type: 'text', text: 'FILE_PATH:src/renderer/App.tsx:42' }]\n+    }\n+    render(<ChatMessage message={message} filePathContext={{ cwd: '/project' }} />)\n+\n+    const filePathLink = screen.getByTitle('Ctrl/Cmd-click to open in editor')\n+    fireEvent.click(filePathLink)\n+    expect(openFilePathFromTerminal).not.toHaveBeenCalled()\n+\n+    fireEvent.click(filePathLink, { ctrlKey: true })\n+    await act(async () => undefined)\n+    expect(openFilePathFromTerminal).toHaveBeenCalledWith('src/renderer/App.tsx:42', {\n+      cwd: '/project'\n+    })\n+  })\n+\n   it('opens confirmed links via the system browser and closes the safety dialog', async () => {\n     render(<ChatMessage message={agentMessage(false)} isLast />)\n "
+      },
+      {
+        "path": "src/renderer/components/chat/ChatMessage.tsx",
+        "status": "modified",
+        "patch": "@@ -2,7 +2,14 @@ import { code as codePlugin } from '@streamdown/code'\n import { mermaid as mermaidPlugin } from '@streamdown/mermaid'\n import { motion, useReducedMotion } from 'framer-motion'\n import { memo, useEffect, useMemo, useState } from 'react'\n-import { type LinkSafetyConfig, type LinkSafetyModalProps, Streamdown } from 'streamdown'\n+import { toast } from 'sonner'\n+import {\n+  type Components,\n+  defaultRemarkPlugins,\n+  type LinkSafetyConfig,\n+  type LinkSafetyModalProps,\n+  Streamdown\n+} from 'streamdown'\n import { Attachment, AttachmentPreview, Attachments } from '@/components/ai-elements/attachments'\n import {\n   AlertDialog,\n@@ -20,6 +27,8 @@ import { Message, MessageContent } from '@/components/ui/message'\n import type { ContentBlock } from '@/lib/acp-api'\n import { openerApi } from '@/lib/api'\n import { readAttachmentBytes } from '@/lib/attachment-api'\n+import { type FilePathResolutionContext, openFilePathFromTerminal } from '@/lib/file-path-links'\n+import { logFrontendError } from '@/lib/log-api'\n import { stripEmptyFences } from '@/lib/strip-empty-fences'\n import { cn } from '@/lib/utils'\n import type { ChatMessage as ChatMessageType } from '@/stores/acp-store'\n@@ -34,10 +43,13 @@ import {\n   uint8ToBase64\n } from './chat-attachments'\n import { ChatMarkdownCode } from './chat-markdown-code'\n+import { filePathFromHref, remarkFilePathLinks } from './chat-markdown-file-links'\n import { ChatMarkdownTable } from './chat-markdown-table'\n import { type BubbleAlign, staggerChild } from './chat-motion'\n import { MessageActions } from './MessageActions'\n \n+const FILE_PATH_REMARK_PLUGINS = [...Object.values(defaultRemarkPlugins), remarkFilePathLinks]\n+\n /** Concatenate the text of all text blocks. */\n function blocksToText(blocks: ContentBlock[]): string {\n   return blocks\n@@ -203,12 +215,74 @@ const LINK_SAFETY: LinkSafetyConfig = {\n function AgentProse({\n   text,\n   streaming,\n-  reduced\n+  reduced,\n+  filePathContext\n }: {\n   text: string\n   streaming: boolean\n   reduced: boolean\n+  filePathContext?: FilePathResolutionContext\n }): React.JSX.Element {\n+  const [externalUrl, setExternalUrl] = useState<string | null>(null)\n+  const filePathComponents = useMemo<Components | undefined>(() => {\n+    if (!filePathContext) return undefined\n+\n+    const context = filePathContext\n+    return {\n+      a: ({ href, children, ...props }) => {\n+        const candidate = filePathFromHref(href)\n+        if (!candidate) {\n+          return (\n+            <a\n+              href={href}\n+              target=\"_blank\"\n+              rel=\"noreferrer\"\n+              {...props}\n+              onClick={(event) => {\n+                event.preventDefault()\n+                if (href) setExternalUrl(href)\n+              }}\n+              onAuxClick={(event) => {\n+                event.preventDefault()\n+              }}\n+            >\n+              {children}\n+            </a>\n+          )\n+        }\n+\n+        return (\n+          <button\n+            type=\"button\"\n+            className={cn(\n+              props.className,\n+              'cursor-pointer appearance-none text-left font-medium text-primary underline'\n+            )}\n+            title=\"Ctrl/Cmd-click to open in editor\"\n+            onClick={(event) => {\n+              if (!event.ctrlKey && !event.metaKey) return\n+              event.preventDefault()\n+              void openFilePathFromTerminal(candidate, context)\n+                .then((result) => {\n+                  if (!result.ok) toast.error(result.message)\n+                })\n+                .catch((error: unknown) => {\n+                  void logFrontendError({\n+                    level: 'warn',\n+                    source: 'ChatMessage.filePathLink',\n+                    message: `Failed to open ${candidate}: ${String(error)}`\n+                  })\n+                  toast.error('Failed to open file from chat.')\n+                })\n+            }}\n+          >\n+            {children}\n+          </button>\n+        )\n+      }\n+    }\n+  }, [filePathContext])\n+\n   return (\n     <div className=\"chat-streamdown min-w-0 text-sm leading-normal text-foreground\">\n       <Streamdown\n@@ -218,14 +292,27 @@ function AgentProse({\n         animated={reduced ? false : STREAMDOWN_ANIMATED}\n         parseIncompleteMarkdown\n         plugins={STREAMDOWN_PLUGINS}\n+        remarkPlugins={filePathContext ? FILE_PATH_REMARK_PLUGINS : undefined}\n         controls={STREAMDOWN_CONTROLS}\n-        components={STREAMDOWN_COMPONENTS}\n+        components={\n+          filePathComponents\n+            ? { ...STREAMDOWN_COMPONENTS, ...filePathComponents }\n+            : STREAMDOWN_COMPONENTS\n+        }\n         lineNumbers={false}\n         linkSafety={LINK_SAFETY}\n         shikiTheme={['github-light', 'github-dark']}\n       >\n         {text}\n       </Streamdown>\n+      {externalUrl && (\n+        <StreamdownLinkSafetyModal\n+          isOpen\n+          url={externalUrl}\n+          onClose={() => setExternalUrl(null)}\n+          onConfirm={() => setExternalUrl(null)}\n+        />\n+      )}\n     </div>\n   )\n }\n@@ -279,6 +366,8 @@ interface ChatMessageProps {\n   onEdit?: (text: string) => void\n   /** Re-run the latest user turn (assistant turns). */\n   onRetry?: () => void\n+  /** Filesystem roots used for safe file-path links in agent prose. */\n+  filePathContext?: FilePathResolutionContext\n }\n \n function ChatMessageComponent({\n@@ -290,7 +379,8 @@ function ChatMessageComponent({\n   actionsPinned = false,\n   animateEnter = true,\n   onEdit,\n-  onRetry\n+  onRetry,\n+  filePathContext\n }: ChatMessageProps): React.JSX.Element {\n   const reduced = useReducedMotion() ?? false\n \n@@ -374,7 +464,12 @@ function ChatMessageComponent({\n                   animateEnter={animateEnter}\n                 >\n                   {proseText.length > 0 && (\n-                    <AgentProse text={proseText} streaming={streaming} reduced={reduced} />\n+                    <AgentProse\n+                      text={proseText}\n+                      streaming={streaming}\n+                      reduced={reduced}\n+                      filePathContext={filePathContext}\n+                    />\n                   )}\n                   {streaming && proseText.length === 0 && (\n                     <span"
+      },
+      {
+        "path": "src/renderer/components/chat/ChatMessageList.tsx",
+        "status": "modified",
+        "patch": "@@ -10,6 +10,7 @@ import {\n   useMessageScroller\n } from '@/components/ui/message-scroller'\n import type { AgentId, SessionId } from '@/lib/acp-api'\n+import type { FilePathResolutionContext } from '@/lib/file-path-links'\n import { cn } from '@/lib/utils'\n import { useAcpStore } from '@/stores/acp-store'\n import { ChatEmptyState } from './ChatEmptyState'\n@@ -41,6 +42,8 @@ interface ChatMessageListProps {\n   onEditMessage?: (text: string) => void\n   /** Re-run the latest user turn (regenerate affordance on agent replies). */\n   onRetry?: () => void\n+  /** Filesystem roots used for safe file-path links in agent prose. */\n+  filePathContext?: FilePathResolutionContext\n }\n \n /** Index of the last visible message item in the turn-grouped timeline. */\n@@ -88,6 +91,7 @@ interface TimelineRenderProps {\n   shouldAnimateEnter: (id: string) => boolean\n   onEditMessage?: (text: string) => void\n   onRetry?: () => void\n+  filePathContext?: FilePathResolutionContext\n }\n \n /**\n@@ -101,7 +105,8 @@ function VirtualizedTimeline({\n   lastMsgIndex,\n   shouldAnimateEnter,\n   onEditMessage,\n-  onRetry\n+  onRetry,\n+  filePathContext\n }: TimelineRenderProps): React.JSX.Element {\n   const { viewportEl, pinned } = useMessageScroller()\n   const virtualizer = useVirtualizer({\n@@ -207,6 +212,7 @@ function VirtualizedTimeline({\n         animateEnter={item.isTurnTail ? false : shouldAnimateEnter(item.message.id)}\n         onEdit={onEditMessage}\n         onRetry={onRetry}\n+        filePathContext={filePathContext}\n       />\n     )\n   }\n@@ -274,7 +280,8 @@ export function ChatMessageList({\n   agentId,\n   showRunningIndicator,\n   onEditMessage,\n-  onRetry\n+  onRetry,\n+  filePathContext\n }: ChatMessageListProps): React.JSX.Element {\n   const groupedItems = useMemo(\n     () => groupTurnActivity(items, showRunningIndicator),\n@@ -301,6 +308,7 @@ export function ChatMessageList({\n               groupedItems={groupedItems}\n               lastMsgIndex={lastMsgIndex}\n               shouldAnimateEnter={shouldAnimateEnter}\n+              filePathContext={filePathContext}\n               onEditMessage={onEditMessage}\n               onRetry={onRetry}\n             />"
+      },
+      {
+        "path": "src/renderer/components/chat/chat-markdown-file-links.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,48 @@\n+import { describe, expect, it } from 'vitest'\n+import { findFilePathMatches } from '@/lib/file-path-links'\n+import { filePathFromHref, filePathHref, remarkFilePathLinks } from './chat-markdown-file-links'\n+\n+describe('chat markdown file links', () => {\n+  it('only linkifies path-shaped tokens', () => {\n+    expect(findFilePathMatches('See src/App.tsx:42 and ./main.ts')).toEqual([\n+      { text: 'src/App.tsx:42', start: 4 },\n+      { text: './main.ts', start: 23 }\n+    ])\n+    expect(findFilePathMatches('https://example.com/src/App.tsx')).toEqual([])\n+    expect(findFilePathMatches('(src/App.tsx:42)')).toEqual([{ text: 'src/App.tsx:42', start: 1 }])\n+    expect(findFilePathMatches('See src/App.tsx:42,')).toEqual([\n+      { text: 'src/App.tsx:42', start: 4 }\n+    ])\n+    expect(findFilePathMatches('(see src/App.tsx)')).toEqual([{ text: 'src/App.tsx', start: 5 }])\n+  })\n+\n+  it('encodes and decodes path markers', () => {\n+    const href = filePathHref('src/renderer/App.tsx:42')\n+    expect(filePathFromHref(href)).toBe('src/renderer/App.tsx:42')\n+    expect(filePathFromHref('https://example.com')).toBeNull()\n+  })\n+\n+  it('linkifies prose paths but leaves links and code blocks unchanged', () => {\n+    const tree = {\n+      type: 'root',\n+      children: [\n+        { type: 'paragraph', children: [{ type: 'text', value: 'See src/App.tsx:42.' }] },\n+        {\n+          type: 'link',\n+          url: 'https://example.com',\n+          children: [{ type: 'text', value: 'src/App.tsx' }]\n+        },\n+        { type: 'code', value: 'src/App.tsx:42' }\n+      ]\n+    }\n+\n+    remarkFilePathLinks()(tree)\n+\n+    expect(tree.children[0].children[1]).toMatchObject({\n+      type: 'link',\n+      url: filePathHref('src/App.tsx:42')\n+    })\n+    expect(tree.children[1].url).toBe('https://example.com')\n+    expect(tree.children[2].type).toBe('code')\n+  })\n+})"
+      },
+      {
+        "path": "src/renderer/components/chat/chat-markdown-file-links.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,68 @@\n+import { findFilePathMatches } from '@/lib/file-path-links'\n+\n+export const FILE_PATH_LINK_PREFIX = 'termul-file-path:'\n+\n+type MarkdownNode = {\n+  type: string\n+  value?: string\n+  url?: string\n+  title?: string | null\n+  children?: MarkdownNode[]\n+}\n+\n+export function filePathHref(path: string): string {\n+  return `${FILE_PATH_LINK_PREFIX}${encodeURIComponent(path)}`\n+}\n+\n+function splitTextNode(node: MarkdownNode): MarkdownNode[] {\n+  const value = node.value ?? ''\n+  const matches = findFilePathMatches(value)\n+  if (matches.length === 0) return [node]\n+\n+  const result: MarkdownNode[] = []\n+  let cursor = 0\n+\n+  for (const match of matches) {\n+    if (match.start > cursor) {\n+      result.push({ type: 'text', value: value.slice(cursor, match.start) })\n+    }\n+    result.push({\n+      type: 'link',\n+      title: null,\n+      url: filePathHref(match.text),\n+      children: [{ type: 'text', value: match.text }]\n+    })\n+    cursor = match.start + match.text.length\n+  }\n+\n+  if (cursor < value.length) {\n+    result.push({ type: 'text', value: value.slice(cursor) })\n+  }\n+\n+  return result\n+}\n+\n+function transformNode(node: MarkdownNode): MarkdownNode[] {\n+  if (node.type === 'text') return splitTextNode(node)\n+  if (node.type === 'code' || node.type === 'link') return [node]\n+\n+  if (!node.children) return [node]\n+  node.children = node.children.flatMap(transformNode)\n+  return [node]\n+}\n+\n+/** Streamdown remark plugin that turns prose path tokens into marker links. */\n+export function remarkFilePathLinks(): (tree: MarkdownNode) => void {\n+  return (tree) => {\n+    if (tree.children) tree.children = tree.children.flatMap(transformNode)\n+  }\n+}\n+\n+export function filePathFromHref(href: string | undefined): string | null {\n+  if (!href?.startsWith(FILE_PATH_LINK_PREFIX)) return null\n+  try {\n+    return decodeURIComponent(href.slice(FILE_PATH_LINK_PREFIX.length))\n+  } catch {\n+    return null\n+  }\n+}"
+      },
+      {
+        "path": "src/renderer/lib/file-path-links.ts",
+        "status": "modified",
+        "patch": "@@ -39,7 +39,7 @@ export interface TerminalPathLink {\n }\n \n const FILE_PATH_LINK_REGEX =\n-  /(?:\\.{1,2}[\\\\/]|[A-Za-z]:[\\\\/]|\\\\\\\\|\\/)?(?:[^\\s\\\\/:*?\"<>|`]+[\\\\/])*[^\\s\\\\/:*?\"<>|`]+(?:\\.[A-Za-z0-9_-]+)?(?::\\d+(?::\\d+)?)?/g\n+  /(?:\\.{1,2}[\\\\/]|[A-Za-z]:[\\\\/]|\\\\\\\\|\\/)?(?:[^\\s\\\\/:*?\"<>|`]+[\\\\/])+[^\\s\\\\/:*?\"<>|`]+(?:\\.[A-Za-z0-9_-]+)?(?::\\d+(?::\\d+)?)?/g\n \n const URI_SCHEME_REGEX = /^[a-zA-Z][a-zA-Z0-9+.-]*:\\/\\//\n \n@@ -63,57 +63,86 @@ function looksLikeFilePath(text: string): boolean {\n   return text.includes('/') || text.includes('\\\\') || /^[A-Za-z]:/.test(text)\n }\n \n-function isUrlAdjacentPathMatch(line: string, start: number, text: string): boolean {\n-  if (!text.startsWith('/')) {\n-    return false\n+function trimTrailingPathPunctuation(value: string): string {\n+  let result = value.replace(/[.,;!?]+$/, '')\n+\n+  for (const [opening, closing] of WRAPPER_PAIRS) {\n+    while (result.endsWith(closing) && !result.includes(opening)) {\n+      result = result.slice(0, -1)\n+    }\n   }\n \n+  return result\n+}\n+\n+function isUrlAdjacentPathMatch(line: string, start: number, text: string): boolean {\n   const tokenStart = line.slice(0, start).search(/\\S+$/)\n   if (tokenStart < 0) {\n     return false\n   }\n \n-  const tokenPrefix = line.slice(tokenStart, start + 1).replace(/^[`\"'([{]+/, '')\n+  const tokenPrefix = line\n+    .slice(tokenStart, start + (text.startsWith('/') ? 1 : 0))\n+    .replace(/^[`\"'([{]+/, '')\n   return URI_SCHEME_REGEX.test(tokenPrefix)\n }\n \n-/** Extracts file-like links from a rendered terminal line for Ctrl/Cmd+Click activation. */\n-// Range x-coordinates are based on JavaScript string indices. Wide or combining\n-// terminal characters can render to different cell widths, and this module only\n-// receives plain text, so it cannot accurately map visual cells here.\n-export function buildTerminalPathLinks(\n-  line: string,\n-  lineNumber: number,\n-  onActivate: (event: MouseEvent, text: string) => void | Promise<void>\n-): TerminalPathLink[] {\n+export interface FilePathMatch {\n+  text: string\n+  start: number\n+}\n+\n+/** Finds file-like path tokens while excluding URL host/path fragments. */\n+export function findFilePathMatches(line: string): FilePathMatch[] {\n   if (!line.includes('/') && !line.includes('\\\\') && !line.includes(':')) {\n     return []\n   }\n \n-  const links: TerminalPathLink[] = []\n+  const matches: FilePathMatch[] = []\n \n   for (const match of line.matchAll(FILE_PATH_LINK_REGEX)) {\n-    const text = match[0]\n-    if (!text || !looksLikeFilePath(text)) {\n-      continue\n+    let text = trimTrailingPathPunctuation(match[0])\n+    let start = match.index ?? -1\n+    const wrapper = WRAPPER_PAIRS.find(\n+      ([opening, closing]) => text.startsWith(opening) && line[start + text.length] === closing\n+    )\n+    if (wrapper) {\n+      text = text.slice(wrapper[0].length)\n+      start += wrapper[0].length\n     }\n \n-    const start = match.index ?? -1\n-    if (start < 0 || isUrlAdjacentPathMatch(line, start, text)) {\n+    if (\n+      !text ||\n+      !looksLikeFilePath(text) ||\n+      start < 0 ||\n+      isUrlAdjacentPathMatch(line, start, text)\n+    ) {\n       continue\n     }\n \n-    links.push({\n-      range: {\n-        start: { x: start + 1, y: lineNumber },\n-        end: { x: start + text.length, y: lineNumber }\n-      },\n-      text,\n-      activate: onActivate\n-    })\n+    matches.push({ text, start })\n   }\n \n-  return links\n+  return matches\n+}\n+\n+/** Extracts file-like links from a rendered terminal line for Ctrl/Cmd+Click activation. */\n+// Range x-coordinates are based on JavaScript string indices. Wide or combining\n+// terminal characters can render to different cell widths, and this module only\n+// receives plain text, so it cannot accurately map visual cells here.\n+export function buildTerminalPathLinks(\n+  line: string,\n+  lineNumber: number,\n+  onActivate: (event: MouseEvent, text: string) => void | Promise<void>\n+): TerminalPathLink[] {\n+  return findFilePathMatches(line).map(({ text, start }) => ({\n+    range: {\n+      start: { x: start + 1, y: lineNumber },\n+      end: { x: start + text.length, y: lineNumber }\n+    },\n+    text,\n+    activate: onActivate\n+  }))\n }\n \n function normalizeAbsolutePath(value: string): string {"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "passed"
+    },
+    {
+      "name": "Standalone Server Build",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "passed"
+    },
+    {
+      "name": "ACP Registry Bundle Freshness",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Description",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Web Client Build",
+      "status": "passed"
+    },
+    {
+      "name": "Review dependency changes",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "passed"
+    },
+    {
+      "name": "Scan for leaked secrets",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "feat(acp): open chat file paths in editor": false,
+      "ACP agent chat now recognizes file-path citations in prose and opens safe, resolvable files in Termul's editor on Ctrl/Cmd-click.": true,
+      "It reuses the existing terminal resolver, preserves external-link confirmation, and keeps path handling desktop-only because the web client has no supported filesystem opener.": false,
+      "Closes #329": false,
+      "Prior related work: merged PR #110 provides the terminal file-link behavior; no ACP chat implementation PR was found.": false,
+      "Closed PR #417 is for #331, not this issue.": false,
+      "[x] feat: new feature": false,
+      "[ ] fix: bug fix": false,
+      "[ ] docs: documentation only": false,
+      "[ ] style: formatting or non-functional styling changes": false,
+      "[ ] refactor: internal cleanup with no behavior change": false,
+      "[ ] perf: performance improvement": false,
+      "[ ] test: adds or updates tests": false,
+      "[ ] build: build or dependency changes": false,
+      "[ ] ci: CI/CD workflow changes": false,
+      "[ ] chore: maintenance or tooling": false,
+      "[ ] revert: reverts a previous change": false,
+      "Detects path-shaped prose tokens and converts them into internal marker links without rewriting existing markdown links or code blocks.": true,
+      "Uses active session cwd/project root and `openFilePathFromTerminal`, including line/column navigation and root-boundary validation.": false,
+      "Requires Ctrl/Cmd-click, shows errors for unresolved paths, and keeps external links behind the existing safety modal.": false,
+      "Adds parser, punctuation, wrapper, and click behavior tests.": false,
+      "[x] `bun run ci` (Biome lint + format + imports, strict mode)": false,
+      "[x] `bun run typecheck`": false,
+      "[x] `bun run test` — 2,516 passed; 4 unrelated suites fail loading `material-icon-theme/icons/3d.svg?raw` through the shared symlinked dependency setup": false,
+      "[ ] `cargo clippy --all-targets -- -D warnings` (in src-tauri) — blocked by missing system GLib/DBus development packages": false,
+      "[ ] `cargo test` (in src-tauri) — blocked by missing system GLib/DBus development packages": false,
+      "[x] Manual verification completed": false,
+      "[ ] Not applicable": false,
+      "Not included; this change is validated through focused tests and desktop-only behavior is gated by the Tauri runtime.": false,
+      "[ ] All CI checks pass (PR Validation, Rust Checks, Build Verification, Security Scans)": false,
+      "[ ] Code review comments from CodeRabbit / Claude have been addressed or resolved": false,
+      "[ ] No unresolved review findings remain": false,
+      "[x] My PR title follows the conventional commit format used by this repo": false,
+      "[x] I linked the related issue or explained why none exists": false,
+      "[x] I updated docs when needed": false,
+      "[x] I added or updated tests when needed": false,
+      "[x] I verified the change does not introduce unrelated modifications": false,
+      "[x] I read AGENTS.md and followed the contributor guidelines": false,
+      "[x] A human reviewed the complete diff before submission": false,
+      "**New Features**": false,
+      "Chat messages now recognize file paths and make them interactive.": false,
+      "Ctrl/Cmd-clicking a detected file path opens it in the editor using the relevant project context.": false,
+      "Regular links continue to use the external-link confirmation flow.": false,
+      "**Bug Fixes**": false,
+      "Improved file-path detection by avoiding single-token filenames, URL fragments, and trailing punctuation.": false,
+      "Preserved existing links and code blocks during file-path conversion.": false,
+      "**Tests**": false,
+      "Added coverage for file-path detection, link behavior, path encoding, and editor-opening interactions.": false,
+      "fix(file-explorer): stream filename search via rg --files to fix 0-count regression (gh-195)": false,
+      "The file-name search Tauri command used a synchronous single-threaded\nstd::fs::read_dir walk, which on large trees (and on Windows where rg's\nmulti-threaded walk is dramatically faster) made the 'Files' tab count\nflash 0 and never recover before the user gave up.": false
+    },
+    "runtimeObservable": {
+      "ACP agent chat now recognizes file-path citations in prose and opens safe, resolvable files in Termul's editor on Ctrl/Cmd-click.": true,
+      "Detects path-shaped prose tokens and converts them into internal marker links without rewriting existing markdown links or code blocks.": true
+    },
+    "checksAdequate": {
+      "ACP agent chat now recognizes file-path citations in prose and opens safe, resolvable files in Termul's editor on Ctrl/Cmd-click.": true,
+      "Detects path-shaped prose tokens and converts them into internal marker links without rewriting existing markdown links or code blocks.": true
+    },
+    "surface": {
+      "ACP agent chat now recognizes file-path citations in prose and opens safe, resolvable files in Termul's editor on Ctrl/Cmd-click.": "native_app",
+      "Detects path-shaped prose tokens and converts them into internal marker links without rewriting existing markdown links or code blocks.": "native_app"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}
