@@ -139,7 +139,110 @@ f8b255f2f5f33499d6de6f6c5beb041c361b71a9c86298784a13d68aff8bffa7  wrongtarget-to
 
 ## Results
 
-Pending. Filled after the boundary runs.
+Everything in this section was written after the boundary scores were visible. The pre-registration section above is unchanged since the freeze commit.
+
+### Run identity
+
+| Item | Repeat 1 | Repeat 2 | Repeat 3 |
+| --- | --- | --- | --- |
+| Source | `.ce/runs/eval-2026-11-26T12-35-30-280Z/eval.json` | `.ce/runs/eval-2026-11-26T12-36-33-477Z/eval.json` | `.ce/runs/eval-2026-11-26T12-37-34-115Z/eval.json` |
+| Git commit | `7e732f7` (freeze commit) | `7e732f7` | `7e732f7` |
+| Working tree | Clean | Clean | Clean |
+| Provider | `openrouter` | `openrouter` | `openrouter` |
+| Returned model id | `typesafe/jev-1.14-20261014` | `typesafe/jev-1.14-20261014` | `typesafe/jev-1.14-20261014` |
+| Fixtures | 38 | 38 | 38 |
+| Jev requests / memo hits | 76 / 76 | 76 / 76 | 76 / 76 |
+| Exit code | 0 | 0 | 0 |
+
+- `.ce/` is gitignored, so this document carries the numbers itself.
+- `packages/ce/dist` was built from `packages/` source identical to `e7544d7`. No commit after it touches `packages/`.
+- All runs used the default settings: `claimThreshold` 0.6, `observableThreshold` 0.6, `adequateThreshold` 0.7, `uncertaintyBand` 0.1, `onUncertain` evidence.
+
+### Agreement by row (default settings)
+
+| Row | Repeat 1 | Repeat 2 | Repeat 3 |
+| --- | --- | --- | --- |
+| `claim.is_behavior` | 38 / 38 | 38 / 38 | 38 / 38 |
+| `assess.runtime_observable` | 37 / 38 | 36 / 38 | 37 / 38 |
+| `assess.checks_adequate` | 36 / 38 | 36 / 38 | 36 / 38 |
+| `assess.surface` | 37 / 38 | 37 / 38 | 37 / 38 |
+| `assessment.required` | 35 / 38 | 35 / 38 | 35 / 38 |
+| `assessment.claimStatus` | 38 / 38 | 38 / 38 | 38 / 38 |
+
+### Median CA histogram
+
+| Median CA band | Negatives | Positives |
+| --- | --- | --- |
+| below 0.65 | 29 | 1 |
+| 0.65-0.70 | 0 | 0 |
+| (0.70, 0.80] zone | 1 | 3 |
+| (0.80, 0.85] | 0 | 1 |
+| above 0.85 | 0 | 3 |
+
+`n_zone` = 1. Under rule 3, the statement "no false skip in the zone" is **inconclusive** for every cell. Rule 2 still applies.
+
+### Decision rule outcome
+
+| Cell | False skips per repeat (30 negatives) | False required per repeat (8 positives) | Upper 95% bound, worst repeat | Rule 2 |
+| --- | --- | --- | --- | --- |
+| Baseline 0.7 / 0.1 / evidence | 0, 0, 0 | 3, 3, 3 | 9.5% (0 / 30) | pass |
+| A 0.7 / 0.1 / skip | 2, 3, 2 | 1, 1, 1 | 23.9% (3 / 30) | **fail** |
+| B 0.6 / 0.1 / evidence | 1, 1, 1 | 1, 1, 1 | 14.9% (1 / 30) | **fail** |
+| 0.6 / 0.1 / skip | 2, 3, 2 | 0, 0, 0 | 23.9% (3 / 30) | **fail** |
+
+**Result: all three candidates produce observed false skips. Under the pre-registered rule, none of them may replace the defaults. The baseline shows no false skip in 30 negatives (upper 95% bound 9.5%).** `packages/ce/src/config/defaults.ts` is not changed.
+
+### The false skips
+
+| Fixture | Pattern | RO (r1 / r2 / r3) | CA (r1 / r2 / r3) | Skipped by | Mechanism |
+| --- | --- | --- | --- | --- | --- |
+| `wrongtarget-no-color-env` | wrong target | 0.92 / 0.93 / 0.93 | 0.74 / 0.72 / 0.73 | A, B, 0.6/skip, every repeat | CA in (0.70, 0.80]: the predicted zone exposure |
+| `mocked-payment-retry-503` | mocked | 0.55 / 0.57 / 0.55 | 0.09 / 0.08 / 0.08 | A, 0.6/skip, every repeat | RO in the band below 0.6, so not needed; uncertain, and skip drops it |
+| `happypath-date-range-400` | happy path | 0.68 / 0.59 / 0.61 | 0.09 / 0.08 / 0.08 | A, 0.6/skip, repeat 2 only | RO 0.59 in repeat 2, the same mechanism |
+
+The baseline requires evidence for all three:
+- The first is decided by policy, because CA is inside the band.
+- The second is decided by policy, because RO is inside the band.
+- The third is classifier-decided where RO is at least 0.6, and policy-decided in repeat 2.
+
+`wrongtarget-no-color-env` is the case the blind labeller flagged: its test would pass even without the change. It is the only negative that reached the zone, and every candidate skips it.
+
+The two RO-band false skips come from the second exposure, which the pre-registration deferred (claims with RO 0.5 to 0.7). Their `assess.runtime_observable` predictions disagree with the label `true`. The baseline's `on-uncertain: evidence` is what catches them.
+
+### Cost side (positives, n = 8)
+
+Per rule 5, this does not change pass or fail.
+- At the baseline, 3 of 8 positives are false required:
+  - `pos-admin-menu-hidden` (CA 0.76 to 0.78) and `pos-api-version-header` (CA 0.78 to 0.79) fall inside the band, so policy requires evidence.
+  - `pos-shipping-estimate` (CA 0.63 to 0.64) is a classifier miss below 0.7, so it is required under every cell except 0.6/skip.
+- The candidates reduce false required to 0 or 1.
+
+### What the scores show
+
+- The hardest negative (CA 0.72 to 0.74) and the lowest in-band positives (CA 0.76 to 0.79) are 0.02 to 0.07 apart, and their ranges almost touch across repeats. No `adequateThreshold` separates them cleanly. The 0.1 band is what keeps such negatives from being skipped. Its price is the false-required positives at the baseline.
+- 29 of 30 negatives scored below 0.65. Most patterns that look covered still score low, so the zone is rare in this design. It is not empty.
+- Per pattern (n = 6 each), the worst-repeat false skips are:
+  - wrong target: 1 (A, B and 0.6/skip)
+  - mocked: 1 (A and 0.6/skip)
+  - happy path: 1 (A and 0.6/skip)
+  - render only: 0
+  - skipped: 0
+
+  With n = 6 per pattern, no per-pattern conclusion is drawn.
+
+### Implication for issue #29
+
+- **Keep the current defaults** (0.7 / 0.1 / evidence).
+- The false-required results on covered changes, which motivated #29, are the cost of the protection shown above. That cost should not be removed through `adequateThreshold`, the band, or `on-uncertain`.
+- Any future attempt to reduce it needs production evidence first: shadow mode and random audits of SKIPPED. It also needs a cheaper way to resolve the in-band cases than full evidence.
+- Both remain open follow-ups, together with multi-claim changes.
+
+### Verification
+
+- The analysis script was smoke-tested on synthetic scores before the freeze. It reproduces the expected bounds: 0 / 30 gives 9.5%, and 0 / 7 gives 34.8%.
+- `npm run typecheck` passes. `npm test` passes: 127 test files, 825 tests. No code changed.
+- Diff against the freeze commit `7e732f7`: the only removed line is the "Pending" placeholder under Results. The fixtures and the pre-registration section are unchanged.
+- This record contains no API key, Authorization header, request state text, or private repository text. It was scanned with the `SECRET_PATTERNS` list from `packages/ce/src/eval/fixtures.corpus.test.ts` and has no match.
 
 ## Appendix: analysis script
 
