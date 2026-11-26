@@ -10,6 +10,8 @@
  * evidence run demonstrates which module boundaries are actually needed.
  */
 
+import type { Outcome as ExecutionOutcome } from './outcome/index.js';
+
 export const VERSION = '0.1.0';
 
 /**
@@ -18,8 +20,6 @@ export const VERSION = '0.1.0';
  * Outcome contract (SPEC.md §7.1): every run MUST resolve to exactly one of
  * SKIPPED | EVIDENCED | UNSUPPORTED | ERROR.
  */
-export type ExecutionOutcome = 'SKIPPED' | 'EVIDENCED' | 'UNSUPPORTED' | 'ERROR';
-
 export interface RunResult {
   outcome: ExecutionOutcome;
 }
@@ -42,3 +42,11 @@ export type { AskOptions, JevGateway } from './jev/gateway.js';
 export { FakeJevGateway, FakeRecordingMissingError } from './jev/fake.js';
 export { JevImageError, JevUsageError, RateLimitError } from './jev/errors.js';
 export { StageError } from './errors.js';
+
+export { resolveOutcome, exitCodeFor, OUTCOMES } from './outcome/index.js';
+export type {
+  Outcome,
+  Outcome as ExecutionOutcome,
+  Resolution,
+  ResolveInput,
+} from './outcome/index.js';
