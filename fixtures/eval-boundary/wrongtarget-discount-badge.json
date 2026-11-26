@@ -1,0 +1,51 @@
+{
+  "id": "wrongtarget-discount-badge",
+  "description": "Wrong target: the test asserts the price text, not the discount badge.",
+  "change": {
+    "title": "Show a discount badge on sale items in the product grid",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Show a discount badge on sale items in the product grid"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/catalog/ProductCard.tsx",
+        "status": "modified",
+        "patch": "@@ -6,3 +6,4 @@\n   return <li data-testid=\"product\">\n     <span data-testid=\"price\">{formatPrice(item.price)}</span>\n+    {item.onSale && <span data-testid=\"discount-badge\">-{item.discountPercent}%</span>}\n   </li>;"
+      },
+      {
+        "path": "e2e/product-grid.spec.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,4 @@\n+test(\"shows sale items in the product grid\", async ({ page }) => {\n+  await page.goto(\"/catalog?filter=sale\");\n+  await expect(page.getByTestId(\"price\").first()).toHaveText(\"$24.00\");\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "e2e/product-grid.spec.ts > shows sale items in the product grid",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Show a discount badge on sale items in the product grid": true
+    },
+    "runtimeObservable": {
+      "Show a discount badge on sale items in the product grid": true
+    },
+    "checksAdequate": {
+      "Show a discount badge on sale items in the product grid": false
+    },
+    "surface": {
+      "Show a discount badge on sale items in the product grid": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

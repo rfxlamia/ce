@@ -1,0 +1,51 @@
+{
+  "id": "wrongtarget-build-elapsed-time",
+  "description": "Wrong target: the test asserts the success line, not the elapsed time output.",
+  "change": {
+    "title": "Print the elapsed time after the build command finishes",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Print the elapsed time after the build command finishes"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/commands/build.ts",
+        "status": "modified",
+        "patch": "@@ -20,4 +20,6 @@\n export async function build(opts: BuildOptions) {\n+  const started = performance.now();\n   await compile(opts);\n   log.info(\"Build succeeded\");\n+  log.info(`Done in ${((performance.now() - started) / 1000).toFixed(1)}s`);\n }"
+      },
+      {
+        "path": "test/commands/build.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,4 @@\n+it(\"prints the build summary\", async () => {\n+  const { stdout } = await execa(\"node\", [\"dist/cli.js\", \"build\"]);\n+  expect(stdout).toContain(\"Build succeeded\");\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/commands/build.test.ts > prints the build summary",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Print the elapsed time after the build command finishes": true
+    },
+    "runtimeObservable": {
+      "Print the elapsed time after the build command finishes": true
+    },
+    "checksAdequate": {
+      "Print the elapsed time after the build command finishes": false
+    },
+    "surface": {
+      "Print the elapsed time after the build command finishes": "cli"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

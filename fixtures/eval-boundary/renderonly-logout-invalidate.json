@@ -1,0 +1,51 @@
+{
+  "id": "renderonly-logout-invalidate",
+  "description": "Render only: the test snapshots the logout response; reusing the old token afterwards is never tried.",
+  "change": {
+    "title": "Invalidate the session on POST /logout so the old token is rejected",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Invalidate the session on POST /logout so the old token is rejected"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/routes/session.ts",
+        "status": "modified",
+        "patch": "@@ -18,2 +18,3 @@\n router.post(\"/logout\", async (req, res) => {\n+  await sessions.revoke(req.session.id);\n   res.json({ ok: true });"
+      },
+      {
+        "path": "test/api/session.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,4 @@\n+it(\"responds to logout\", async () => {\n+  const res = await request(app).post(\"/logout\").set(auth(user));\n+  expect(res.body).toMatchSnapshot();\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/api/session.test.ts > responds to logout",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Invalidate the session on POST /logout so the old token is rejected": true
+    },
+    "runtimeObservable": {
+      "Invalidate the session on POST /logout so the old token is rejected": true
+    },
+    "checksAdequate": {
+      "Invalidate the session on POST /logout so the old token is rejected": false
+    },
+    "surface": {
+      "Invalidate the session on POST /logout so the old token is rejected": "http_api"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

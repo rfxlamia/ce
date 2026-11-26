@@ -1,0 +1,51 @@
+{
+  "id": "happypath-webhook-preview-truncate",
+  "description": "Happy path only: the test uses a small payload; truncation above 1 KB is never exercised.",
+  "change": {
+    "title": "Truncate webhook payload previews to 1 KB in GET /webhooks/:id/deliveries",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Truncate webhook payload previews to 1 KB in GET /webhooks/:id/deliveries"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/routes/webhooks.ts",
+        "status": "modified",
+        "patch": "@@ -20,2 +20,2 @@\n const deliveries = await db.deliveries.forWebhook(req.params.id);\n-res.json(deliveries);\n+res.json(deliveries.map((d) => ({ ...d, preview: d.payload.slice(0, 1024) })));"
+      },
+      {
+        "path": "test/api/webhooks.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,5 @@\n+it(\"lists deliveries with a payload preview\", async () => {\n+  await seedDelivery({ payload: '{\"event\":\"ping\"}' });\n+  const res = await request(app).get(`/webhooks/${hook.id}/deliveries`);\n+  expect(res.body[0].preview).toBe('{\"event\":\"ping\"}');\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/api/webhooks.test.ts > lists deliveries with a payload preview",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Truncate webhook payload previews to 1 KB in GET /webhooks/:id/deliveries": true
+    },
+    "runtimeObservable": {
+      "Truncate webhook payload previews to 1 KB in GET /webhooks/:id/deliveries": true
+    },
+    "checksAdequate": {
+      "Truncate webhook payload previews to 1 KB in GET /webhooks/:id/deliveries": false
+    },
+    "surface": {
+      "Truncate webhook payload previews to 1 KB in GET /webhooks/:id/deliveries": "http_api"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

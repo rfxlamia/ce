@@ -1,0 +1,51 @@
+{
+  "id": "wrongtarget-total-count-header",
+  "description": "Wrong target: the test asserts the body length, not the X-Total-Count header.",
+  "change": {
+    "title": "Return the total ticket count in the X-Total-Count header of GET /tickets",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Return the total ticket count in the X-Total-Count header of GET /tickets"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/routes/tickets.ts",
+        "status": "modified",
+        "patch": "@@ -12,2 +12,3 @@\n   const [rows, total] = await Promise.all([db.tickets.page(q), db.tickets.count(q.filter)]);\n+  res.set(\"X-Total-Count\", String(total));\n   res.json(rows);"
+      },
+      {
+        "path": "test/api/tickets.test.ts",
+        "status": "modified",
+        "patch": "@@ -30,1 +30,6 @@\n });\n+it(\"lists tickets with the total count\", async () => {\n+  const res = await request(app).get(\"/tickets?limit=20\");\n+  expect(res.status).toBe(200);\n+  expect(res.body).toHaveLength(20);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/api/tickets.test.ts > lists tickets with the total count",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Return the total ticket count in the X-Total-Count header of GET /tickets": true
+    },
+    "runtimeObservable": {
+      "Return the total ticket count in the X-Total-Count header of GET /tickets": true
+    },
+    "checksAdequate": {
+      "Return the total ticket count in the X-Total-Count header of GET /tickets": false
+    },
+    "surface": {
+      "Return the total ticket count in the X-Total-Count header of GET /tickets": "http_api"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "id": "skipped-branch-delete-confirm",
+  "description": "Skipped: the prompt test is skipped; its check has status skipped.",
+  "change": {
+    "title": "Ask for confirmation before deleting a remote branch",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Ask for confirmation before deleting a remote branch"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/commands/branch.ts",
+        "status": "modified",
+        "patch": "@@ -22,2 +22,4 @@\n if (opts.delete && opts.remote) {\n+  const ok = await confirm(`Delete remote branch ${name}?`);\n+  if (!ok) return;\n   await git.deleteRemoteBranch(name);"
+      },
+      {
+        "path": "test/commands/branch.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,4 @@\n+it.skip(\"asks before deleting a remote branch\", async () => {\n+  const run = runCliInteractive([\"branch\", \"--delete\", \"--remote\", \"feat\"]);\n+  await run.expectOutput(\"Delete remote branch feat?\");\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/commands/branch.test.ts > lists local branches",
+      "status": "passed"
+    },
+    {
+      "name": "test/commands/branch.test.ts > asks before deleting a remote branch",
+      "status": "skipped"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Ask for confirmation before deleting a remote branch": true
+    },
+    "runtimeObservable": {
+      "Ask for confirmation before deleting a remote branch": true
+    },
+    "checksAdequate": {
+      "Ask for confirmation before deleting a remote branch": false
+    },
+    "surface": {
+      "Ask for confirmation before deleting a remote branch": "cli"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

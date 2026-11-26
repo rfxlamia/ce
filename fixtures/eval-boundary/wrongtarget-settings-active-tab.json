@@ -1,0 +1,51 @@
+{
+  "id": "wrongtarget-settings-active-tab",
+  "description": "Wrong target: the test asserts the page heading after navigation, not the highlighted tab.",
+  "change": {
+    "title": "Highlight the active tab in the settings sidebar",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Highlight the active tab in the settings sidebar"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/settings/Sidebar.tsx",
+        "status": "modified",
+        "patch": "@@ -9,3 +9,4 @@\n   {tabs.map((t) => (\n-    <Link key={t.id} to={t.path}>{t.label}</Link>\n+    <Link key={t.id} to={t.path} aria-current={t.path === pathname ? \"page\" : undefined}\n+      className={t.path === pathname ? \"tab tab--active\" : \"tab\"}>{t.label}</Link>\n   ))}"
+      },
+      {
+        "path": "e2e/settings-sidebar.spec.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,5 @@\n+test(\"settings sidebar switches tabs\", async ({ page }) => {\n+  await page.goto(\"/settings\");\n+  await page.getByRole(\"link\", { name: \"Notifications\" }).click();\n+  await expect(page.getByRole(\"heading\", { level: 1 })).toHaveText(\"Notifications\");\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "e2e/settings-sidebar.spec.ts > settings sidebar switches tabs",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Highlight the active tab in the settings sidebar": true
+    },
+    "runtimeObservable": {
+      "Highlight the active tab in the settings sidebar": true
+    },
+    "checksAdequate": {
+      "Highlight the active tab in the settings sidebar": false
+    },
+    "surface": {
+      "Highlight the active tab in the settings sidebar": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

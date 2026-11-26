@@ -1,0 +1,51 @@
+{
+  "id": "pos-api-version-header",
+  "description": "Positive: a generic header validation test asserts 400 for a missing version header.",
+  "change": {
+    "title": "Reject requests without an API version header with status 400",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Reject requests without an API version header with status 400"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/middleware/apiVersion.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,2 @@\n+export const requireApiVersion = (req, res, next) =>\n+  req.get(\"Api-Version\") ? next() : res.status(400).json({ error: \"missing_api_version\" });"
+      },
+      {
+        "path": "test/api/headers.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,6 @@\n+it(\"validates request headers\", async () => {\n+  const res = await request(app).get(\"/things\");\n+  expect(res.status).toBe(400);\n+  expect(res.body.error).toBe(\"missing_api_version\");\n+  expect((await request(app).get(\"/things\").set(\"Api-Version\", \"2\")).status).toBe(200);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/api/headers.test.ts > validates request headers",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Reject requests without an API version header with status 400": true
+    },
+    "runtimeObservable": {
+      "Reject requests without an API version header with status 400": true
+    },
+    "checksAdequate": {
+      "Reject requests without an API version header with status 400": true
+    },
+    "surface": {
+      "Reject requests without an API version header with status 400": "http_api"
+    },
+    "claimStatus": "identified",
+    "required": false
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "id": "wrongtarget-no-color-env",
+  "description": "Wrong target: the test strips ANSI codes before comparing, so it cannot see whether color was disabled.",
+  "change": {
+    "title": "Disable colored output when the NO_COLOR environment variable is set",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Disable colored output when the NO_COLOR environment variable is set"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/output/color.ts",
+        "status": "modified",
+        "patch": "@@ -1,1 +1,1 @@\n-export const useColor = process.stdout.isTTY;\n+export const useColor = process.stdout.isTTY && !(\"NO_COLOR\" in process.env);"
+      },
+      {
+        "path": "test/output/status.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,4 @@\n+it(\"prints the status line with NO_COLOR\", async () => {\n+  const { stdout } = await execa(\"node\", [\"dist/cli.js\", \"status\"], { env: { NO_COLOR: \"1\" } });\n+  expect(stripAnsi(stdout)).toContain(\"3 services running\");\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/output/status.test.ts > prints the status line with NO_COLOR",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Disable colored output when the NO_COLOR environment variable is set": true
+    },
+    "runtimeObservable": {
+      "Disable colored output when the NO_COLOR environment variable is set": true
+    },
+    "checksAdequate": {
+      "Disable colored output when the NO_COLOR environment variable is set": false
+    },
+    "surface": {
+      "Disable colored output when the NO_COLOR environment variable is set": "cli"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

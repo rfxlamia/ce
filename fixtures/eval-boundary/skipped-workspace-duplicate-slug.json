@@ -1,0 +1,55 @@
+{
+  "id": "skipped-workspace-duplicate-slug",
+  "description": "Skipped: the duplicate-slug test is skipped as flaky; its check has status skipped.",
+  "change": {
+    "title": "Return 409 when creating a workspace with a duplicate slug",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Return 409 when creating a workspace with a duplicate slug"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/routes/workspaces.ts",
+        "status": "modified",
+        "patch": "@@ -10,2 +10,3 @@\n router.post(\"/workspaces\", async (req, res) => {\n+  if (await db.workspaces.exists({ slug: req.body.slug })) return res.status(409).json({ error: \"slug_taken\" });\n   res.status(201).json(await db.workspaces.create(req.body));"
+      },
+      {
+        "path": "test/api/workspaces.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,7 @@\n+it(\"creates a workspace\", async () => {\n+  expect((await request(app).post(\"/workspaces\").send({ slug: \"acme\" })).status).toBe(201);\n+});\n+it.skip(\"rejects a duplicate slug with 409\", async () => {\n+  await request(app).post(\"/workspaces\").send({ slug: \"dup\" });\n+  expect((await request(app).post(\"/workspaces\").send({ slug: \"dup\" })).status).toBe(409);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/api/workspaces.test.ts > creates a workspace",
+      "status": "passed"
+    },
+    {
+      "name": "test/api/workspaces.test.ts > rejects a duplicate slug with 409",
+      "status": "skipped"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Return 409 when creating a workspace with a duplicate slug": true
+    },
+    "runtimeObservable": {
+      "Return 409 when creating a workspace with a duplicate slug": true
+    },
+    "checksAdequate": {
+      "Return 409 when creating a workspace with a duplicate slug": false
+    },
+    "surface": {
+      "Return 409 when creating a workspace with a duplicate slug": "http_api"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

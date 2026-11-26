@@ -1,0 +1,51 @@
+{
+  "id": "pos-version-flag",
+  "description": "Positive: a CLI smoke test runs --version and compares it with package.json.",
+  "change": {
+    "title": "Print the version number when --version is passed",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Print the version number when --version is passed"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/cli.ts",
+        "status": "modified",
+        "patch": "@@ -5,1 +5,5 @@\n const args = parseArgs(process.argv.slice(2));\n+if (args.version) {\n+  console.log(pkg.version);\n+  process.exit(0);\n+}"
+      },
+      {
+        "path": "test/cli/smoke.test.ts",
+        "status": "modified",
+        "patch": "@@ -8,1 +8,6 @@\n });\n+it(\"smoke: flags\", async () => {\n+  const { stdout, exitCode } = await execa(\"node\", [\"dist/cli.js\", \"--version\"]);\n+  expect(exitCode).toBe(0);\n+  expect(stdout.trim()).toBe(pkg.version);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/cli/smoke.test.ts > smoke: flags",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Print the version number when --version is passed": true
+    },
+    "runtimeObservable": {
+      "Print the version number when --version is passed": true
+    },
+    "checksAdequate": {
+      "Print the version number when --version is passed": true
+    },
+    "surface": {
+      "Print the version number when --version is passed": "cli"
+    },
+    "claimStatus": "identified",
+    "required": false
+  }
+}

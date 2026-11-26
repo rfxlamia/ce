@@ -1,0 +1,51 @@
+{
+  "id": "renderonly-kanban-drag-done",
+  "description": "Render only: the snapshot captures the initial board; no drag is performed.",
+  "change": {
+    "title": "Move the card to the Done column when it is dragged there",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Move the card to the Done column when it is dragged there"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/board/Board.tsx",
+        "status": "modified",
+        "patch": "@@ -11,2 +11,3 @@\n <DndContext\n+  onDragEnd={({ active, over }) => over && moveCard(active.id, over.id)}\n >"
+      },
+      {
+        "path": "src/board/Board.test.tsx",
+        "status": "added",
+        "patch": "@@ -0,0 +1,4 @@\n+it(\"renders the board columns\", () => {\n+  const { container } = render(<Board cards={sampleCards} />);\n+  expect(container).toMatchSnapshot();\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "src/board/Board.test.tsx > renders the board columns",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Move the card to the Done column when it is dragged there": true
+    },
+    "runtimeObservable": {
+      "Move the card to the Done column when it is dragged there": true
+    },
+    "checksAdequate": {
+      "Move the card to the Done column when it is dragged there": false
+    },
+    "surface": {
+      "Move the card to the Done column when it is dragged there": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

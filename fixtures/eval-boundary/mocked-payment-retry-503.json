@@ -1,0 +1,51 @@
+{
+  "id": "mocked-payment-retry-503",
+  "description": "Mocked boundary: the retry helper itself is mocked to succeed, so retries on 503 are never exercised.",
+  "change": {
+    "title": "Retry the payment provider call up to three times on a 503 response",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Retry the payment provider call up to three times on a 503 response"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/payments/charge.ts",
+        "status": "modified",
+        "patch": "@@ -4,3 +4,3 @@\n export async function charge(input: ChargeInput) {\n-  return provider.createCharge(input);\n+  return withRetry(() => provider.createCharge(input), { attempts: 3, retryOn: [503] });\n }"
+      },
+      {
+        "path": "test/api/charges.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,5 @@\n+vi.mock(\"../../src/payments/retry\", () => ({ withRetry: (fn: () => unknown) => fn() }));\n+it(\"creates a charge\", async () => {\n+  const res = await request(app).post(\"/charges\").send({ amount: 500 });\n+  expect(res.status).toBe(201);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/api/charges.test.ts > creates a charge",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Retry the payment provider call up to three times on a 503 response": true
+    },
+    "runtimeObservable": {
+      "Retry the payment provider call up to three times on a 503 response": true
+    },
+    "checksAdequate": {
+      "Retry the payment provider call up to three times on a 503 response": false
+    },
+    "surface": {
+      "Retry the payment provider call up to three times on a 503 response": "http_api"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

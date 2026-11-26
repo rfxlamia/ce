@@ -1,0 +1,51 @@
+{
+  "id": "happypath-date-range-400",
+  "description": "Happy path only: the test sends a valid range; the reversed-range error is never exercised.",
+  "change": {
+    "title": "Return 400 when the report date range ends before it starts",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Return 400 when the report date range ends before it starts"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/routes/reports.ts",
+        "status": "modified",
+        "patch": "@@ -9,2 +9,3 @@\n const { from, to } = parseRange(req.query);\n+if (to < from) return res.status(400).json({ error: \"invalid_range\" });\n res.json(await reports.build(from, to));"
+      },
+      {
+        "path": "test/api/reports.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,4 @@\n+it(\"builds a report for a date range\", async () => {\n+  const res = await request(app).get(\"/reports?from=2026-01-01&to=2026-01-31\");\n+  expect(res.status).toBe(200);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/api/reports.test.ts > builds a report for a date range",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Return 400 when the report date range ends before it starts": true
+    },
+    "runtimeObservable": {
+      "Return 400 when the report date range ends before it starts": true
+    },
+    "checksAdequate": {
+      "Return 400 when the report date range ends before it starts": false
+    },
+    "surface": {
+      "Return 400 when the report date range ends before it starts": "http_api"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

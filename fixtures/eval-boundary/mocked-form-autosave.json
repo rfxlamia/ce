@@ -1,0 +1,51 @@
+{
+  "id": "mocked-form-autosave",
+  "description": "Mocked boundary: the autosave hook is mocked, so the test only checks wiring, not that the form is saved.",
+  "change": {
+    "title": "Autosave the expense form every 30 seconds",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Autosave the expense form every 30 seconds"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/expenses/ExpenseForm.tsx",
+        "status": "modified",
+        "patch": "@@ -5,3 +5,4 @@\n export function ExpenseForm() {\n   const form = useForm<Expense>();\n+  useAutosave(() => api.saveExpenseDraft(form.getValues()), 30_000);\n   return <form>{/* fields */}</form>;"
+      },
+      {
+        "path": "src/expenses/ExpenseForm.test.tsx",
+        "status": "added",
+        "patch": "@@ -0,0 +1,5 @@\n+vi.mock(\"../hooks/useAutosave\", () => ({ useAutosave: vi.fn() }));\n+it(\"sets up autosave for the expense form\", () => {\n+  render(<ExpenseForm />);\n+  expect(useAutosave).toHaveBeenCalledWith(expect.any(Function), 30_000);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "src/expenses/ExpenseForm.test.tsx > sets up autosave for the expense form",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Autosave the expense form every 30 seconds": true
+    },
+    "runtimeObservable": {
+      "Autosave the expense form every 30 seconds": true
+    },
+    "checksAdequate": {
+      "Autosave the expense form every 30 seconds": false
+    },
+    "surface": {
+      "Autosave the expense form every 30 seconds": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

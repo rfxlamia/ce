@@ -1,0 +1,51 @@
+{
+  "id": "mocked-backup-gzip",
+  "description": "Mocked boundary: createGzip is replaced with a passthrough, so the archive is never actually compressed.",
+  "change": {
+    "title": "Compress the backup archive with gzip",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Compress the backup archive with gzip"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/commands/backup.ts",
+        "status": "modified",
+        "patch": "@@ -14,1 +14,1 @@\n-  await pipeline(tarStream(dir), createWriteStream(`${out}.tar`));\n+  await pipeline(tarStream(dir), createGzip(), createWriteStream(`${out}.tar.gz`));"
+      },
+      {
+        "path": "test/commands/backup.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,5 @@\n+vi.mock(\"node:zlib\", () => ({ createGzip: () => new PassThrough() }));\n+it(\"writes the backup archive\", async () => {\n+  await runCli([\"backup\", \"--out\", tmp(\"db\")]);\n+  expect(existsSync(tmp(\"db.tar.gz\"))).toBe(true);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/commands/backup.test.ts > writes the backup archive",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Compress the backup archive with gzip": true
+    },
+    "runtimeObservable": {
+      "Compress the backup archive with gzip": true
+    },
+    "checksAdequate": {
+      "Compress the backup archive with gzip": false
+    },
+    "surface": {
+      "Compress the backup archive with gzip": "cli"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

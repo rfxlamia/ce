@@ -1,0 +1,55 @@
+{
+  "id": "skipped-terms-checkbox-pay",
+  "description": "Skipped: the test is marked fixme; its check has status skipped.",
+  "change": {
+    "title": "Disable the pay button until the terms checkbox is ticked",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Disable the pay button until the terms checkbox is ticked"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/checkout/PayButton.tsx",
+        "status": "modified",
+        "patch": "@@ -3,3 +3,3 @@\n export function PayButton({ termsAccepted }: Props) {\n-  return <button type=\"submit\">Pay</button>;\n+  return <button type=\"submit\" disabled={!termsAccepted}>Pay</button>;\n }"
+      },
+      {
+        "path": "e2e/checkout-terms.spec.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,6 @@\n+test.fixme(\"pay is disabled until terms are accepted\", async ({ page }) => {\n+  await page.goto(\"/checkout\");\n+  await expect(page.getByRole(\"button\", { name: \"Pay\" })).toBeDisabled();\n+  await page.getByLabel(\"I accept the terms\").check();\n+  await expect(page.getByRole(\"button\", { name: \"Pay\" })).toBeEnabled();\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "unit-tests",
+      "status": "passed"
+    },
+    {
+      "name": "e2e/checkout-terms.spec.ts > pay is disabled until terms are accepted",
+      "status": "skipped"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Disable the pay button until the terms checkbox is ticked": true
+    },
+    "runtimeObservable": {
+      "Disable the pay button until the terms checkbox is ticked": true
+    },
+    "checksAdequate": {
+      "Disable the pay button until the terms checkbox is ticked": false
+    },
+    "surface": {
+      "Disable the pay button until the terms checkbox is ticked": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "id": "pos-docs-etag-304",
+  "description": "Positive: the test repeats the request with If-None-Match and expects 304.",
+  "change": {
+    "title": "Return an ETag and respond 304 for unchanged GET /docs/:id",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Return an ETag and respond 304 for unchanged GET /docs/:id"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/routes/docs.ts",
+        "status": "modified",
+        "patch": "@@ -7,2 +7,5 @@\n const doc = await db.docs.get(req.params.id);\n+const etag = `\"${doc.revision}\"`;\n+if (req.get(\"If-None-Match\") === etag) return res.status(304).end();\n+res.set(\"ETag\", etag);\n res.json(doc);"
+      },
+      {
+        "path": "test/api/docs.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,5 @@\n+it(\"caching\", async () => {\n+  const first = await request(app).get(\"/docs/7\");\n+  const second = await request(app).get(\"/docs/7\").set(\"If-None-Match\", first.headers.etag);\n+  expect(second.status).toBe(304);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/api/docs.test.ts > caching",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Return an ETag and respond 304 for unchanged GET /docs/:id": true
+    },
+    "runtimeObservable": {
+      "Return an ETag and respond 304 for unchanged GET /docs/:id": true
+    },
+    "checksAdequate": {
+      "Return an ETag and respond 304 for unchanged GET /docs/:id": true
+    },
+    "surface": {
+      "Return an ETag and respond 304 for unchanged GET /docs/:id": "http_api"
+    },
+    "claimStatus": "identified",
+    "required": false
+  }
+}

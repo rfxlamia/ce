@@ -1,0 +1,51 @@
+{
+  "id": "pos-leaderboard-sort",
+  "description": "Positive: the test compares the returned scores with a descending sorted copy.",
+  "change": {
+    "title": "Sort GET /leaderboard by score in descending order",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Sort GET /leaderboard by score in descending order"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/routes/leaderboard.ts",
+        "status": "modified",
+        "patch": "@@ -4,1 +4,1 @@\n-  res.json(await db.scores.findMany());\n+  res.json(await db.scores.findMany({ orderBy: { score: \"desc\" } }));"
+      },
+      {
+        "path": "test/api/leaderboard.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,6 @@\n+it(\"returns the leaderboard\", async () => {\n+  await seedScores([10, 50, 30]);\n+  const scores = (await request(app).get(\"/leaderboard\")).body.map((r: { score: number }) => r.score);\n+  expect(scores).toEqual([...scores].sort((a, b) => b - a));\n+  expect(scores).toEqual([50, 30, 10]);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/api/leaderboard.test.ts > returns the leaderboard",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Sort GET /leaderboard by score in descending order": true
+    },
+    "runtimeObservable": {
+      "Sort GET /leaderboard by score in descending order": true
+    },
+    "checksAdequate": {
+      "Sort GET /leaderboard by score in descending order": true
+    },
+    "surface": {
+      "Sort GET /leaderboard by score in descending order": "http_api"
+    },
+    "claimStatus": "identified",
+    "required": false
+  }
+}

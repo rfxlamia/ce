@@ -1,0 +1,51 @@
+{
+  "id": "pos-admin-menu-hidden",
+  "description": "Positive: a role test signs in as a viewer and asserts the admin menu is absent.",
+  "change": {
+    "title": "Hide the admin menu for users without the admin role",
+    "commits": [
+      {
+        "sha": "c7d8e9f",
+        "message": "Hide the admin menu for users without the admin role"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/layout/TopNav.tsx",
+        "status": "modified",
+        "patch": "@@ -8,1 +8,1 @@\n-  <AdminMenu />\n+  {user.roles.includes(\"admin\") && <AdminMenu />}"
+      },
+      {
+        "path": "e2e/roles.spec.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,5 @@\n+test(\"viewer navigation\", async ({ page }) => {\n+  await signIn(page, \"viewer@example.test\");\n+  await page.goto(\"/\");\n+  await expect(page.getByRole(\"menu\", { name: \"Admin\" })).toHaveCount(0);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "e2e/roles.spec.ts > viewer navigation",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Hide the admin menu for users without the admin role": true
+    },
+    "runtimeObservable": {
+      "Hide the admin menu for users without the admin role": true
+    },
+    "checksAdequate": {
+      "Hide the admin menu for users without the admin role": true
+    },
+    "surface": {
+      "Hide the admin menu for users without the admin role": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": false
+  }
+}
