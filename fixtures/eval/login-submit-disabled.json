@@ -1,0 +1,46 @@
+{
+  "id": "login-submit-disabled",
+  "description": "UI behaviour change, only build and lint run.",
+  "change": {
+    "title": "Disable the submit button while the login form is sending",
+    "commits": [
+      {
+        "sha": "a1b2c3d",
+        "message": "Disable the submit button while the login form is sending"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/components/LoginForm.tsx",
+        "status": "modified",
+        "patch": "@@ -1,4 +1,5 @@\n export function LoginForm() {\n+  const [sending, setSending] = useState(false);\n  return <form />;\n }"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "lint",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Disable the submit button while the login form is sending": true
+    },
+    "runtimeObservable": {
+      "Disable the submit button while the login form is sending": true
+    },
+    "checksAdequate": {
+      "Disable the submit button while the login form is sending": false
+    },
+    "surface": {
+      "Disable the submit button while the login form is sending": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

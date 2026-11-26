@@ -1,0 +1,42 @@
+{
+  "id": "native-window-title",
+  "description": "Desktop window behaviour.",
+  "change": {
+    "title": "Show the document name in the window title",
+    "commits": [
+      {
+        "sha": "a1b2c3d",
+        "message": "Show the document name in the window title"
+      }
+    ],
+    "files": [
+      {
+        "path": "app/mac/MainWindow.swift",
+        "status": "modified",
+        "patch": "@@ -1,3 +1,4 @@\n func updateTitle(_ doc: Document) {\n+  window.title = doc.name\n }"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Show the document name in the window title": true
+    },
+    "runtimeObservable": {
+      "Show the document name in the window title": true
+    },
+    "checksAdequate": {
+      "Show the document name in the window title": false
+    },
+    "surface": {
+      "Show the document name in the window title": "native_app"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

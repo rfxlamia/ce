@@ -126,6 +126,14 @@ const RANK_TEST = 1;
 const RANK_OTHER = 2;
 const RANK_LOW = 3;
 
+/** True when the path is a Test_File: a test directory, or `.test.` / `.spec.` in the base name. */
+export function isTestFile(path: string): boolean {
+  const segments = path.split('/');
+  const base = segments[segments.length - 1] ?? '';
+  const dirs = segments.slice(0, -1);
+  return dirs.some((d) => TEST_DIRS.has(d)) || base.includes('.test.') || base.includes('.spec.');
+}
+
 function rankOf(file: ChangedFile, binaryPaths: ReadonlySet<string>): number {
   const segments = file.path.split('/');
   const base = segments[segments.length - 1] ?? '';
@@ -142,7 +150,7 @@ function rankOf(file: ChangedFile, binaryPaths: ReadonlySet<string>): number {
     return RANK_LOW;
   }
 
-  if (dirs.some((d) => TEST_DIRS.has(d)) || base.includes('.test.') || base.includes('.spec.')) {
+  if (isTestFile(file.path)) {
     return RANK_TEST;
   }
 

@@ -1,0 +1,49 @@
+{
+  "id": "cli-declared-claim",
+  "description": "User states the claim with --claim; the title is not a behaviour.",
+  "change": {
+    "title": "Refactor exporter internals",
+    "commits": [
+      {
+        "sha": "a1b2c3d",
+        "message": "Refactor exporter internals"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/export/writer.ts",
+        "status": "modified",
+        "patch": "@@ -1,3 +1,4 @@\n export function write(rows: Row[]) {\n+  return toCsv(rows);\n }"
+      }
+    ],
+    "claims": [
+      "The export command writes a CSV file next to the input"
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "lint",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Refactor exporter internals": false
+    },
+    "runtimeObservable": {
+      "The export command writes a CSV file next to the input": true
+    },
+    "checksAdequate": {
+      "The export command writes a CSV file next to the input": false
+    },
+    "surface": {
+      "The export command writes a CSV file next to the input": "cli"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

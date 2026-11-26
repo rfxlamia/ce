@@ -1,0 +1,46 @@
+{
+  "id": "dark-mode-persist",
+  "description": "Reload behaviour of a toggle, no UI test.",
+  "change": {
+    "title": "Persist the dark mode choice across page reloads",
+    "commits": [
+      {
+        "sha": "a1b2c3d",
+        "message": "Persist the dark mode choice across page reloads"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/theme/useTheme.ts",
+        "status": "modified",
+        "patch": "@@ -1,2 +1,3 @@\n const [mode, setMode] = useState(\"light\");\n+localStorage.setItem(\"mode\", mode);"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "unit-tests",
+      "status": "skipped"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Persist the dark mode choice across page reloads": true
+    },
+    "runtimeObservable": {
+      "Persist the dark mode choice across page reloads": true
+    },
+    "checksAdequate": {
+      "Persist the dark mode choice across page reloads": false
+    },
+    "surface": {
+      "Persist the dark mode choice across page reloads": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

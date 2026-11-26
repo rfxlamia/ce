@@ -1,0 +1,46 @@
+{
+  "id": "dialog-escape-closes",
+  "description": "Keyboard behaviour in a dialog, no UI test.",
+  "change": {
+    "title": "Close the settings dialog when the user presses Escape",
+    "commits": [
+      {
+        "sha": "a1b2c3d",
+        "message": "Close the settings dialog when the user presses Escape"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/components/SettingsDialog.tsx",
+        "status": "modified",
+        "patch": "@@ -1,3 +1,4 @@\n function onKey(e: KeyboardEvent) {\n+  if (e.key === \"Escape\") close();\n }"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "unit-tests",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Close the settings dialog when the user presses Escape": true
+    },
+    "runtimeObservable": {
+      "Close the settings dialog when the user presses Escape": true
+    },
+    "checksAdequate": {
+      "Close the settings dialog when the user presses Escape": false
+    },
+    "surface": {
+      "Close the settings dialog when the user presses Escape": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

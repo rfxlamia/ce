@@ -22,5 +22,6 @@ export {
   estimateTokens,
   estimateTokensOf,
   fitCheckResults,
+  isTestFile,
   truncateToTokens,
 } from './budget.js';

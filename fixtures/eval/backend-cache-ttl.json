@@ -1,0 +1,46 @@
+{
+  "id": "backend-cache-ttl",
+  "description": "Internal caching, not observable from outside.",
+  "change": {
+    "title": "Cache parsed configuration for ten minutes",
+    "commits": [
+      {
+        "sha": "a1b2c3d",
+        "message": "Cache parsed configuration for ten minutes"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/config/cache.ts",
+        "status": "modified",
+        "patch": "@@ -1,2 +1,3 @@\n const TTL_MS = 0;\n+const TTL_MS = 600_000;"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "unit-tests",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Cache parsed configuration for ten minutes": true
+    },
+    "runtimeObservable": {
+      "Cache parsed configuration for ten minutes": false
+    },
+    "checksAdequate": {
+      "Cache parsed configuration for ten minutes": false
+    },
+    "surface": {
+      "Cache parsed configuration for ten minutes": "backend_internal"
+    },
+    "claimStatus": "identified",
+    "required": false
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "id": "email-error-message",
+  "description": "Visible validation message, no UI test.",
+  "change": {
+    "title": "Show an error message under the email field when the address is invalid",
+    "commits": [
+      {
+        "sha": "a1b2c3d",
+        "message": "Show an error message under the email field when the address is invalid"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/components/SignupForm.tsx",
+        "status": "modified",
+        "patch": "@@ -1,2 +1,3 @@\n const valid = isEmail(value);\n+{!valid && <p className=\"error\">Enter a valid email</p>}"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "lint",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Show an error message under the email field when the address is invalid": true
+    },
+    "runtimeObservable": {
+      "Show an error message under the email field when the address is invalid": true
+    },
+    "checksAdequate": {
+      "Show an error message under the email field when the address is invalid": false
+    },
+    "surface": {
+      "Show an error message under the email field when the address is invalid": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}
