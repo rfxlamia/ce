@@ -199,6 +199,9 @@ describe('git provider Env_File and Sensitive_File handling', () => {
     put(d, 'keep.txt', 'two\n');
     const sens: Record<string, string> = {
       'x/.Env': 'env-file',
+      'x/.envrc': 'env-file',
+      'x/.env-local': 'env-file',
+      'x/.env_prod': 'env-file',
       'x/ID_RSA': 'sensitive-file',
       'x/Server.PEM': 'sensitive-file',
       'x/deploy.KEY': 'sensitive-file',

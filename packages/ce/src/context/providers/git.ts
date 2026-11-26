@@ -48,7 +48,6 @@ export interface GitProviderResult {
 
 /** Decision D24 names, compared in lower case on the base name. */
 const SENSITIVE_EXACT = new Set([
-  '.env',
   'id_rsa',
   'id_ed25519',
   '.npmrc',
@@ -61,8 +60,7 @@ const SENSITIVE_EXACT = new Set([
 const SENSITIVE_SUFFIX = ['.pem', '.key', '.p12', '.pfx'];
 /** Pathspec names for the Stage 2 `exclude,glob,icase` magic. */
 const SENSITIVE_PATHSPEC_NAMES = [
-  '.env',
-  '.env.*',
+  '.env*',
   '*.pem',
   'id_rsa',
   'id_ed25519',
@@ -83,13 +81,14 @@ function baseName(path: string): string {
 }
 function isEnvName(path: string): boolean {
   const b = baseName(path);
-  return b === '.env' || b.startsWith('.env.');
+  // Any base name starting with `.env` (`.envrc`, `.env-local`, `.env_prod`, ...).
+  return b.startsWith('.env');
 }
 function isSensitiveName(path: string): boolean {
   const b = baseName(path);
   return (
+    isEnvName(path) ||
     SENSITIVE_EXACT.has(b) ||
-    b.startsWith('.env.') ||
     SENSITIVE_SUFFIX.some((s) => b.endsWith(s))
   );
 }

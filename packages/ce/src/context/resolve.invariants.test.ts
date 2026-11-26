@@ -145,7 +145,7 @@ describe('Feature: ce-context-resolver, Property 5: Provenance survives redactio
 // Property 6
 
 const SENSITIVE_BASES = [
-  '.env', '.env.local', '.env.production', 'id_rsa', 'id_ed25519', 'id_ecdsa', 'id_dsa',
+  '.env', '.env.local', '.env.production', '.envrc', '.env-local', '.env_prod', 'id_rsa', 'id_ed25519', 'id_ecdsa', 'id_dsa',
   '.npmrc', '.netrc', '.git-credentials', '.pypirc', 'server.pem', 'tls.key', 'store.p12', 'cert.pfx',
 ];
 
