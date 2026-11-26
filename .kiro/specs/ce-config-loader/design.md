@@ -392,7 +392,7 @@ For any provider (`openrouter` or `typesafe`) and any `env` in which the matchin
 
 ### Property 16: Redaction removes every Secret and is idempotent
 
-For any Effective_Config and any Secret value appearing as a substring of one of its string leaves (or supplied through `env`), `JSON.stringify(buildRedactedConfig(config, meta, env))` does not contain that Secret value as a substring; and applying `buildRedactedConfig`'s redaction a second time to its own output leaves the result unchanged (deep-equal to the first redacted result).
+For any Effective_Config and any Secret value appearing as a substring of one of its string leaves (or supplied through `env`, including Secret_Variables selected by name pattern such as `STRIPE_API_KEY`, as collected by `collectSecretValues` in `config/secrets.ts`), where `buildRedactedConfig` removes secrets with the Secret_Value_Function (`redactSecretValues`), `JSON.stringify(buildRedactedConfig(config, meta, env))` does not contain that Secret value as a substring; and applying `buildRedactedConfig`'s redaction a second time to its own output leaves the result unchanged (deep-equal to the first redacted result).
 
 **Validates: Requirements 7.6, 7.8, 7.9**
 

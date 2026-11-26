@@ -1,5 +1,6 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
+import { collectSecretValues } from '../secrets.js';
 import { formatReport, type ValidationError } from '../errors.js';
 
 // Feature: ce-config-loader, Property 12: Secret-matching values are always redacted in the printed report
@@ -74,5 +75,18 @@ describe('Property 12: secret redaction in the printed report', () => {
     const report = formatReport([{ path: 'runtime.max-steps', value: 'abc', expected: 'positive integer' }], ['sk-secret-value']);
     expect(report).toContain('"abc"');
     expect(report).not.toContain('[REDACTED]');
+  });
+
+  it('redacts secrets taken from the Secret_Definition (collectSecretValues)', () => {
+    fc.assert(
+      fc.property(secretArb, fillerArb, fillerArb, (secret, pre, post) => {
+        const secrets = collectSecretValues({ STRIPE_API_KEY: secret });
+        expect(secrets).toContain(secret);
+        const report = formatReport([{ path: 'jev.model', value: pre + secret + post, expected: 'x' }], secrets);
+        expect(report).not.toContain(secret);
+        expect(report).toContain('[REDACTED]');
+      }),
+      { numRuns: 100 },
+    );
   });
 });

@@ -56,6 +56,7 @@ const envArb = fc.record(
   {
     OPENROUTER_API_KEY: fc.option(fc.stringMatching(/^sk-[0-9a-f]{8,24}$/), { nil: undefined }),
     TYPESAFE_API_KEY: fc.option(fc.stringMatching(/^sk-[0-9a-f]{8,24}$/), { nil: undefined }),
+    STRIPE_API_KEY: fc.option(fc.stringMatching(/^sk-[0-9a-f]{8,24}$/), { nil: undefined }),
   },
   { requiredKeys: [] },
 );

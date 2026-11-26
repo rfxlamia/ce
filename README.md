@@ -45,6 +45,43 @@ npm run build --workspace continuous-evidence
 npx ce --version
 ```
 
+## CI requirements
+
+CE reads the Change from Git, so the CI checkout must contain the history
+of the base branch.
+
+- **`fetch-depth: 0`**: set it on `actions/checkout`. Without it the base
+  ref and the merge base may not exist, and the Git provider reports
+  `base-unresolved` or `merge-base-missing`.
+
+  ```yaml
+  - uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
+  ```
+
+- **`pull_request_target`**: this event checks out the base branch by
+  default, so the pull request head commit is not in the repository and the
+  diff is empty. Check out the head commit explicitly, with full history:
+
+  ```yaml
+  - uses: actions/checkout@v4
+    with:
+      ref: ${{ github.event.pull_request.head.sha }}
+      fetch-depth: 0
+  ```
+
+  If the workflow does not do this, the run records the Git provider as
+  `used` with the reason `head-missing`. That reason marks a run whose diff
+  was taken from the wrong commit.
+
+- **`context.checks`** (JUnit XML): the value must be a path or glob
+  relative to the working directory. An absolute path, such as
+  `${{ github.workspace }}/reports/junit.xml`, or a path with a `..`
+  segment is rejected, the JUnit provider is recorded as `unavailable` with
+  the reason `source-malformed`, and no file is read. Write
+  `reports/junit.xml` or `reports/**/*.xml` instead.
+
 ## License
 
 [MIT](./LICENSE)
