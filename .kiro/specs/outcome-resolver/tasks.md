@@ -182,7 +182,7 @@ Out of scope (Decision D9): wiring `run()`, calling `process.exit`, writing `run
 - [x] 9. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 10. Verify issue #8 and open the pull request
+- [x] 10. Verify issue #8 and open the pull request
   - [x] 10.1 Verify the Issue_Checklist and the "Done when" line, and prepare the pull request body
     - Run `npm run typecheck` and `npm test` from the repository root; both must pass (a failure is fixed before continuing)
     - Confirm that the four Invariant_Tests set `numRuns` of at least 1000 and passed: Property 1 (exactly one Outcome), Property 13 (`SKIPPED ⇒ ¬required`, with Property 6 for the converse), Property 6 (`UNSUPPORTED ⇒ required ∧ ¬supported`) and Property 9 (`EVIDENCED ⇒` SPEC 7.2 check)
@@ -192,7 +192,7 @@ Out of scope (Decision D9): wiring `run()`, calling `process.exit`, writing `run
     - The body contains no API key or other secret value; the Combiner, the question catalog, `catalog.snapshot.json` and the `Assessment` type are not changed
     - _Requirements: 10.1, 10.2, 10.6, 12.2, 12.3, 12.4, 13.1, 13.2, 13.3, 13.5, 13.6, 13.8, 13.9_
 
-  - [-] 10.2 Open the pull request against `main` of rfxlamia/ce
+  - [x] 10.2 Open the pull request against `main` of rfxlamia/ce
     - Hard gate: do this only when every implementation task above is complete and the checks of task 10.1 pass; otherwise do not open the pull request
     - Use the body prepared in task 10.1 (for example `gh pr create --base main --body-file <file>`)
     - Do not merge the pull request and do not close issue #8 by hand
