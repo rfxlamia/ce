@@ -633,6 +633,16 @@
         "executionId": "bcc0cf41-2158-487e-bd7b-c4f4f47b97bd",
         "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
         "timestamp": 1795685502482
+      },
+      {
+        "executionId": "b8cd4149-b564-4504-81ef-c5be5ed52492",
+        "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
+        "timestamp": 1795688495080
+      },
+      {
+        "executionId": "b8cd4149-b564-4504-81ef-c5be5ed52492",
+        "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
+        "timestamp": 1795688588935
       }
     ],
     "8.5 Implement `eval/run.ts` (`runEval`)": [
@@ -650,6 +660,16 @@
         "executionId": "bcc0cf41-2158-487e-bd7b-c4f4f47b97bd",
         "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
         "timestamp": 1795685748581
+      },
+      {
+        "executionId": "35a4a141-f083-4a48-997a-4da69f4d07ff",
+        "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
+        "timestamp": 1795687475282
+      },
+      {
+        "executionId": "35a4a141-f083-4a48-997a-4da69f4d07ff",
+        "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
+        "timestamp": 1795687611018
       }
     ],
     "8.6 Implement `eval/report.ts` and `eval/command.ts`": [
@@ -786,6 +806,26 @@
         "executionId": "bcc0cf41-2158-487e-bd7b-c4f4f47b97bd",
         "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
         "timestamp": 1795685748784
+      },
+      {
+        "executionId": "35a4a141-f083-4a48-997a-4da69f4d07ff",
+        "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
+        "timestamp": 1795687611359
+      },
+      {
+        "executionId": "35a4a141-f083-4a48-997a-4da69f4d07ff",
+        "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
+        "timestamp": 1795687789641
+      },
+      {
+        "executionId": "b8cd4149-b564-4504-81ef-c5be5ed52492",
+        "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
+        "timestamp": 1795688494998
+      },
+      {
+        "executionId": "b8cd4149-b564-4504-81ef-c5be5ed52492",
+        "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
+        "timestamp": 1795688588772
       }
     ],
     "9.2 Write tests over the real fixture corpus": [
@@ -871,6 +911,16 @@
         "executionId": "f9f32c38-cde4-4bc1-a21a-0229b232878f",
         "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
         "timestamp": 1795686547066
+      },
+      {
+        "executionId": "35a4a141-f083-4a48-997a-4da69f4d07ff",
+        "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
+        "timestamp": 1795687798507
+      },
+      {
+        "executionId": "35a4a141-f083-4a48-997a-4da69f4d07ff",
+        "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
+        "timestamp": 1795687904270
       }
     ],
     "12.2 MANUAL: Create `docs/journal/v0.0/eval-agreement.md`": [
@@ -888,6 +938,26 @@
         "executionId": "ed022375-a395-454b-8889-84c94411704a",
         "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
         "timestamp": 1795686778210
+      },
+      {
+        "executionId": "35a4a141-f083-4a48-997a-4da69f4d07ff",
+        "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
+        "timestamp": 1795687904464
+      },
+      {
+        "executionId": "35a4a141-f083-4a48-997a-4da69f4d07ff",
+        "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
+        "timestamp": 1795687983009
+      },
+      {
+        "executionId": "b8cd4149-b564-4504-81ef-c5be5ed52492",
+        "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
+        "timestamp": 1795688588985
+      },
+      {
+        "executionId": "b8cd4149-b564-4504-81ef-c5be5ed52492",
+        "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
+        "timestamp": 1795688624467
       }
     ],
     "12.3 MANUAL: Verify the Issue_Checklist and \"Done when\"": [
@@ -912,6 +982,11 @@
         "executionId": "bcc0cf41-2158-487e-bd7b-c4f4f47b97bd",
         "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
         "timestamp": 1795684019380
+      },
+      {
+        "executionId": "ed022375-a395-454b-8889-84c94411704a",
+        "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
+        "timestamp": 1795686929587
       }
     ],
     "1. Foundations: shared predicate, types and answer reading": [
@@ -975,6 +1050,13 @@
         "executionId": "bcc0cf41-2158-487e-bd7b-c4f4f47b97bd",
         "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
         "timestamp": 1795686230950
+      }
+    ],
+    "12. Live run, journal record and pull request (MANUAL, not part of CI)": [
+      {
+        "executionId": "35a4a141-f083-4a48-997a-4da69f4d07ff",
+        "chatSessionId": "sess_51f8364a-840b-4afe-99b2-8346e6953916",
+        "timestamp": 1795687904392
       }
     ]
   }

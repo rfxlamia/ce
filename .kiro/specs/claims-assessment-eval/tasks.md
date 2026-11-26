@@ -274,8 +274,8 @@ Conventions for every task:
 - [x] 11. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise. Run `npm run typecheck` and `npm test` with no API key in the environment.
 
-- [ ] 12. Live run, journal record and pull request (MANUAL, not part of CI)
-  - [ ] 12.1 MANUAL: Run `ce eval` against live Jev
+- [x] 12. Live run, journal record and pull request (MANUAL, not part of CI)
+  - [x] 12.1 MANUAL: Run `ce eval` against live Jev
     - Requires a real `OPENROUTER_API_KEY` in the environment or the gitignored `.env`. Run `npm run build`, then `node packages/ce/dist/cli.js eval` (or the repo's bin) with provider `openrouter`. Keep the generated `eval.json`.
     - If the key is unavailable, stop and record the blocked status in 12.2. Do not invent numbers.
     - If the run raises an error, record class and stage, fix the cause if it lies in this feature, and repeat. If a question or threshold must change, ask the maintainer first (Decision D2), update `catalog.snapshot.json` via `npm run update:catalog-snapshot` only after agreement, then repeat the run.
@@ -292,7 +292,7 @@ Conventions for every task:
     - Fix any failure before continuing.
     - _Requirements: 17.1 to 17.3, 17.8_
 
-  - [ ] 12.4 MANUAL: Open the pull request
+  - [x] 12.4 MANUAL: Open the pull request
     - Only when every implementation task is complete and 12.3 passed. Open a PR against `main` of rfxlamia/ce, body containing `Closes #7`, the checklist with evidence, and a link to `docs/journal/v0.0/eval-agreement.md`. No secrets in the body.
     - If 12.2 recorded the blocked status, state in the body that "Done when" is not met and do not open the PR as complete.
     - Do not merge the PR and do not close issue #7 by hand.
