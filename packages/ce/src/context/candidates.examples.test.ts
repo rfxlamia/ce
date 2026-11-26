@@ -81,6 +81,56 @@ describe('candidate extraction examples', () => {
     }
   });
 
+  describe('unchecked task-list items (9.16, 11.26)', () => {
+    const desc = (description: string): string[] => texts(ctx({ description }));
+
+    it('skips an unchecked item, with any list marker and indentation', () => {
+      expect(desc('- [ ] docs: documentation only')).toEqual([]);
+      expect(desc('* [ ] a\n+ [ ] b\n1. [ ] c\n  - [ ] nested')).toEqual([]);
+      expect(desc('- [ ]')).toEqual([]);
+      expect(desc('- [ ]\tfoo')).toEqual([]);
+    });
+
+    it('skips the continuation lines of an unchecked item', () => {
+      expect(desc('- [ ] perf: performance\nimprovement wrapped\n- Next item.')).toEqual(['Next item.']);
+      expect(desc('- [ ] a\n  indented wrap')).toEqual([]);
+    });
+
+    it('keeps checked items with the [x] in the text', () => {
+      expect(desc('- [x] Manual verification completed\n- [X] Ran tests')).toEqual([
+        '[x] Manual verification completed',
+        '[X] Ran tests',
+      ]);
+      expect(desc('- [ ] parent\n  - [x] child done')).toEqual(['[x] child done']);
+    });
+
+    it('keeps [ ] that does not start a list item, and non-GFM boxes', () => {
+      expect(desc('Use [ ] for empty arrays.')).toEqual(['Use [ ] for empty arrays.']);
+      expect(desc('[ ] not a list item.')).toEqual(['[ ] not a list item.']);
+      expect(desc('- [] empty\n- [  ] two')).toEqual(['[] empty', '[  ] two']);
+    });
+
+    it('resumes extraction after the item ends', () => {
+      expect(desc('- [ ] a\n- Real item.\n\nNew paragraph.')).toEqual(['Real item.', 'New paragraph.']);
+      expect(desc('- [ ] a\n```\ncode\n```\nAfter fence.')).toEqual(['After fence.']);
+      expect(desc('- [ ] a\n## H\nAfter heading.')).toEqual(['After heading.']);
+      expect(desc('- [ ] a\n<!-- c -->\nAfter comment.')).toEqual(['After comment.']);
+      expect(desc('- [ ] a\n| x |\nAfter table.')).toEqual(['After table.']);
+      expect(desc('- [ ] foo\r\n\r\nKept.')).toEqual(['Kept.']);
+    });
+
+    it('known limit: a paragraph after a blank line is not part of the item', () => {
+      expect(desc('- [ ] a\n\n  indented paragraph')).toEqual(['indented paragraph']);
+    });
+
+    it('applies to the title and commit messages, not to Comment_Lines', () => {
+      expect(texts(ctx({ title: '- [ ] wip' }))).toEqual([]);
+      const commits = [{ sha: 'a1', message: 'fix: a\n\n- [ ] todo\n- Done item.', provenance: gitProv }];
+      expect(texts(ctx({ commits }))).toEqual(['fix: a', 'Done item.']);
+      expect(texts(ctx({ files: [file('src/a.ts', ['// - [ ] todo'])] }))).toEqual(['- [ ] todo']);
+    });
+  });
+
   it('--claim text keeps provider cli (11.17, 11.25)', () => {
     const cli = { provider: 'cli' as const, location: '--claim[1]' };
     const r = extractCandidates(ctx({ claims: [{ text: 'Adds a button. Fixes it.', provenance: cli }] }));

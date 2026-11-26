@@ -28,6 +28,8 @@ function trimmedSlice(text: string, start: number, end: number): string {
 
 const LIST_MARKER = /^(\s*)(?:[-*+]|\d+\.)\s+/;
 const HEADING = /^#{1,6}(?:\s|$)/;
+/** Text of a list item that is an unchecked GFM task (Decision D32). */
+const UNCHECKED_TASK = /^\[ \](?:\s|$)/;
 
 /** Split one sentence-run segment [start,end) at terminal punctuation. */
 function splitSentences(text: string, start: number, end: number, out: string[]): void {
@@ -50,6 +52,8 @@ export function splitProse(text: string): string[] {
   let segEnd = -1;
   let fence: string | null = null;
   let inHtml = false;
+  // Inside an unchecked task-list item (Decision D32): its continuation lines are dropped.
+  let skipping = false;
 
   const flush = (): void => {
     if (segStart >= 0) splitSentences(text, segStart, segEnd, out);
@@ -78,29 +82,36 @@ export function splitProse(text: string): string[] {
     const fenceMatch = /^(```|~~~)/.exec(trimmed);
     if (fenceMatch) {
       flush();
+      skipping = false;
       fence = fenceMatch[1]!;
       continue;
     }
     if (trimmed.startsWith('<!--')) {
       flush();
+      skipping = false;
       if (!trimmed.includes('-->', 4)) inHtml = true;
       continue;
     }
     if (trimmed === '') {
       flush();
+      skipping = false;
       continue;
     }
     if (HEADING.test(trimmed) || trimmed.startsWith('|')) {
       flush();
+      skipping = false;
       continue;
     }
     const m = LIST_MARKER.exec(line);
     if (m) {
       flush();
+      skipping = UNCHECKED_TASK.test(line.slice(m[0].length));
+      if (skipping) continue;
       segStart = lineStart + m[0].length;
       segEnd = lineEnd;
       continue;
     }
+    if (skipping) continue;
     if (segStart < 0) segStart = lineStart;
     segEnd = lineEnd;
   }
