@@ -134,7 +134,17 @@ These are for the maintainer's review. Per Decision D2, changing a question, thr
 - The 3 policy-decided covered fixtures (`banner-dismiss-covered`, `cart-total-covered`, `cli-usage-covered`) have `checksAdequate` of 0.72, 0.78 and 0.71, inside the 0.1 band around the 0.7 threshold. With `onUncertain` set to `evidence`, uncertain evidence forces `required=true`, so all three disagree with their `required=false` label.
 - `docs-near-miss-login` is classifier-decided because the Change_Subject fallback is asked after `not_identified`. The fallback scored `runtimeObservable` 0.79 and `checksAdequate` 0.05, so `needed` is true and `required` is true against a false label.
 - `backend-cache-ttl` has `runtimeObservable` 0.73 against a label of false.
-- `tooling-near-miss-lint` disagrees on three rows: `claim.is_behavior` (probability 0.23, label true), `assess.surface` (predicted `cli`, label `non_runtime`, confidence 0.9) and `assessment.claimStatus` (predicted `not_identified`, label `identified`). Its `assessment.required` result agrees (false).
+- `tooling-near-miss-lint`, as recorded in runs 1 and 2 with the old label, disagrees on three rows: `claim.is_behavior` (probability 0.23, label true), `assess.surface` (predicted `cli`, label `non_runtime`, confidence 0.9) and `assessment.claimStatus` (predicted `not_identified`, label `identified`). Its `assessment.required` result agrees (false). These observations are historical. The label was changed afterwards, see "Label correction after run 2".
+
+## Label correction after run 2
+
+This is a label change made after seeing results.
+
+- After run 2, the label of fixture `tooling-near-miss-lint` was changed: `isBehavior` true -> false and `claimStatus` identified -> not_identified. `required` stays false.
+- The reason comes from text and spec, not from Jev scores. The `claim.is_behavior@1` catalog text says to answer no for text that describes only tooling. Req 11.10 defines this fixture as a near-miss (behaviour-sounding title, tooling-only change). The old label also contradicted itself: `identified`, yet surface `non_runtime`.
+- The numbers for runs 1 and 2 in this document were computed with the old label. They were not recomputed and no run was repeated. With the old label this fixture accounted for 3 of the 9 run-2 disagreements (`claim.is_behavior`, `assess.surface`, `assessment.claimStatus`). This record makes no claim about what the numbers would be with the new label.
+- The downstream labels of this fixture (`runtimeObservable`, `checksAdequate`, `surface`) are not used by the runner when `isBehavior` is false. Surface `non_runtime` is kept only so the corpus still covers all six Surface values. This is a known wart.
+- Calibration of thresholds, band, policy or questions is intentionally out of scope for this PR (Decision D2). Issue #7 asks for a measurement.
 
 ## Reproducing
 

@@ -85,7 +85,7 @@ export function buildRow<T extends number | string | boolean>(
   };
 }
 
-/** Counts samples and agreeing samples per bucket, in first-seen order. */
+/** Counts samples and agreeing samples per bucket, sorted by bucket name (code-unit order). */
 export function buildBuckets<T>(
   samples: readonly { bucket: string; predicted: T; label: T }[],
 ): BucketRow[] {

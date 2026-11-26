@@ -25,7 +25,7 @@
   ],
   "labels": {
     "isBehavior": {
-      "Fail the build when a lint warning appears": true
+      "Fail the build when a lint warning appears": false
     },
     "runtimeObservable": {
       "Fail the build when a lint warning appears": false
@@ -36,7 +36,7 @@
     "surface": {
       "Fail the build when a lint warning appears": "non_runtime"
     },
-    "claimStatus": "identified",
+    "claimStatus": "not_identified",
     "required": false
   }
 }
