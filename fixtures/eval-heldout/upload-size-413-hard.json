@@ -1,0 +1,51 @@
+{
+  "id": "upload-size-413-hard",
+  "description": "Hard negative: the upload test only covers a small valid PNG, never a file over the limit.",
+  "change": {
+    "title": "Reject uploads larger than 10 MB with status 413",
+    "commits": [
+      {
+        "sha": "b4c5d6e",
+        "message": "Reject uploads larger than 10 MB with status 413"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/routes/upload.ts",
+        "status": "modified",
+        "patch": "@@ -4,2 +4,3 @@\n-const upload = multer({ storage });\n+const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });\n+router.use((err, req, res, next) => err.code === \"LIMIT_FILE_SIZE\" ? res.status(413).end() : next(err));"
+      },
+      {
+        "path": "test/api/upload.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,4 @@\n+it(\"accepts a PNG upload\", async () => {\n+  const res = await request(app).post(\"/upload\").attach(\"file\", \"test/fixtures/small.png\");\n+  expect(res.status).toBe(201);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/api/upload.test.ts > accepts a PNG upload",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Reject uploads larger than 10 MB with status 413": true
+    },
+    "runtimeObservable": {
+      "Reject uploads larger than 10 MB with status 413": true
+    },
+    "checksAdequate": {
+      "Reject uploads larger than 10 MB with status 413": false
+    },
+    "surface": {
+      "Reject uploads larger than 10 MB with status 413": "http_api"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

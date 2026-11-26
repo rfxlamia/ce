@@ -1,0 +1,51 @@
+{
+  "id": "rate-limit-429-covered",
+  "description": "Positive: an API test in the diff sends 101 requests and asserts status 429.",
+  "change": {
+    "title": "Return 429 when a client sends more than 100 requests per minute",
+    "commits": [
+      {
+        "sha": "b4c5d6e",
+        "message": "Return 429 when a client sends more than 100 requests per minute"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/middleware/rateLimit.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,6 @@\n+export const rateLimit = (store: Counter) => async (req, res, next) => {\n+  const count = await store.hit(req.ip, 60_000);\n+  if (count > 100) return res.status(429).json({ error: \"too_many_requests\" });\n+  next();\n+};\n+"
+      },
+      {
+        "path": "test/api/rate-limit.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,6 @@\n+it(\"returns 429 after 100 requests in one minute\", async () => {\n+  for (let i = 0; i < 100; i++) await request(app).get(\"/items\").expect(200);\n+  const res = await request(app).get(\"/items\");\n+  expect(res.status).toBe(429);\n+});\n+"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/api/rate-limit.test.ts > returns 429 after 100 requests in one minute",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Return 429 when a client sends more than 100 requests per minute": true
+    },
+    "runtimeObservable": {
+      "Return 429 when a client sends more than 100 requests per minute": true
+    },
+    "checksAdequate": {
+      "Return 429 when a client sends more than 100 requests per minute": true
+    },
+    "surface": {
+      "Return 429 when a client sends more than 100 requests per minute": "http_api"
+    },
+    "claimStatus": "identified",
+    "required": false
+  }
+}

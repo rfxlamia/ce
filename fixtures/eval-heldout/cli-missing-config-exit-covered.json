@@ -1,0 +1,51 @@
+{
+  "id": "cli-missing-config-exit-covered",
+  "description": "Positive: a CLI test in the diff runs the binary without a config file and asserts exit code 2.",
+  "change": {
+    "title": "Exit with code 2 when the config file is missing",
+    "commits": [
+      {
+        "sha": "b4c5d6e",
+        "message": "Exit with code 2 when the config file is missing"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/cli/main.ts",
+        "status": "modified",
+        "patch": "@@ -10,3 +10,6 @@\n const configPath = args.config ?? \"deploy.toml\";\n+if (!existsSync(configPath)) {\n+  console.error(`Config file not found: ${configPath}`);\n+  process.exit(2);\n+}\n const config = readConfig(configPath);"
+      },
+      {
+        "path": "test/cli/missing-config.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,5 @@\n+it(\"exits with code 2 when the config file is missing\", () => {\n+  const result = spawnSync(\"node\", [\"dist/main.js\", \"--config\", \"nope.toml\"]);\n+  expect(result.status).toBe(2);\n+  expect(result.stderr.toString()).toContain(\"Config file not found\");\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/cli/missing-config.test.ts > exits with code 2 when the config file is missing",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Exit with code 2 when the config file is missing": true
+    },
+    "runtimeObservable": {
+      "Exit with code 2 when the config file is missing": true
+    },
+    "checksAdequate": {
+      "Exit with code 2 when the config file is missing": true
+    },
+    "surface": {
+      "Exit with code 2 when the config file is missing": "cli"
+    },
+    "claimStatus": "identified",
+    "required": false
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "id": "import-progress-bar-hard",
+  "description": "Hard negative: the import test asserts the imported row count, not the progress output.",
+  "change": {
+    "title": "Print a progress bar while the import command runs",
+    "commits": [
+      {
+        "sha": "b4c5d6e",
+        "message": "Print a progress bar while the import command runs"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/commands/import.ts",
+        "status": "modified",
+        "patch": "@@ -12,3 +12,6 @@\n const rows = parseCsv(input);\n+const bar = new ProgressBar(rows.length, process.stderr);\n for (const row of rows) {\n   await db.insert(row);\n+  bar.tick();\n }\n+bar.done();"
+      },
+      {
+        "path": "test/commands/import.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,4 @@\n+it(\"imports all rows from the CSV\", async () => {\n+  await runImport(\"test/fixtures/people.csv\");\n+  expect(await db.count(\"people\")).toBe(42);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/commands/import.test.ts > imports all rows from the CSV",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Print a progress bar while the import command runs": true
+    },
+    "runtimeObservable": {
+      "Print a progress bar while the import command runs": true
+    },
+    "checksAdequate": {
+      "Print a progress bar while the import command runs": false
+    },
+    "surface": {
+      "Print a progress bar while the import command runs": "cli"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

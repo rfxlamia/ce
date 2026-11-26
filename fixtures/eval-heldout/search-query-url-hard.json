@@ -1,0 +1,51 @@
+{
+  "id": "search-query-url-hard",
+  "description": "Hard negative: the search test only asserts that results render, not that the query is kept in the URL.",
+  "change": {
+    "title": "Keep the search query in the URL so the results page can be shared",
+    "commits": [
+      {
+        "sha": "b4c5d6e",
+        "message": "Keep the search query in the URL so the results page can be shared"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/search/SearchPage.tsx",
+        "status": "modified",
+        "patch": "@@ -6,3 +6,4 @@\n const onSubmit = (q: string) => {\n   setQuery(q);\n+  router.replace({ query: { q } });\n };"
+      },
+      {
+        "path": "e2e/search.spec.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,5 @@\n+test(\"shows results for a query\", async ({ page }) => {\n+  await page.goto(\"/search\");\n+  await page.getByRole(\"searchbox\").fill(\"lamp\");\n+  await page.keyboard.press(\"Enter\");\n+  await expect(page.getByTestId(\"result\")).toHaveCount(3);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "e2e/search.spec.ts > shows results for a query",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Keep the search query in the URL so the results page can be shared": true
+    },
+    "runtimeObservable": {
+      "Keep the search query in the URL so the results page can be shared": true
+    },
+    "checksAdequate": {
+      "Keep the search query in the URL so the results page can be shared": false
+    },
+    "surface": {
+      "Keep the search query in the URL so the results page can be shared": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}
