@@ -1,6 +1,6 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { buildRow } from './agreement.js';
+import { buildBuckets, buildRow } from './agreement.js';
 
 const QUESTIONS = [
   'claim.is_behavior',
@@ -32,7 +32,9 @@ describe('eval agreement', () => {
         fc.constantFrom(...QUESTIONS),
         fc.array(sampleArb, { maxLength: 40 }),
         (question, samples) => {
-          const { row, disagreements } = buildRow(question, samples, (p, l) => p === l);
+          const { row, disagreements, samples: all } = buildRow(question, samples, (p, l) => p === l);
+          expect(all).toHaveLength(samples.length);
+          expect(all.filter((x) => x.agreed)).toHaveLength(row.agreeing);
           expect(row.question).toBe(question);
           expect(row.samples).toBe(samples.length);
           expect(row.agreeing).toBeGreaterThanOrEqual(0);
@@ -47,6 +49,29 @@ describe('eval agreement', () => {
           }
           expect(disagreements).toHaveLength(row.samples - row.agreeing);
           for (const d of disagreements) expect(d.question).toBe(question);
+        },
+      ),
+      { numRuns: 100 },
+    );
+  });
+
+  it('buckets partition the samples and agreeing counts', () => {
+    fc.assert(
+      fc.property(
+        fc.array(
+          fc.record({
+            bucket: fc.constantFrom('classifier', 'policy'),
+            predicted: fc.boolean(),
+            label: fc.boolean(),
+          }),
+          { maxLength: 40 },
+        ),
+        (samples) => {
+          const buckets = buildBuckets(samples);
+          expect(buckets.reduce((n, b) => n + b.samples, 0)).toBe(samples.length);
+          expect(buckets.reduce((n, b) => n + b.agreeing, 0)).toBe(
+            samples.filter((s) => s.predicted === s.label).length,
+          );
         },
       ),
       { numRuns: 100 },

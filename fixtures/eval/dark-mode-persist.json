@@ -13,7 +13,7 @@
       {
         "path": "src/theme/useTheme.ts",
         "status": "modified",
-        "patch": "@@ -1,2 +1,3 @@\n const [mode, setMode] = useState(\"light\");\n+localStorage.setItem(\"mode\", mode);"
+        "patch": "@@ -1,4 +1,8 @@\n export function useTheme() {\n-  const [mode, setMode] = useState(\"light\");\n+  const [mode, setMode] = useState(() => localStorage.getItem(\"mode\") ?? \"light\");\n+  useEffect(() => {\n+    localStorage.setItem(\"mode\", mode);\n+    document.documentElement.dataset.theme = mode;\n+  }, [mode]);\n   return { mode, setMode };\n }"
       }
     ]
   },

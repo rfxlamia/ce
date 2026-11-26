@@ -5,12 +5,25 @@
 
 import { argmaxSurface, readChoice, readNoul } from '../assessment/answers.js';
 import { assess, resolveAssessmentSettings } from '../assessment/assess.js';
-import type { AssessmentSettings, Surface } from '../assessment/types.js';
+import type {
+  AssessmentSettings,
+  Cut,
+  PerClaimAssessment,
+  Surface,
+} from '../assessment/types.js';
 import type { EffectiveConfig } from '../config/schema.js';
 import { StageError } from '../errors.js';
 import { SURFACE_LABELS, buildAssessmentRequest, buildClassificationRequest } from '../jev/catalog.js';
 import type { JevGateway } from '../jev/gateway.js';
-import { buildRow, type AgreementRow, type Disagreement } from './agreement.js';
+import {
+  buildBuckets,
+  buildRow,
+  type AgreementRow,
+  type BucketRow,
+  type Disagreement,
+  type EvalSample,
+  type RowSample,
+} from './agreement.js';
 import { loadFixtures, type LoadFixturesFailure } from './fixture.js';
 import { EvalMemoGateway } from './memo.js';
 import { buildFixtureContext, type FixtureProvidersOverride } from './providers.js';
@@ -24,9 +37,26 @@ export interface EvalRunOptions {
   providersOverride?: FixtureProvidersOverride;
 }
 
+/** Per-fixture copy of the assess() output (never recomputed in eval). */
+export interface FixtureAssessmentSummary {
+  fixtureId: string;
+  claimStatus: 'identified' | 'not_identified';
+  required: boolean;
+  decidedBy: 'classifier' | 'policy';
+  surface: Surface;
+  perClaim: PerClaimAssessment[];
+  cuts: Cut[];
+}
+
 export interface EvalResult {
   rows: AgreementRow[];
   disagreements: Disagreement[];
+  /** Every sample of every row, agreeing or not. */
+  samples: EvalSample[];
+  /** One summary of the assess() output per fixture. */
+  assessments: FixtureAssessmentSummary[];
+  /** The assessment.required row split by Assessment.decidedBy. */
+  requiredByDecidedBy: BucketRow[];
   modelIds: string[];
   fixtureCount: number;
   settings: AssessmentSettings;
@@ -39,12 +69,7 @@ export type EvalRunOutcome =
   | Exclude<LoadFixturesFailure, { kind: 'context' }>
   | { ok: false; stageError: StageError };
 
-interface Sample<T> {
-  fixtureId: string;
-  subject: string;
-  predicted: T;
-  label: T;
-}
+type Sample<T> = RowSample<T>;
 
 export async function runEval(options: EvalRunOptions): Promise<EvalRunOutcome> {
   const loaded = loadFixtures(options.fixturesDir);
@@ -98,6 +123,8 @@ export async function runEval(options: EvalRunOptions): Promise<EvalRunOutcome> 
   const adequate: Sample<boolean>[] = [];
   const surface: Sample<string>[] = [];
   const required: Sample<boolean>[] = [];
+  const requiredBuckets: { bucket: string; predicted: boolean; label: boolean }[] = [];
+  const assessments: FixtureAssessmentSummary[] = [];
   const claimStatus: Sample<string>[] = [];
 
   try {
@@ -120,6 +147,8 @@ export async function runEval(options: EvalRunOptions): Promise<EvalRunOutcome> 
               fixtureId: id,
               subject: candidate.text,
               predicted: p >= settings.claimThreshold,
+              probability: p,
+              threshold: settings.claimThreshold,
               label,
             });
           }
@@ -132,7 +161,7 @@ export async function runEval(options: EvalRunOptions): Promise<EvalRunOutcome> 
         noteModel(response.model);
         const pObservable = readNoul(response.answers['runtime_observable']);
         const pAdequate = readNoul(response.answers['checks_adequate']);
-        const { surface: predictedSurface } = argmaxSurface(
+        const { surface: predictedSurface, confidence: surfaceConfidence } = argmaxSurface(
           readChoice(response.answers['surface'], SURFACE_LABELS),
         );
         const labelObservable = labels.runtimeObservable[candidate.text];
@@ -143,6 +172,8 @@ export async function runEval(options: EvalRunOptions): Promise<EvalRunOutcome> 
             fixtureId: id,
             subject: candidate.text,
             predicted: pObservable >= settings.observableThreshold,
+            probability: pObservable,
+            threshold: settings.observableThreshold,
             label: labelObservable,
           });
         }
@@ -151,6 +182,8 @@ export async function runEval(options: EvalRunOptions): Promise<EvalRunOutcome> 
             fixtureId: id,
             subject: candidate.text,
             predicted: pAdequate >= settings.adequateThreshold,
+            probability: pAdequate,
+            threshold: settings.adequateThreshold,
             label: labelAdequate,
           });
         }
@@ -159,6 +192,7 @@ export async function runEval(options: EvalRunOptions): Promise<EvalRunOutcome> 
             fixtureId: id,
             subject: candidate.text,
             predicted: predictedSurface,
+            confidence: surfaceConfidence,
             label: labelSurface,
           });
         }
@@ -170,6 +204,20 @@ export async function runEval(options: EvalRunOptions): Promise<EvalRunOutcome> 
         subject: 'change',
         predicted: assessment.required,
         label: labels.required,
+      });
+      requiredBuckets.push({
+        bucket: assessment.decidedBy,
+        predicted: assessment.required,
+        label: labels.required,
+      });
+      assessments.push({
+        fixtureId: id,
+        claimStatus: assessment.claimStatus,
+        required: assessment.required,
+        decidedBy: assessment.decidedBy,
+        surface: assessment.surface,
+        perClaim: assessment.perClaim.map((c) => ({ ...c })),
+        cuts: assessment.record.cuts.map((c) => ({ ...c })),
       });
       claimStatus.push({
         fixtureId: id,
@@ -198,6 +246,9 @@ export async function runEval(options: EvalRunOptions): Promise<EvalRunOutcome> 
     result: {
       rows: built.map((b) => b.row),
       disagreements: built.flatMap((b) => b.disagreements),
+      samples: built.flatMap((b) => b.samples),
+      assessments,
+      requiredByDecidedBy: buildBuckets(requiredBuckets),
       modelIds,
       fixtureCount: fixtures.length,
       settings,

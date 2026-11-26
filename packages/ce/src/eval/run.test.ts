@@ -156,6 +156,44 @@ describe('runEval', () => {
       ]),
     );
     expect(result.requests).toBe(gateway.requests.length);
+
+    // 13.7: returned probability and threshold are recorded beside the boolean.
+    const adequate = result.disagreements.find((d) => d.question === 'assess.checks_adequate')!;
+    expect(adequate.probability).toBe(0.01);
+    expect(adequate.threshold).toBe(result.settings.adequateThreshold);
+
+    // Every sample is recorded, agreeing or not.
+    const total = result.rows.reduce((n, x) => n + x.samples, 0);
+    expect(result.samples).toHaveLength(total);
+    expect(result.samples.filter((x) => !x.agreed)).toHaveLength(result.disagreements.length);
+    const surfaceSample = result.samples.find((x) => x.question === 'assess.surface')!;
+    expect(surfaceSample).toMatchObject({ fixtureId: 'a', subject: BEHAVIOR, predicted: 'browser_ui', confidence: 1 });
+    expect(result.samples.find((x) => x.question === 'assess.runtime_observable')).toMatchObject({
+      probability: 0.99,
+      threshold: result.settings.observableThreshold,
+      agreed: true,
+    });
+
+    // Per-fixture assess() summary and the decidedBy breakdown.
+    expect(result.assessments).toHaveLength(1);
+    const a = result.assessments[0]!;
+    expect(a).toMatchObject({ fixtureId: 'a', claimStatus: 'identified' });
+    expect(a.perClaim.length).toBeGreaterThan(0);
+    expect(a.perClaim[0]).toEqual(
+      expect.objectContaining({
+        needed: expect.any(Boolean),
+        uncertain: expect.any(Boolean),
+        runtimeObservable: expect.any(Number),
+        checksAdequate: expect.any(Number),
+      }),
+    );
+    expect(Array.isArray(a.cuts)).toBe(true);
+    expect(result.requiredByDecidedBy).toEqual([
+      expect.objectContaining({ bucket: a.decidedBy, samples: 1 }),
+    ]);
+    const req = result.rows.find((x) => x.question === 'assessment.required')!;
+    expect(result.requiredByDecidedBy.reduce((n, b) => n + b.samples, 0)).toBe(req.samples);
+    expect(result.requiredByDecidedBy.reduce((n, b) => n + b.agreeing, 0)).toBe(req.agreeing);
   });
 
   it('reports a null agreement for a row without samples', async () => {

@@ -142,6 +142,10 @@ describe('runEvalCommand', () => {
     expect(result.fixtureCount).toBe(1);
     expect(result.rows).toHaveLength(6);
     expect(result.modelIds).toEqual(['stub-model']);
+    expect(Array.isArray(result.samples)).toBe(true);
+    expect(result.assessments).toHaveLength(1);
+    expect(result.requiredByDecidedBy[0].samples).toBe(1);
+    expect(stdout).toContain('assessment.required[decidedBy=');
 
     const lines = readFileSync(join(dir, 'jev-calls.jsonl'), 'utf8').trim().split('\n');
     expect(lines.length).toBeGreaterThan(0);

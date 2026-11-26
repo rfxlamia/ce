@@ -13,7 +13,7 @@
       {
         "path": "src/cli/args.ts",
         "status": "modified",
-        "patch": "@@ -1,2 +1,3 @@\n const opts = parse(argv);\n+if (opts.verbose) console.log(`processing ${file}`);"
+        "patch": "@@ -1,6 +1,7 @@\n export function main(argv: string[]) {\n-  const opts = parse(argv);\n+  const opts = parse(argv, { boolean: [\"verbose\"] });\n   for (const file of opts.files) {\n+    if (opts.verbose) console.log(`processing ${file}`);\n     process(file);\n   }\n }"
       }
     ]
   },

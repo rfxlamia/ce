@@ -13,7 +13,7 @@
       {
         "path": "src/components/LoginForm.tsx",
         "status": "modified",
-        "patch": "@@ -1,4 +1,5 @@\n export function LoginForm() {\n+  const [sending, setSending] = useState(false);\n  return <form />;\n }"
+        "patch": "@@ -1,3 +1,17 @@\n export function LoginForm() {\n+  const [sending, setSending] = useState(false);\n+  async function onSubmit(e: FormEvent) {\n+    e.preventDefault();\n+    setSending(true);\n+    try {\n+      await signIn();\n+    } finally {\n+      setSending(false);\n+    }\n+  }\n-  return <form />;\n+  return (\n+    <form onSubmit={onSubmit}>\n+      <button type=\"submit\" disabled={sending}>Sign in</button>\n+    </form>\n+  );\n }"
       }
     ]
   },

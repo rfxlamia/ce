@@ -13,7 +13,7 @@
       {
         "path": ".github/workflows/ci.yml",
         "status": "modified",
-        "patch": "@@ -1,2 +1,3 @@\n - run: npm run lint\n+- run: npm run lint -- --max-warnings 0"
+        "patch": "@@ -1,1 +1,2 @@\n - run: npm run lint\n+- run: npm run lint -- --max-warnings 0"
       }
     ]
   },
