@@ -108,8 +108,8 @@ This plan implements the Context Resolver (GitHub issue #6) in TypeScript under 
 
 - [x] 5. Candidate_Extractor
   - [x] 5.1 Implement `packages/ce/src/context/candidates.ts`
-    - `extractCandidates(context)`: sources in fixed order (`--claim` unsplit, title, description, commits oldest first, Comment_Lines); sentence/list-item splitting per Decision D6 for title/description/commits only, skipping fenced code, headings, HTML comments and table rows there; Comment_Line extraction from `+` lines per extension table including `/* */` continuation and Python docstrings, never split further; Directive_Comment filter (Decision D31); text is always an exact trimmed slice of its source field; dedup keeping first Provenance; cap 50 with `<candidates>`/`candidate-cap` record; ids `c1…` after dedup and cap; location `<path>:<line>` for comment lines. Reads only redacted, budgeted data; never imports from `jev/`.
-    - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 9.10, 9.11, 9.12, 9.13, 9.14, 9.15, 4.5_
+    - `extractCandidates(context)`: sources in fixed order (`--claim` unsplit, title, description, commits oldest first, Comment_Lines); sentence/list-item splitting per Decision D6 for title/description/commits only, skipping fenced code, headings, HTML comments, table rows and unchecked task-list items (Decision D32) there; Comment_Line extraction from `+` lines per extension table including `/* */` continuation and Python docstrings, never split further; Directive_Comment filter (Decision D31); text is always an exact trimmed slice of its source field; dedup keeping first Provenance; cap 50 with `<candidates>`/`candidate-cap` record; ids `c1…` after dedup and cap; location `<path>:<line>` for comment lines. Reads only redacted, budgeted data; never imports from `jev/`.
+    - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 9.9, 9.10, 9.11, 9.12, 9.13, 9.14, 9.15, 9.16, 4.5_
 
   - [x] 5.2 Write property tests for candidates
     - **Property 11: Every Claim_Candidate is a substring of its named source field** (fields include comment lines of every syntax)
@@ -121,7 +121,7 @@ This plan implements the Context Resolver (GitHub issue #6) in TypeScript under 
   - [x] 5.3 Write unit tests for candidate extraction
     - 72-column wrapped commit message gives one candidate per sentence; `/** … */` block with `*` continuations gives no list items and exact `<path>:<line>`; `<!-- -->` in a Markdown diff gives a candidate, the same comment in the description does not; Directive_Comments (`eslint-disable-next-line`, `# noqa`, `@ts-expect-error`, `@ts-ignore`, line-1 shebang, `Copyright 2025 Example`) give none while an ordinary neighbor gives one; `--claim` text keeps provider `cli`.
     - File: `packages/ce/src/context/candidates.examples.test.ts`
-    - _Requirements: 9.7, 9.8, 9.9, 9.10, 9.14, 9.15, 11.12, 11.17, 11.25_
+    - _Requirements: 9.7, 9.8, 9.9, 9.10, 9.14, 9.15, 9.16, 11.12, 11.17, 11.25, 11.26_
 
 - [x] 6. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
