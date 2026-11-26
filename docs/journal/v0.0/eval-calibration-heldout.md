@@ -111,7 +111,132 @@ No candidate adds a false skip on the dev `required=true` fixtures.
 
 ## Results
 
-Pending. Filled after the held-out runs.
+Everything in this section was written after the held-out scores were visible. The pre-registration section above is unchanged since the freeze commit.
+
+**Erratum to the pre-registration.** Rule 1 says "the 14 dev-set `required=true` fixtures". The dev set has 9 fixtures labelled `required=true` (and 8 labelled false). 14 is the number of classifier-decided dev fixtures in run 2. The sweep checks every fixture labelled true, so the outcome of rule 1 does not change.
+
+### Run identity
+
+| Item | Repeat 1 | Repeat 2 | Repeat 3 |
+| --- | --- | --- | --- |
+| Source | `.ce/runs/eval-2026-11-26T12-14-17-407Z/eval.json` | `.ce/runs/eval-2026-11-26T12-14-34-846Z/eval.json` | `.ce/runs/eval-2026-11-26T12-14-52-008Z/eval.json` |
+| Git commit | `46253c8` (freeze commit) | `46253c8` | `46253c8` |
+| Working tree | Clean | Clean | Clean |
+| Provider | `openrouter` | `openrouter` | `openrouter` |
+| Returned model id | `typesafe/jev-1.14-20261014` | `typesafe/jev-1.14-20261014` | `typesafe/jev-1.14-20261014` |
+| Fixtures | 10 | 10 | 10 |
+| Jev requests / memo hits | 20 / 20 | 20 / 20 | 20 / 20 |
+| Exit code | 0 | 0 | 0 |
+
+- `.ce/` is gitignored. The run directories above are local to the machine that made the runs, so this document carries the numbers itself.
+- `packages/ce/dist` was built from `packages/` source identical to `e7544d7`. No commit after `e7544d7` touches `packages/`. The sweep script ran against that build.
+- All runs used the default settings: `claimThreshold` 0.6, `observableThreshold` 0.6, `adequateThreshold` 0.7, `uncertaintyBand` 0.1, `onUncertain` evidence.
+
+### Agreement by row (default settings)
+
+Identical in all three repeats.
+
+| Row | Agreeing / samples |
+| --- | --- |
+| `claim.is_behavior` | 10 / 10 |
+| `assess.runtime_observable` | 10 / 10 |
+| `assess.checks_adequate` | 10 / 10 |
+| `assess.surface` | 10 / 10 |
+| `assessment.required` | 8 / 10 |
+| `assessment.claimStatus` | 10 / 10 |
+| `assessment.required`, `decidedBy=classifier` | 8 / 8 |
+| `assessment.required`, `decidedBy=policy` | 0 / 2 |
+
+### Per-fixture scores across repeats
+
+RO is `runtimeObservable`, CA is `checksAdequate`. Values are listed as repeat 1 / 2 / 3. `required` and `decidedBy` are under the default settings.
+
+| Fixture | Label CA | Label `required` | RO | CA | CA spread | Surface | `required` / `decidedBy` |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `comment-counter-covered` | true | false | 0.95 / 0.95 / 0.95 | 0.84 / 0.83 / 0.82 | 0.02 | browser_ui | false / classifier (all) |
+| `rate-limit-429-covered` | true | false | 0.89 / 0.87 / 0.89 | 0.86 / 0.86 / 0.85 | 0.01 | http_api | false / classifier (all) |
+| `cli-missing-config-exit-covered` | true | false | 0.94 / 0.94 / 0.94 | 0.78 / 0.75 / 0.76 | 0.03 | cli | **true / policy** (all) |
+| `invoice-sort-covered` | true | false | 0.91 / 0.9 / 0.91 | 0.79 / 0.74 / 0.78 | 0.05 | browser_ui | **true / policy** (all) |
+| `project-location-header-covered` | true | false | 0.93 / 0.93 / 0.93 | 0.88 / 0.9 / 0.88 | 0.02 | http_api | false / classifier (all) |
+| `search-query-url-hard` | false | true | 0.86 / 0.86 / 0.86 | 0.35 / 0.37 / 0.35 | 0.02 | browser_ui | true / classifier (all) |
+| `upload-size-413-hard` | false | true | 0.8 / 0.81 / 0.79 | 0.14 / 0.15 / 0.13 | 0.02 | http_api | true / classifier (all) |
+| `import-progress-bar-hard` | false | true | 0.87 / 0.86 / 0.88 | 0.16 / 0.17 / 0.2 | 0.04 | cli | true / classifier (all) |
+| `profile-retry-button-hard` | false | true | 0.73 / 0.68 / 0.7 | 0.05 / 0.06 / 0.06 | 0.01 | browser_ui | true / classifier (all) |
+| `feed-scroll-restore` | false | true | 0.77 / 0.8 / 0.77 | 0.11 / 0.1 / 0.09 | 0.02 | browser_ui | true / classifier (all) |
+
+- CA separation: positives score 0.74 to 0.90, negatives 0.05 to 0.37. The gap is 0.37.
+- The largest CA spread across repeats is 0.05, and the largest RO spread is 0.05. The three repeats are close to one observation, not three independent ones.
+- The baseline repeats the dev pattern. The 2 errors are positives with CA 0.74 to 0.79, inside the 0.1 band around 0.7, decided by policy as `required=true`.
+
+### Held-out sweep
+
+The 4 candidate cells (band 0.1) are shown. Every repeat gives the same agreement for these cells.
+
+| adequate | band | on-uncertain | role | `required` agree / n (repeats 1, 2, 3) | delta vs baseline | false skips | false required | policy-decided (repeats 1, 2, 3) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0.7 | 0.1 | evidence | baseline | 8, 8, 8 / 10 | 0 | none | `cli-missing-config-exit-covered`, `invoice-sort-covered` | 2, 2, 2 |
+| 0.7 | 0.1 | skip | candidate | 10, 10, 10 / 10 | +2 | none | none | 2, 2, 2 |
+| 0.6 | 0.1 | evidence | candidate | 10, 10, 10 / 10 | +2 | none | none | 0, 0, 0 |
+| 0.6 | 0.1 | skip | candidate | 10, 10, 10 / 10 | +2 | none | none | 0, 0, 0 |
+
+Exploratory cells (cannot be proposed):
+- Every skip cell at any band gives 10 / 10.
+- `adequate` 0.6 with evidence gives 10 / 10 at band 0, 0.05 and 0.1. At band 0.15 it gives 10, 9, 10 (`invoice-sort-covered` CA 0.74 in repeat 2 is inside the band).
+- `adequate` 0.7 with evidence:
+  - band 0 gives 10, 10, 10.
+  - band 0.05 gives 10, 9, 10 (`invoice-sort-covered` CA 0.74 in repeat 2).
+  - band 0.15 gives 7, 7, 7 (`comment-counter-covered` CA 0.82 to 0.84 joins the band).
+
+No cell in the whole grid produces a false skip on the held-out set.
+
+### Decision rule outcome
+
+| Candidate | Rule 1: no new false skips (held-out 5, dev 9) | Rule 2: gain of at least 2 in every repeat | Rule 3: dev agreement not lower (baseline 12 / 17) | Settings changed |
+| --- | --- | --- | --- | --- |
+| 0.7 / 0.1 / skip | pass | pass (+2, +2, +2) | pass (15 / 17) | 1 (`on-uncertain`) |
+| 0.6 / 0.1 / evidence | pass | pass (+2, +2, +2) | pass (14 / 17) | 1 (`adequateThreshold`) |
+| 0.6 / 0.1 / skip | pass | pass (+2, +2, +2) | pass (15 / 17) | 2 |
+
+- All three candidates pass rules 1 to 3.
+- The pre-registered tie-break prefers one changed setting over two, which excludes 0.6/skip.
+- The tie-break does not separate 0.7/skip from 0.6/evidence. Each changes one setting. On the held-out set both give identical `required` values for all 10 fixtures in all 3 repeats.
+
+**Result: the held-out set supports moving off the current defaults, but it does not choose between `on-uncertain: skip` (keeping `adequateThreshold` 0.7) and `adequateThreshold` 0.6 (keeping `on-uncertain: evidence`).** Per Decision D2 the maintainer chooses. `packages/ce/src/config/defaults.ts` is not changed by this record.
+
+### How strong this evidence is
+
+- **The +2 gain is the ceiling.** The baseline makes only 2 errors, the same two positives in every repeat. Rule 2 was met at its minimum.
+- **Rule 1 passed without being tested.** The highest negative CA is 0.37 (`search-query-url-hard`). That is far below the 0.5 to 0.8 region where a lower threshold or `skip` could turn a required run into a false skip. The set did not probe the false-skip margin. Fixtures that would test it are negatives scoring CA 0.6 to 0.75, or claims with RO 0.5 to 0.7.
+- **The sample is small.** n = 10, with one model snapshot and one author (see "Known limits").
+
+### Where the two remaining candidates differ (context, not held-out evidence)
+
+This was checked by calling the built `combine` on synthetic scores. It is not part of the decision rule.
+
+| RO | CA | 0.6 / evidence | 0.7 / skip |
+| --- | --- | --- | --- |
+| 0.9 | 0.65 | required | required |
+| 0.9 | 0.69 | required | required |
+| 0.9 | 0.70 | required | not required |
+| 0.9 | 0.71 | not required | not required |
+| 0.65 | 0.85 | required | not required |
+| 0.65 | 0.30 | required | required |
+| 0.55 | 0.30 | required | not required |
+| 0.55 | 0.85 | required | not required |
+| 0.45 | 0.30 | not required | not required |
+
+- When RO is clearly above 0.7, the two cells have the same effective CA cut near 0.7. The only difference is the float edge at exactly 0.70: `Math.abs(0.7 - 0.6)` is just under 0.1, so 0.6/evidence counts that score as uncertain.
+- They differ when RO is inside the 0.5 to 0.7 band. 0.6/evidence then always requires evidence. 0.7/skip skips whenever the claim is not clearly needed.
+- On the dev set the only difference between the two is `tooling-near-miss-lint` (not_identified fallback, RO 0.22, CA 0.57). 0.6/evidence puts it in the band, decides it by policy, and requires it, against a `required=false` label.
+- No held-out fixture sits in the RO band with a label that would split the two cells.
+- The choice is about whether CE keeps `on-uncertain: evidence`, its conservative default for uncertain observability. That is the stance Decision D2 reserves for the maintainer.
+
+### Verification
+
+- The sweep script reproduces dev run 2 exactly with the default settings (see "Method").
+- `npm run typecheck` passes. `npm test` passes: 127 test files, 825 tests. No code changed.
+- Diff against the freeze commit `46253c8`: the only removed line is the "Pending" placeholder under Results. The fixtures and the pre-registration section are unchanged.
+- This record contains no API key, Authorization header, request state text, or private repository text. It was scanned with the `SECRET_PATTERNS` list from `packages/ce/src/eval/fixtures.corpus.test.ts` and has no match.
 
 ## Appendix: sweep script
 
