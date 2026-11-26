@@ -1,0 +1,51 @@
+{
+  "id": "project-location-header-covered",
+  "description": "Positive: an API test in the diff asserts the Location header of the created project.",
+  "change": {
+    "title": "Include a Location header in the response to POST /projects",
+    "commits": [
+      {
+        "sha": "b4c5d6e",
+        "message": "Include a Location header in the response to POST /projects"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/routes/projects.ts",
+        "status": "modified",
+        "patch": "@@ -8,3 +8,4 @@\n router.post(\"/projects\", async (req, res) => {\n   const project = await db.projects.create(req.body);\n+  res.location(`/projects/${project.id}`);\n   res.status(201).json(project);"
+      },
+      {
+        "path": "test/api/projects.test.ts",
+        "status": "modified",
+        "patch": "@@ -20,0 +21,5 @@\n+it(\"sets the Location header on create\", async () => {\n+  const res = await request(app).post(\"/projects\").send({ name: \"x\" });\n+  expect(res.status).toBe(201);\n+  expect(res.headers.location).toBe(`/projects/${res.body.id}`);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/api/projects.test.ts > sets the Location header on create",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Include a Location header in the response to POST /projects": true
+    },
+    "runtimeObservable": {
+      "Include a Location header in the response to POST /projects": true
+    },
+    "checksAdequate": {
+      "Include a Location header in the response to POST /projects": true
+    },
+    "surface": {
+      "Include a Location header in the response to POST /projects": "http_api"
+    },
+    "claimStatus": "identified",
+    "required": false
+  }
+}

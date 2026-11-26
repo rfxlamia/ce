@@ -1,0 +1,51 @@
+{
+  "id": "profile-retry-button-hard",
+  "description": "Hard negative: the profile test only covers the success path, never a failed load.",
+  "change": {
+    "title": "Show a retry button when the profile page fails to load",
+    "commits": [
+      {
+        "sha": "b4c5d6e",
+        "message": "Show a retry button when the profile page fails to load"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/profile/ProfilePage.tsx",
+        "status": "modified",
+        "patch": "@@ -7,3 +7,6 @@\n const { data, error, refetch } = useQuery([\"profile\"], fetchProfile);\n+if (error) {\n+  return <button onClick={() => refetch()}>Retry</button>;\n+}\n return <h1 data-testid=\"name\">{data?.name}</h1>;"
+      },
+      {
+        "path": "e2e/profile.spec.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,4 @@\n+test(\"renders the user name\", async ({ page }) => {\n+  await page.goto(\"/profile\");\n+  await expect(page.getByTestId(\"name\")).toHaveText(\"Ada\");\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "e2e/profile.spec.ts > renders the user name",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Show a retry button when the profile page fails to load": true
+    },
+    "runtimeObservable": {
+      "Show a retry button when the profile page fails to load": true
+    },
+    "checksAdequate": {
+      "Show a retry button when the profile page fails to load": false
+    },
+    "surface": {
+      "Show a retry button when the profile page fails to load": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

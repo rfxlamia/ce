@@ -1,0 +1,46 @@
+{
+  "id": "feed-scroll-restore",
+  "description": "Easy negative: only build and unit-tests ran; nothing exercises navigation back to the feed.",
+  "change": {
+    "title": "Restore the scroll position when the user returns to the feed",
+    "commits": [
+      {
+        "sha": "b4c5d6e",
+        "message": "Restore the scroll position when the user returns to the feed"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/feed/FeedPage.tsx",
+        "status": "modified",
+        "patch": "@@ -4,2 +4,8 @@\n export function FeedPage() {\n+  useEffect(() => {\n+    const y = sessionStorage.getItem(\"feed-scroll\");\n+    if (y) window.scrollTo(0, Number(y));\n+    const save = () => sessionStorage.setItem(\"feed-scroll\", String(window.scrollY));\n+    return save;\n+  }, []);\n   return <Feed />;"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "unit-tests",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Restore the scroll position when the user returns to the feed": true
+    },
+    "runtimeObservable": {
+      "Restore the scroll position when the user returns to the feed": true
+    },
+    "checksAdequate": {
+      "Restore the scroll position when the user returns to the feed": false
+    },
+    "surface": {
+      "Restore the scroll position when the user returns to the feed": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}
