@@ -474,7 +474,7 @@ Out of scope: the Context Resolver and its providers (already delivered), the Je
    | Done when: `ce eval` runs against live Jev and agreement is recorded in the journal | 15, 14.15 to 14.19 (loading the key from `.env`), 12.9 to 12.11 and 13.13 to 13.16 (no Git, no repeated request) |
    | Refs R4 | 1, 2 |
    | Refs R5 (R5.1 to R5.6) | 3, 4, 5, 6, 7, 8, 10.3, 10.7 to 10.9 |
-   | Refs R12 (R12.1, R12.2) | 11 to 14 (R12.1), 16 (R12.2, including 16.11 to 16.17) |
+   | Refs R12 (R12.1, R12.2) | 11 to 14 (R12.1), 16 (R12.2, including 16.11 to 16.18) |
 
 2. WHEN all implementation tasks are complete, THE implementer SHALL verify each item of the Issue_Checklist against the delivered code and SHALL record the evidence for each: a passing test name, a file path or a command output. The four checklist items are the claim identification, the three assessment questions, the decision combination with band, policy and `decidedBy`, and the fixtures with `ce eval`.
 3. WHEN all implementation tasks are complete, THE implementer SHALL verify the "Done when" line of issue #7 under Requirement 15.

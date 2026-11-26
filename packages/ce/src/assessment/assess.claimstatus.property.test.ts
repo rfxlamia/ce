@@ -8,6 +8,8 @@ import { assess } from './assess.js';
 
 // Feature: claims-assessment-eval, Property 5: claimStatus totality
 // **Validates: Requirements 2.5, 2.6, 2.7, 2.8**
+// Contexts here have no Changed_File, so the docs-only gate of Requirement 3 criterion 7
+// never applies; it is covered in assess.docsonly.test.ts.
 
 const prob = fc.double({ min: 0, max: 1, noNaN: true });
 

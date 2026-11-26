@@ -11,6 +11,8 @@ import { assess, selectChangeSubject } from './assess.js';
 
 // Feature: claims-assessment-eval, Property 6: Change_Subject selection priority
 // **Validates: Requirements 3.1, 3.2, 3.3, 3.4, 3.5, 3.6**
+// Contexts here have no Changed_File, so the docs-only gate of Requirement 3 criterion 7
+// never applies; it is covered in assess.docsonly.test.ts.
 
 const config = ConfigDefaults as EffectiveConfig;
 

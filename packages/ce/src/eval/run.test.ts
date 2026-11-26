@@ -228,6 +228,23 @@ describe('runEval', () => {
     for (const fn of Object.values(cp)) expect(fn).not.toHaveBeenCalled();
   });
 
+  it('skips the Change_Subject for the documentation-only real fixtures (issue #30)', async () => {
+    // Every candidate is rejected; the assessment answers are those of docs-near-miss-login in run 2.
+    const gateway = new StubGateway({ isBehavior: 0.1, observable: 0.79, adequate: 0.05 });
+    const r = await runEval({ fixturesDir: REAL_FIXTURES, config: ConfigDefaults, gateway });
+    if (!r.ok) throw new Error('expected eval to complete');
+    const byId = new Map(r.result.assessments.map((a) => [a.fixtureId, a]));
+
+    for (const id of ['docs-near-miss-login', 'readme-typo']) {
+      const a = byId.get(id);
+      expect(a, id).toMatchObject({ claimStatus: 'not_identified', required: false, surface: 'non_runtime' });
+      expect(a!.perClaim, id).toEqual([]);
+    }
+    const lint = byId.get('tooling-near-miss-lint');
+    expect(lint).toMatchObject({ claimStatus: 'not_identified', required: true });
+    expect(lint!.perClaim.map((p) => p.claimId)).toEqual(['change']);
+  });
+
   it('returns StageError(context) and asks nothing when a stand-in provider returns a headSha', async () => {
     write('a.json', fixture('a'));
     const gateway = new StubGateway({ isBehavior: 0.5, observable: 0.5, adequate: 0.5 });
