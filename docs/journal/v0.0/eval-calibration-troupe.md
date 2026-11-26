@@ -148,6 +148,101 @@ a82cf123c3ea0dbf5331870d4ff8118277bb3873080f3669c3530ab7c9ac23e5  troupe-2092.js
 
 The analysis script was smoke-tested before the freeze with a deterministic stub gateway (no network): it reproduced `combine` on 41 of 41 fixture runs and listed a simulated errored run.
 
+## Results
+
+Added after the three live runs. Nothing above this heading was changed.
+
+### Runs
+
+- Model id `typesafe/jev-1.14-20261014` in every run. Shipped defaults, as pre-registered.
+- `combine` reproduction: 54 of 54 completed fixture runs. Every recorded `required` and `decidedBy` was recomputed exactly from `perClaim`.
+- Errored runs: 9, all in repeat 3 (`troupe-510`, `-537`, `-551`, `-600`, `-610`, `-624`, `-75`, `-752`, `-872`). They ran one after another from 21:20 local time. Each failed at the assessment stage with `APIConnectionError` or `APITimeoutError` after the gateway's two transient retries. The last eight failed about 2 s apart. This reads as a network outage, not a fixture problem; OpenRouter answered normally a few minutes later. As pre-registered, they are excluded and not retried.
+- C1 n per repeat: 16, 16, 9. The minimum is 8, so the set is conclusive.
+- Requests per repeat: 1692, 1690, 976. That is about 80 billable requests per real pull request (50 classifications plus about 30 assessments; the eval loop's repeated classification questions were served from the memo).
+
+### Headline
+
+| subset | n | regression claim missed per repeat (miss or not-behavior) | fixture SKIPPED per repeat | upper 95% bound on claim miss rate (worst repeat) |
+| --- | --- | --- | --- | --- |
+| C1, all | 16 | 2/16, 2/16, 1/9 | 0/16, 0/16, 0/9 | 34.4% (2/16) |
+| C1, without low confidence | 13 | 1/13, 1/13, 1/7 | 0/13, 0/13, 0/7 | 52.1% (1/7) |
+| C1, without truncated diffs | 10 | 2/10, 2/10, 1/5 | 0/10, 0/10, 0/5 | 50.7% (2/10) |
+| C2, all | 5 | 0/5, 0/5, 0/3 | 0/5, 0/5, 0/3 | 45.1% (0/5) |
+
+Per fixture, at the shipped defaults (outcomes r1 / r2 / r3; scores are repeat 1):
+
+| fixture | class | conf | trunc | outcome per repeat | is_behavior p | regression claim scores (r1) | fixture required / decidedBy |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `troupe-75` | C1 | med/high |  | not-behavior / needed / ERROR | 0.57 / 0.60 / - | - | true/classifier / true/classifier / ERROR |
+| `troupe-197` | C1 | med/high |  | needed / needed / needed | 0.88 / 0.86 / 0.88 | RO 0.79 CA 0.26 | true/classifier / true/classifier / true/classifier |
+| `troupe-227` | C1 | med/high |  | needed / needed / needed | 0.93 / 0.92 / 0.92 | RO 0.92 CA 0.43 | true/classifier / true/classifier / true/classifier |
+| `troupe-433` | C1 | low | yes | needed / needed / needed | 0.84 / 0.85 / 0.85 | RO 0.75 CA 0.21 | true/classifier / true/classifier / true/classifier |
+| `troupe-471` | C1 | med/high |  | needed / needed / needed | 0.93/0.92 / 0.93/0.91 / 0.93/0.92 | RO 0.89 CA 0.46; RO 0.8 CA 0.29 | true/classifier / true/classifier / true/classifier |
+| `troupe-488` | C2 | med/high |  | needed / needed / needed | 0.95/0.93 / 0.95/0.92 / 0.95/0.92 | RO 0.86 CA 0.59; RO 0.89 CA 0.62 | true/classifier / true/classifier / true/classifier |
+| `troupe-499` | C1 | med/high | yes | needed / needed / needed | 0.84 / 0.84 / 0.84 | RO 0.88 CA 0.26 | true/classifier / true/classifier / true/classifier |
+| `troupe-510` | C2 | med/high |  | needed / needed / ERROR | 0.92 / 0.92 / - | RO 0.88 CA 0.53 | true/classifier / true/classifier / ERROR |
+| `troupe-537` | C1 | med/high |  | needed / needed / ERROR | 0.88 / 0.88 / - | RO 0.9 CA 0.63 | true/classifier / true/classifier / ERROR |
+| `troupe-551` | C2 | med/high | yes | needed / needed / ERROR | 0.89/0.88 / 0.89/0.88 / - | RO 0.85 CA 0.39; RO 0.65 CA 0.26 | true/classifier / true/classifier / ERROR |
+| `troupe-600` | C1 | low |  | miss / miss / ERROR | 0.77 / 0.82 / - | RO 0.9 CA 0.82 | true/classifier / true/classifier / ERROR |
+| `troupe-610` | C1 | med/high |  | needed / needed / ERROR | 0.85 / 0.81 / - | RO 0.7 CA 0.22 | true/classifier / true/classifier / ERROR |
+| `troupe-624` | C1 | med/high |  | needed / needed / ERROR | 0.90 / 0.91 / - | RO 0.92 CA 0.61 | true/classifier / true/classifier / ERROR |
+| `troupe-752` | C1 | med/high | yes | needed / needed / ERROR | 0.86 / 0.86 / - | RO 0.87 CA 0.54 | true/classifier / true/classifier / ERROR |
+| `troupe-872` | C1 | med/high | yes | needed / needed / ERROR | 0.63/0.86 / 0.63/0.84 / - | RO 0.77 CA 0.19; RO 0.87 CA 0.2 | true/classifier / true/classifier / ERROR |
+| `troupe-1077` | C2 | low | yes | needed / needed / needed | 0.78 / 0.78 / 0.79 | RO 0.78 CA 0.63 | true/classifier / true/classifier / true/classifier |
+| `troupe-1088` | C1 | med/high | yes | uncertain / uncertain / needed | 0.90/0.78 / 0.89/0.78 / 0.89/0.79 | RO 0.59 CA 0.24; RO 0.48 CA 0.25 | true/classifier / true/classifier / true/classifier |
+| `troupe-1275` | C1 | med/high |  | needed / needed / needed | 0.85/0.58 / 0.86/0.58 / 0.86/0.58 | RO 0.85 CA 0.5 | true/classifier / true/classifier / true/classifier |
+| `troupe-1510` | C2 | med/high |  | needed / needed / needed | 0.92 / 0.92 / 0.92 | RO 0.85 CA 0.66 | true/classifier / true/classifier / true/classifier |
+| `troupe-1720` | C1 | med/high |  | uncertain / miss / miss | 0.73/0.90 / 0.74/0.89 / 0.77/0.89 | RO 0.92 CA 0.83; RO 0.94 CA 0.79 | true/classifier / true/classifier / true/classifier |
+| `troupe-2092` | C1 | low | yes | needed / needed / needed | 0.73/0.94 / 0.73/0.94 / 0.73/0.93 | RO 0.86 CA 0.37; RO 0.67 CA 0.35 | true/classifier / true/classifier / true/classifier |
+
+**Rule outcome: recall gap.** Two C1 regression claims were missed in two or more repeats. Both misses are at the assessment stage. There was 1 claim-stage miss in all runs (`troupe-75`, repeat 1, `is_behavior` 0.57), and it did not repeat.
+
+- `troupe-600`: `miss` in both completed repeats. RO 0.90, CA 0.82.
+- `troupe-1720`: `uncertain`, then `miss`, `miss`. CA 0.79 to 0.83.
+
+14 of 16 C1 regression claims were missed in fewer than 2 repeats, which is the rule's criterion. 13 of 16 were caught in every completed repeat; `troupe-75` was caught in repeats 1 and 2 only. No C1 fixture was `SKIPPED` in any repeat. All 5 C2 claims were also `needed`.
+
+The sensitivity row "C1, without low confidence" has n = 7 in repeat 3, below the minimum of 8. The rule governs only the "C1, all" row.
+
+**Base rate. This set cannot show that CE discriminates.** Claims that did not later regress were caught (`needed` or `uncertain`) at nearly the same rate as the regression claims:
+
+| repeat | non-regression claims caught | C1 regression claims caught |
+| --- | --- | --- |
+| r1 | 520 / 613 (84.8%) | 14 / 16 (87.5%) |
+| r2 | 524 / 611 (85.8%) | 14 / 16 (87.5%) |
+| r3 | 301 / 358 (84.1%) | 8 / 9 (88.9%) |
+
+A recall near 87% is therefore what flagging about 85% of all claims would give anyway. Zero false skips follows from every fixture being `required`, not from CE finding the regression.
+
+### Diagnosis of the two misses
+
+The pre-registered next step for a recall gap is to look at the catalog and context, not thresholds. I read the diffs of both fixtures. In both, a test in the cause diff does cover the claim as written; the regression lives in an aspect the claim does not state.
+
+- `troupe-600`. Claim: "Render an "Open file" `IconActionButton`". `ToolCallCard.test.tsx` in the same diff adds `renders an "Open file" button when rawInput has a path and filePathContext is set`. The regression was the button's position in the row, which no candidate states.
+- `troupe-1720`. Claim: "The collapsed Rail shows its four tab icons only when the Side panel is also hidden." `ShellRail.test.tsx` in the same diff adds `shows the Column tabs only while the Side panel is not on screen`. The regression was a layout shift after clicking an icon. Another candidate, "After an icon shows the panel, focus moves to the panel tab, because the icon unmounts.", names its cause, but the class labeller did not select it.
+
+So a high `checksAdequate` on these claims is a defensible answer to the question CE asked. The gap is claim granularity: CE judges the claims a pull request states, and these regressions sat in side effects of those claims. The C1 labels were correct by the operational definition (no test touches the regressed aspect), but the chosen claims did not state that aspect. This is a post-hoc reading. The rule outcome above stands as recorded.
+
+### What this set shows beyond the rule
+
+These observations are exploratory. They were not pre-registered, and none of them proposes a default.
+
+1. **The evidence band and the `evidence` policy did real work.** `troupe-1088` was caught only as `uncertain` in repeats 1 and 2 (RO 0.59, inside the band). `troupe-1720` was caught in repeat 1 only because CA 0.79 fell inside the band. Candidate A (0.7/skip) would have missed both of those catches. Candidate B (0.6/evidence) would have missed the `troupe-1720` one; it keeps `troupe-1088`, which is uncertain on RO, not CA. This is consistent with the boundary record's conclusion to keep the defaults.
+2. **Real pull requests are always `EVIDENCED`.** Every completed fixture run was `required`, decided by the classifier. Across repeat 1, 640 claims were assessed; 459 (72%) were `needed` and 85 (13%) more were `uncertain`. Every fixture had at least one `needed` claim. This set holds only pull requests that shipped a regression, so it cannot say whether `EVIDENCED` was wrong for any of them. It does mean that a precision measurement on real pull requests that did not regress is the next missing piece.
+3. **Template lines become claims.** Counted on repeat 1, over the 1050 deduplicated candidates of all 21 fixtures:
+   - Unchecked task-list lines (`[ ] ...`, for example `[ ] docs: documentation only`): 145 candidates, 73 claims (11% of the 640 assessed claims), 21 `needed` and 19 more `uncertain`. These are template options the author did not select, so they say nothing about the change, yet 40 of them push the run toward evidence.
+   - Checked task-list lines (`[x] ...`, for example `[x] Manual verification completed`): 187 candidates, 63 claims, 37 `needed`. These are author statements about verification, not about behavior, so they are a separate and less clear-cut case.
+4. **Retry budget.** The gateway retries a transient failure twice, with 0.5 s and 1 s back-off. That does not ride out a short network outage, so a CI run during one ends in `ERROR`. That is a safe outcome (never a false `SKIPPED`), but it is a usability cost.
+
+### Conclusion for #29
+
+- No change to `adequateThreshold`, `uncertainty-band` or `on-uncertain`. The two rule misses come from claim granularity, not from the thresholds, and the two band catches above argue against loosening them.
+- This set does not show that CE separates risky claims from safe ones: it flags about 85% of all claims, and every real pull request here ended `EVIDENCED`. On complex real pull requests, recall looks fine and precision is unmeasured. The precision set is therefore the required next calibration, not an optional one.
+- Follow-ups, each needing its own issue and maintainer agreement:
+  - a precision set of real pull requests that did not regress (or shadow mode), required before any claim that CE discriminates;
+  - candidate extraction that drops unchecked task-list options (11% of claims here);
+  - possibly a longer transient back-off.
+
 ## Appendix: troupe-run.sh
 
 Run from any directory as `troupe-run.sh <repoRoot> <k> <runsRoot>` for k = 1, 2, 3.
