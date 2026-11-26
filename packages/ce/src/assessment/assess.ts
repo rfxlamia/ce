@@ -5,7 +5,8 @@
 
 import { ConfigDefaults } from '../config/defaults.js';
 import type { EffectiveConfig } from '../config/schema.js';
-import type { ChangeContext } from '../context/types.js';
+import { isDocumentationFile } from '../context/budget.js';
+import type { ChangeContext, TruncationReason } from '../context/types.js';
 import { StageError } from '../errors.js';
 import { SURFACE_LABELS, buildAssessmentRequest } from '../jev/catalog.js';
 import type { JevGateway } from '../jev/gateway.js';
@@ -104,6 +105,37 @@ export function selectChangeSubject(context: ChangeContext): AssessedSubject {
   );
 }
 
+/** Truncation reasons that name a real changed file (not a pseudo-path or a cap). */
+const FILE_TRUNCATION_REASONS: ReadonlySet<TruncationReason> = new Set([
+  'dropped',
+  'truncated',
+  'binary',
+  'sensitive-file',
+  'env-file',
+]);
+const PSEUDO_PATH = /^<.*>$|^commit:|^claim:|^check:/;
+
+/**
+ * True when the Change_Context holds at least one changed file and every changed
+ * file, old path and file-level truncation record is a Documentation_File
+ * (Requirement 3 criterion 7). Truncation records are read because the Budgeter can
+ * drop a file from `files`. Files removed by `context.include` / `context.exclude`
+ * are not in the Change_Context and are not considered.
+ */
+export function isDocsOnlyChange(context: ChangeContext): boolean {
+  const { files } = context.change;
+  if (files.length === 0) return false;
+  for (const f of files) {
+    if (!isDocumentationFile(f.path)) return false;
+    if (f.oldPath !== undefined && !isDocumentationFile(f.oldPath)) return false;
+  }
+  for (const t of context.truncated) {
+    if (!FILE_TRUNCATION_REASONS.has(t.reason) || PSEUDO_PATH.test(t.file)) continue;
+    if (!isDocumentationFile(t.file)) return false;
+  }
+  return true;
+}
+
 export async function assess(
   context: ChangeContext,
   config: EffectiveConfig,
@@ -133,15 +165,26 @@ async function assessUnsafe(
   const claims = classified.claims;
   const claimStatus: Assessment['claimStatus'] = claims.length > 0 ? 'identified' : 'not_identified';
 
-  const subjects: AssessedSubject[] =
-    claims.length > 0
-      ? claims.map((c) => ({
-          id: c.id,
-          kind: 'claim' as const,
-          text: c.text,
-          provenance: c.provenance,
-        }))
-      : [selectChangeSubject(context)];
+  let subjects: AssessedSubject[];
+  let subjectSkipped: AssessmentRecord['subjectSkipped'];
+  if (claims.length > 0) {
+    subjects = claims.map((c) => ({
+      id: c.id,
+      kind: 'claim' as const,
+      text: c.text,
+      provenance: c.provenance,
+    }));
+  } else {
+    // Select first so that an empty context still raises StageError (Decision D8),
+    // even when the docs-only gate below would discard the Change_Subject.
+    const changeSubject = selectChangeSubject(context);
+    if (isDocsOnlyChange(context)) {
+      subjects = [];
+      subjectSkipped = 'docs-only';
+    } else {
+      subjects = [changeSubject];
+    }
+  }
 
   const questions: AssessmentRecord['questions'] = [...classified.questionsAsked];
   const modelIds: string[] = [...classified.modelIds];
@@ -194,6 +237,7 @@ async function assessUnsafe(
     settings,
     cuts,
   };
+  if (subjectSkipped !== undefined) record.subjectSkipped = subjectSkipped;
   if (combined.policyDecision !== undefined) record.policyDecision = combined.policyDecision;
 
   return {

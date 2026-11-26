@@ -134,6 +134,19 @@ export function isTestFile(path: string): boolean {
   return dirs.some((d) => TEST_DIRS.has(d)) || base.includes('.test.') || base.includes('.spec.');
 }
 
+// Conservative on purpose: a false "documentation" verdict can skip a behaviour change
+// (claims-assessment-eval, Requirement 3 criterion 7). `.txt` is excluded because
+// files such as `requirements.txt` or `CMakeLists.txt` change run-time behaviour.
+const DOCUMENTATION_EXTENSIONS = new Set(['.md', '.mdx', '.markdown', '.rst', '.adoc']);
+
+/** True when the base name of the path has a Documentation_File extension (case-insensitive). */
+export function isDocumentationFile(path: string): boolean {
+  const segments = path.split('/');
+  const base = segments[segments.length - 1] ?? '';
+  const dot = base.lastIndexOf('.');
+  return dot >= 0 && DOCUMENTATION_EXTENSIONS.has(base.slice(dot).toLowerCase());
+}
+
 function rankOf(file: ChangedFile, binaryPaths: ReadonlySet<string>): number {
   const segments = file.path.split('/');
   const base = segments[segments.length - 1] ?? '';
