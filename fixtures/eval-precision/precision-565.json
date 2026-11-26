@@ -1,0 +1,132 @@
+{
+  "id": "precision-565",
+  "description": "Real change: https://github.com/gnoviawan/troupe/pull/565 at head e8ee309249e09a1de3d8c692ac937509fbbb01cc, merged 2026-08-08T07:34:26Z. No later PR references it as fixed or reverted. Layer L2. Cleaned input. MIT, see NOTICE.",
+  "change": {
+    "title": "chore: release v0.4.10",
+    "description": "## Summary\n\nPromote dev to main for the v0.4.10 stable release. This carries the version bump (0.4.9 -> 0.4.10) so a fresh tag can be cut and the release pipeline (with the macOS-optional fix already on main) can run cleanly.\n\n## Related Issue\n\nCloses #\n\nNo related issue - release promotion.\n\n## Type of Change\n\n- [ ] feat: new feature\n- [ ] fix: bug fix\n- [ ] docs: documentation only\n- [ ] style: formatting or non-functional styling changes\n- [ ] refactor: internal cleanup with no behavior change\n- [ ] perf: performance improvement\n- [ ] test: adds or updates tests\n- [ ] build: build or dependency changes\n- [ ] ci: CI/CD workflow changes\n- [ ] revert: reverts a previous change\n\n## What Changed\n\n- Version 0.4.9 -> 0.4.10 in package.json, src-tauri/Cargo.toml, src-tauri/tauri.conf.json, src-tauri/Cargo.lock, src/renderer/components/ProjectSidebar.tsx (sidebar label).\n\n## How It Was Tested\n\n- [ ] Not applicable\n\n## Screenshots or Recordings\n\nN/A - version-only bump, no UI change.\n\n## CI & Review Gate\n\n## Checklist",
+    "commits": [
+      {
+        "sha": "e8ee309",
+        "message": "chore: release v0.4.10 (#564)"
+      }
+    ],
+    "files": [
+      {
+        "path": "package.json",
+        "status": "modified",
+        "patch": "@@ -1,7 +1,7 @@\n {\n   \"name\": \"termul-manager\",\n   \"productName\": \"Termul Manager\",\n-  \"version\": \"0.4.9\",\n+  \"version\": \"0.4.10\",\n   \"description\": \"Project-aware terminal that treats workspaces as first-class citizens\",\n   \"author\": \"gnoviawan\",\n   \"contributors\": ["
+      },
+      {
+        "path": "src-tauri/Cargo.lock",
+        "status": "modified",
+        "patch": "@@ -5922,7 +5922,7 @@ dependencies = [\n \n [[package]]\n name = \"termul-manager\"\n-version = \"0.4.9\"\n+version = \"0.4.10\"\n dependencies = [\n  \"agent-client-protocol\",\n  \"anyhow\","
+      },
+      {
+        "path": "src-tauri/Cargo.toml",
+        "status": "modified",
+        "patch": "@@ -1,6 +1,6 @@\n [package]\n name = \"termul-manager\"\n-version = \"0.4.9\"\n+version = \"0.4.10\"\n description = \"Project-aware terminal that treats workspaces as first-class citizens\"\n authors = [\"gnoviawan\", \"mannnrachman (Tauri port)\"]\n edition = \"2021\""
+      },
+      {
+        "path": "src-tauri/tauri.conf.json",
+        "status": "modified",
+        "patch": "@@ -1,7 +1,7 @@\n {\n \t\"$schema\": \"https://schema.tauri.app/config/2\",\n \t\"productName\": \"Termul Manager\",\n-\t\"version\": \"0.4.9\",\n+\t\"version\": \"0.4.10\",\n \t\"identifier\": \"com.termul-manager.app\",\n \t\"build\": {\n \t\t\"beforeDevCommand\": \"npx vite --config vite.config.tauri.ts\","
+      },
+      {
+        "path": "src/renderer/components/ProjectSidebar.tsx",
+        "status": "modified",
+        "patch": "@@ -1540,7 +1540,7 @@ export function ProjectSidebar({\n       {/* Version - pinned bottom */}\n       <div className=\"p-2 rounded-b-xl\">\n         <div className=\"w-full h-6 inline-flex items-center justify-center\">\n-          <span className=\"text-xs text-muted-foreground\">Termul v0.4.9</span>\n+          <span className=\"text-xs text-muted-foreground\">Termul v0.4.10</span>\n         </div>\n       </div>\n "
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "passed"
+    },
+    {
+      "name": "ACP Registry Bundle Freshness",
+      "status": "passed"
+    },
+    {
+      "name": "Standalone Server Build",
+      "status": "passed"
+    },
+    {
+      "name": "Web Client Build",
+      "status": "passed"
+    },
+    {
+      "name": "Scan for leaked secrets",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Description",
+      "status": "passed"
+    },
+    {
+      "name": "Review dependency changes",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "passed"
+    },
+    {
+      "name": "Scan for leaked secrets",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "chore: release v0.4.10": false,
+      "Promote dev to main for the v0.4.10 stable release.": false,
+      "This carries the version bump (0.4.9 -> 0.4.10) so a fresh tag can be cut and the release pipeline (with the macOS-optional fix already on main) can run cleanly.": false,
+      "Closes #": false,
+      "No related issue - release promotion.": false,
+      "Version 0.4.9 -> 0.4.10 in package.json, src-tauri/Cargo.toml, src-tauri/tauri.conf.json, src-tauri/Cargo.lock, src/renderer/components/ProjectSidebar.tsx (sidebar label).": false,
+      "N/A - version-only bump, no UI change.": false,
+      "chore: release v0.4.10 (#564)": false
+    },
+    "runtimeObservable": {},
+    "checksAdequate": {},
+    "surface": {},
+    "claimStatus": "identified",
+    "required": false
+  }
+}

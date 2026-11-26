@@ -1,0 +1,121 @@
+{
+  "id": "precision-599",
+  "description": "Real change: https://github.com/gnoviawan/troupe/pull/599 at head 0034d58ed8ea8e0beb1fa08d81d0b29beee326e5, merged 2026-08-10T21:59:09Z. No later PR references it as fixed or reverted. Layer L2. Cleaned input. MIT, see NOTICE.",
+  "change": {
+    "title": "chore(acp): sync bundled ACP registry snapshot",
+    "description": "## Summary\n\nThe bundled ACP registry snapshot (`src/renderer/assets/agent-icons/acp/agents.json`) is stale against the CDN registry. The `ACP Registry Bundle Freshness` CI check (runs `bun run sync:acp-icons` then `git diff --exit-code`) is currently failing on `dev`'s HEAD because upstream released newer versions after the last sync landed in #596:\n\n- `harn` v0.10.71 → v0.10.73\n- `qwen-code` 0.21.8 → 0.21.9\n\nThis blocks every new PR targeting `dev` (e.g. #598), not just this one, because the check runs on every PR.\n\n## Related Issue\n\nNo related issue. Pre-existing base-branch freshness drift caused by upstream registry movement.\n\n## Type of Change\n\n- [ ] feat: new feature\n- [ ] fix: bug fix\n- [ ] docs: documentation only\n- [ ] style: formatting or non-functional styling changes\n- [ ] refactor: internal cleanup with no behavior change\n- [ ] perf: performance improvement\n- [ ] test: adds or updates tests\n- [ ] build: build or dependency changes\n- [ ] ci: CI/CD workflow changes\n- [ ] revert: reverts a previous change\n\n## What Changed\n\n- Ran `bun run sync:acp-icons` against the latest CDN registry.\n- Only `src/renderer/assets/agent-icons/acp/agents.json` changed (10 lines: version bumps for `harn` and `qwen-code`).\n- No runtime code, no Rust snapshot (`src-tauri/src/acp_registry_snapshot.rs`) change — `sync:acp-icons` does not touch the Rust snapshot, and the freshness check confirms it is already in sync.\n\n## How It Was Tested\n\n- [ ] `bun run ci` (Biome lint + format + imports, strict mode) - pre-existing worktree path issue; biome passes on the changed file.\n- [N/A] `cargo clippy` / `cargo test` - no Rust changes.\n\n## Screenshots or Recordings\n\nNot a UI change.\n\n## CI & Review Gate\n\n- [ ] All CI checks pass (PR Validation, Rust Checks, Build Verification, Security Scans) - awaiting run.\n- [ ] Code review comments from CodeRabbit / Claude have been addressed or resolved - awaiting review.\n- [ ] No unresolved review findings remain.\n\n## Checklist",
+    "commits": [
+      {
+        "sha": "0034d58",
+        "message": "chore(acp): sync bundled ACP registry snapshot\n\nRefresh the offline agents.json snapshot from the CDN registry so the ACP Registry Bundle Freshness check passes. Upstream moved since 48b43c26: harn v0.10.71 -> v0.10.73, qwen-code 0.21.8 -> 0.21.9. Auto-generated asset, no runtime code change."
+      }
+    ],
+    "files": [
+      {
+        "path": "src/renderer/assets/agent-icons/acp/agents.json",
+        "status": "modified",
+        "patch": "@@ -372,11 +372,11 @@\n   {\n     \"id\": \"github-copilot-cli\",\n     \"name\": \"GitHub Copilot\",\n-    \"version\": \"1.0.78\",\n+    \"version\": \"1.0.79\",\n     \"description\": \"GitHub's AI pair programmer\",\n     \"distribution\": {\n       \"npx\": {\n-        \"package\": \"@github/<email>\",\n+        \"package\": \"@github/<email>\",\n         \"args\": [\"--acp\"]\n       }\n     }\n@@ -438,33 +438,33 @@\n   {\n     \"id\": \"harn\",\n     \"name\": \"Harn\",\n-    \"version\": \"0.10.71\",\n+    \"version\": \"0.10.73\",\n     \"description\": \"Harn runs .harn agent pipelines as a native ACP coding agent over stdio.\",\n     \"distribution\": {\n       \"binary\": {\n         \"darwin-aarch64\": {\n           \"cmd\": \"./harn\",\n-          \"archive\": \"https://github.com/burin-labs/harn/releases/download/v0.10.71/harn-aarch64-apple-darwin.tar.gz\",\n+          \"archive\": \"https://github.com/burin-labs/harn/releases/download/v0.10.73/harn-aarch64-apple-darwin.tar.gz\",\n           \"args\": [\"serve\", \"acp\"]\n         },\n         \"darwin-x86_64\": {\n           \"cmd\": \"./harn\",\n-          \"archive\": \"https://github.com/burin-labs/harn/releases/download/v0.10.71/harn-x86_64-apple-darwin.tar.gz\",\n+          \"archive\": \"https://github.com/burin-labs/harn/releases/download/v0.10.73/harn-x86_64-apple-darwin.tar.gz\",\n           \"args\": [\"serve\", \"acp\"]\n         },\n         \"linux-aarch64\": {\n           \"cmd\": \"./harn\",\n-          \"archive\": \"https://github.com/burin-labs/harn/releases/download/v0.10.71/harn-aarch64-unknown-linux-gnu.tar.gz\",\n+          \"archive\": \"https://github.com/burin-labs/harn/releases/download/v0.10.73/harn-aarch64-unknown-linux-gnu.tar.gz\",\n           \"args\": [\"serve\", \"acp\"]\n         },\n         \"linux-x86_64\": {\n           \"cmd\": \"./harn\",\n-          \"archive\": \"https://github.com/burin-labs/harn/releases/download/v0.10.71/harn-x86_64-unknown-linux-gnu.tar.gz\",\n+          \"archive\": \"https://github.com/burin-labs/harn/releases/download/v0.10.73/harn-x86_64-unknown-linux-gnu.tar.gz\",\n           \"args\": [\"serve\", \"acp\"]\n         },\n         \"windows-x86_64\": {\n           \"cmd\": \"harn.exe\",\n-          \"archive\": \"https://github.com/burin-labs/harn/releases/download/v0.10.71/harn-x86_64-pc-windows-msvc.zip\",\n+          \"archive\": \"https://github.com/burin-labs/harn/releases/download/v0.10.73/harn-x86_64-pc-windows-msvc.zip\",\n           \"args\": [\"serve\", \"acp\"]\n         }\n       }\n@@ -744,11 +744,11 @@\n   {\n     \"id\": \"qwen-code\",\n     \"name\": \"Qwen Code\",\n-    \"version\": \"0.21.8\",\n+    \"version\": \"0.21.9\",\n     \"description\": \"Alibaba's Qwen coding assistant\",\n     \"distribution\": {\n       \"npx\": {\n-        \"package\": \"@qwen-code/<email>\",\n+        \"package\": \"@qwen-code/<email>\",\n         \"args\": [\"--acp\", \"--experimental-skills\"]\n       }\n     }"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "passed"
+    },
+    {
+      "name": "Review dependency changes",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "passed"
+    },
+    {
+      "name": "Scan for leaked secrets",
+      "status": "passed"
+    },
+    {
+      "name": "ACP Registry Bundle Freshness",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Description",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "passed"
+    },
+    {
+      "name": "Standalone Server Build",
+      "status": "passed"
+    },
+    {
+      "name": "Web Client Build",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "skipped"
+    },
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "skipped"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "chore(acp): sync bundled ACP registry snapshot": false,
+      "The bundled ACP registry snapshot (`src/renderer/assets/agent-icons/acp/agents.json`) is stale against the CDN registry.": false,
+      "The `ACP Registry Bundle Freshness` CI check (runs `bun run sync:acp-icons` then `git diff --exit-code`) is currently failing on `dev`'s HEAD because upstream released newer versions after the last sync landed in #596:": false,
+      "`harn` v0.10.71 → v0.10.73": false,
+      "`qwen-code` 0.21.8 → 0.21.9": false,
+      "This blocks every new PR targeting `dev` (e.g.": false,
+      "#598), not just this one, because the check runs on every PR.": false,
+      "No related issue.": false,
+      "Pre-existing base-branch freshness drift caused by upstream registry movement.": false,
+      "Ran `bun run sync:acp-icons` against the latest CDN registry.": false,
+      "Only `src/renderer/assets/agent-icons/acp/agents.json` changed (10 lines: version bumps for `harn` and `qwen-code`).": false,
+      "No runtime code, no Rust snapshot (`src-tauri/src/acp_registry_snapshot.rs`) change — `sync:acp-icons` does not touch the Rust snapshot, and the freshness check confirms it is already in sync.": false,
+      "[N/A] `cargo clippy` / `cargo test` - no Rust changes.": false,
+      "Not a UI change.": false,
+      "Refresh the offline agents.json snapshot from the CDN registry so the ACP Registry Bundle Freshness check passes.": false,
+      "Upstream moved since 48b43c26: harn v0.10.71 -> v0.10.73, qwen-code 0.21.8 -> 0.21.9.": false,
+      "Auto-generated asset, no runtime code change.": false
+    },
+    "runtimeObservable": {},
+    "checksAdequate": {},
+    "surface": {},
+    "claimStatus": "identified",
+    "required": false
+  }
+}

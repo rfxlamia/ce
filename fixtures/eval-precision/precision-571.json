@@ -1,0 +1,119 @@
+{
+  "id": "precision-571",
+  "description": "Real change: https://github.com/gnoviawan/troupe/pull/571 at head ac06afc3fdabb9209f1252942139870dc37fe3f8, merged 2026-08-08T10:47:51Z. No later PR references it as fixed or reverted. Layer L1. Cleaned input. MIT, see NOTICE.",
+  "change": {
+    "title": "fix(release): drop --target from termul-server build so binary lands at target/release/",
+    "description": "## Summary\n\nPromote the termul-server build-path fix to main so the v0.4.10 release pipeline's `standalone-server` job produces a signable binary and `publish_release` can run (all 4 desktop builds already succeed with the macOS-optional fix; this unblocks the server binary + manifest).\n\n## Related Issue\n\nCloses #\n\nNo related issue - release hotfix promotion.\n\n## Type of Change\n\n- [ ] feat: new feature\n- [ ] fix: bug fix\n- [ ] docs: documentation only\n- [ ] style: formatting or non-functional styling changes\n- [ ] refactor: internal cleanup with no behavior change\n- [ ] perf: performance improvement\n- [ ] test: adds or updates tests\n- [ ] build: build or dependency changes\n- [ ] chore: maintenance or tooling\n- [ ] revert: reverts a previous change\n\n## What Changed\n\n- `.github/workflows/release.yml`: dropped `--target x86_64-unknown-linux-gnu` from the termul-server build (binary lands at `target/release/termul-server`); updated sign/prepare/stage path refs; added a `Locate termul-server binary` diagnostic.\n\n## How It Was Tested\n\n- [ ] Not applicable\n\n## Screenshots or Recordings\n\nN/A - CI workflow change.\n\n## CI & Review Gate\n\n## Checklist",
+    "commits": [
+      {
+        "sha": "ac06afc",
+        "message": "fix(release): drop --target from termul-server build (binary lands at target/release/) + diagnostic find (#570)"
+      }
+    ],
+    "files": [
+      {
+        "path": ".github/workflows/release.yml",
+        "status": "modified",
+        "patch": "@@ -453,16 +453,23 @@ jobs:\n         run: >\n           cargo build --release --bin termul-server\n           --features standalone-server\n-          --target x86_64-unknown-linux-gnu\n+\n+      - name: Locate termul-server binary\n+        working-directory: src-tauri\n+        shell: bash\n+        run: |\n+          echo \"Searching for termul-server binary in target/...\"\n+          find target -name 'termul-server' -type f -print || true\n+          ls -la target/release/termul-server 2>/dev/null || echo \"target/release/termul-server NOT FOUND\"\n \n       - name: Sign termul-server binary\n         working-directory: src-tauri\n         env:\n           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}\n           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}\n         run: |\n-          bun run tauri signer sign target/x86_64-unknown-linux-gnu/release/termul-server\n-          test -f target/x86_64-unknown-linux-gnu/release/termul-server.sig\n+          bun run tauri signer sign target/release/termul-server\n+          test -f target/release/termul-server.sig\n \n       - name: Prepare server manifest fragment\n         shell: bash\n@@ -471,7 +478,7 @@ jobs:\n           TAG: ${{ github.ref_name }}\n         run: |\n           node scripts/release/prepare-server-artifacts.mjs \\\n-            --signature src-tauri/target/x86_64-unknown-linux-gnu/release/termul-server.sig \\\n+            --signature src-tauri/target/release/termul-server.sig \\\n             --tag \"$TAG\" \\\n             --version \"$VERSION\" \\\n             --output server-collected/server-manifest.json\n@@ -480,8 +487,8 @@ jobs:\n         shell: bash\n         run: |\n           mkdir -p server-collected\n-          cp src-tauri/target/x86_64-unknown-linux-gnu/release/termul-server server-collected/termul-server\n-          cp src-tauri/target/x86_64-unknown-linux-gnu/release/termul-server.sig server-collected/termul-server.sig\n+          cp src-tauri/target/release/termul-server server-collected/termul-server\n+          cp src-tauri/target/release/termul-server.sig server-collected/termul-server.sig\n \n       - name: Upload termul-server workflow artifact\n         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "passed"
+    },
+    {
+      "name": "Standalone Server Build",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "passed"
+    },
+    {
+      "name": "Web Client Build",
+      "status": "passed"
+    },
+    {
+      "name": "ACP Registry Bundle Freshness",
+      "status": "failed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Description",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "passed"
+    },
+    {
+      "name": "Audit GitHub Actions workflows",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "passed"
+    },
+    {
+      "name": "Scan for leaked secrets",
+      "status": "passed"
+    },
+    {
+      "name": "Review dependency changes",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "passed"
+    },
+    {
+      "name": "Audit GitHub Actions workflows",
+      "status": "passed"
+    },
+    {
+      "name": "Scan for leaked secrets",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "fix(release): drop --target from termul-server build so binary lands at target/release/": false,
+      "Promote the termul-server build-path fix to main so the v0.4.10 release pipeline's `standalone-server` job produces a signable binary and `publish_release` can run (all 4 desktop builds already succeed with the macOS-optional fix; this unblocks the server binary + manifest).": false,
+      "Closes #": false,
+      "No related issue - release hotfix promotion.": false,
+      "`.github/workflows/release.yml`: dropped `--target x86_64-unknown-linux-gnu` from the termul-server build (binary lands at `target/release/termul-server`); updated sign/prepare/stage path refs; added a `Locate termul-server binary` diagnostic.": false,
+      "N/A - CI workflow change.": false,
+      "fix(release): drop --target from termul-server build (binary lands at target/release/) + diagnostic find (#570)": false
+    },
+    "runtimeObservable": {},
+    "checksAdequate": {},
+    "surface": {},
+    "claimStatus": "identified",
+    "required": false
+  }
+}

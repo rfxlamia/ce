@@ -1,0 +1,109 @@
+{
+  "id": "precision-89",
+  "description": "Real change: https://github.com/gnoviawan/troupe/pull/89 at head 37cbb820f54bfd44949aa628b17c81afb851de33, merged 2026-04-28T08:10:18Z. No later PR references it as fixed or reverted. Layer L2. Cleaned input. MIT, see NOTICE.",
+  "change": {
+    "title": "feat: add AUR update support",
+    "description": "## Summary\n- add AUR update mode that checks upstream GitHub releases and points users to yay\n- keep signed Tauri updater as the default for official builds\n- add release workflow to publish termul-manager updates to AUR\n\n## AUR CD setup\nThe upstream repo needs an `AUR_SSH_PRIVATE_KEY` secret. The matching public key must belong to an AUR account that maintains or co-maintains `termul-manager`.\n\n## Testing\n- AUR package built locally as termul-manager 0.3.2-12\n\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n\n## Summary by CodeRabbit\n\n## Release Notes\n\n* **New Features**\n  * Added support for Arch Linux (AUR) installations with yay-based updates\n  * Update notifications now display platform-specific instructions based on your installation method\n  * AUR users are guided to use `yay -S termul-manager` for updates through in-app notifications\n\n<!-- end of auto-generated comment: release notes by coderabbit.ai -->",
+    "commits": [
+      {
+        "sha": "d4a073c",
+        "message": "fix(updater): split AUR update checks\n\nUse signed Tauri updates by default. Let AUR builds check upstream GitHub releases and direct users to yay."
+      },
+      {
+        "sha": "538af8c",
+        "message": "ci: publish AUR on release"
+      },
+      {
+        "sha": "37cbb82",
+        "message": "fix(updater): harden AUR publishing"
+      }
+    ],
+    "files": [
+      {
+        "path": ".github/workflows/publish-aur.yml",
+        "status": "added",
+        "patch": "@@ -0,0 +1,105 @@\n+name: Publish AUR\n+\n+on:\n+  release:\n+    types: [published]\n+  workflow_dispatch:\n+    inputs:\n+      version:\n+        description: Version to publish, without leading v\n+        required: true\n+        type: string\n+\n+concurrency:\n+  group: publish-aur-${{ github.event.release.tag_name || inputs.version }}\n+  cancel-in-progress: false\n+\n+jobs:\n+  publish:\n+    name: Update termul-manager on AUR\n+    runs-on: ubuntu-latest\n+    if: github.event_name == 'workflow_dispatch' || github.event.release.prerelease == false\n+    container:\n+      image: archlinux:base-devel\n+    env:\n+      AUR_PACKAGE: termul-manager\n+      AUR_REPO: ssh://<email>/termul-manager.git\n+    steps:\n+      - name: Install tools\n+        run: |\n+          pacman -Syu --noconfirm --needed git openssh pacman-contrib\n+          useradd -m builder\n+\n+      - name: Configure Git\n+        run: |\n+          runuser -u builder -- git config --global user.name \"github-actions[bot]\"\n+          runuser -u builder -- git config --global user.email \"41898282+github-actions[bot]@users.noreply.github.com\"\n+\n+      - name: Configure AUR SSH\n+        env:\n+          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}\n+        run: |\n+          test -n \"$AUR_SSH_PRIVATE_KEY\"\n+          install -d -m 700 -o builder -g builder /home/builder/.ssh\n+          printf '%s\\n' \"$AUR_SSH_PRIVATE_KEY\" > /home/builder/.ssh/aur\n+          chown builder:builder /home/builder/.ssh/aur\n+          chmod 600 /home/builder/.ssh/aur\n+          printf '%s\\n' \\\n+            'aur.archlinux.org ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEuBKrPzbawxA/k2g6NcyV5jmqwJ2s+zpgZGZ7tpLIcN' \\\n+            > /home/builder/.ssh/known_hosts\n+          chown builder:builder /home/builder/.ssh/known_hosts\n+          cat > /home/builder/.ssh/config <<'EOF'\n+          Host aur.archlinux.org\n+            User aur\n+            IdentityFile ~/.ssh/aur\n+            IdentitiesOnly yes\n+          EOF\n+          chown builder:builder /home/builder/.ssh/config\n+          chmod 600 /home/builder/.ssh/config\n+\n+      - name: Resolve version\n+        id: version\n+        shell: bash\n+        run: |\n+          if [[ \"${{ github.event_name }}\" == \"workflow_dispatch\" ]]; then\n+            VERSION=\"${{ inputs.version }}\"\n+          else\n+            VERSION=\"${{ github.event.release.tag_name }}\"\n+          fi\n+          VERSION=\"${VERSION#v}\"\n+          if [[ ! \"$VERSION\" =~ ^[0-9]+(\\.[0-9]+){1,2}([._+-][0-9A-Za-z]+)?$ ]]; then\n+            echo \"Invalid version: $VERSION\" >&2\n+            exit 1\n+          fi\n+          echo \"version=$VERSION\" >> \"$GITHUB_OUTPUT\"\n+\n+      - name: Clone AUR package\n+        run: |\n+          runuser -u builder -- git clone \"$AUR_REPO\" \"/home/builder/$AUR_PACKAGE\"\n+\n+      - name: Update PKGBUILD\n+        working-directory: /home/builder/termul-manager\n+        env:\n+          VERSION: ${{ steps.version.outputs.version }}\n+        run: |\n+          runuser -u builder -- sed -i \\\n+            -e \"s/^pkgver=.*/pkgver=$VERSION/\" \\\n+            -e \"s/^pkgrel=.*/pkgrel=1/\" \\\n+            PKGBUILD\n+          runuser -u builder -- updpkgsums\n+          runuser -u builder -- bash -c 'makepkg --printsrcinfo > .SRCINFO'\n+\n+      - name: Commit and push\n+        working-directory: /home/builder/termul-manager\n+        env:\n+          VERSION: ${{ steps.version.outputs.version }}\n+        run: |\n+          if runuser -u builder -- git diff --quiet; then\n+            echo \"AUR package already up to date.\"\n+            exit 0\n+          fi\n+          runuser -u builder -- git add PKGBUILD .SRCINFO\n+          runuser -u builder -- git commit -m \"Update to $VERSION\"\n+          runuser -u builder -- git fetch origin master\n+          runuser -u builder -- git rebase origin/master\n+          runuser -u builder -- git push origin HEAD:master"
+      },
+      {
+        "path": "src-tauri/Cargo.lock",
+        "status": "modified",
+        "patch": "@@ -4976,7 +4976,7 @@ dependencies = [\n \n [[package]]\n name = \"termul-manager\"\n-version = \"0.3.0\"\n+version = \"0.3.2\"\n dependencies = [\n  \"anyhow\",\n  \"chrono\","
+      },
+      {
+        "path": "src-tauri/tauri.conf.json",
+        "status": "modified",
+        "patch": "@@ -27,7 +27,7 @@\n \t\t\t}\n \t\t],\n \t\t\"security\": {\n-\t\t\t\"csp\": \"default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src ipc: http://ipc.localhost ws://localhost:* ws://127.0.0.1:*; worker-src 'self' blob:; img-src 'self' asset: http://asset.localhost data: https://picsum.photos; font-src 'self' data:; media-src 'self' blob:;\"\n+\t\t\t\"csp\": \"default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src ipc: http://ipc.localhost ws://localhost:* ws://127.0.0.1:* https://api.github.com; worker-src 'self' blob:; img-src 'self' asset: http://asset.localhost data: https://picsum.photos; font-src 'self' data:; media-src 'self' blob:;\"\n \t\t}\n \t},\n \t\"plugins\": {"
+      },
+      {
+        "path": "src/renderer/components/UpdateAvailableToast.tsx",
+        "status": "modified",
+        "patch": "@@ -1,6 +1,6 @@\n import { useEffect, useRef } from 'react'\n import { toast } from 'sonner'\n-import { Download, X, Clock } from 'lucide-react'\n+import { Download, Terminal, Clock } from 'lucide-react'\n import {\n   updaterStore,\n   useUpdaterState,\n@@ -10,6 +10,7 @@ import {\n   useIsDownloading,\n   useDownloadProgress\n } from '@/stores/updater-store'\n+import { isAurUpdateMode } from '@/lib/tauri-updater-api'\n \n // Local storage keys\n const UPDATE_REMINDER_KEY = 'update-reminder-timestamp'\n@@ -40,20 +41,30 @@ function setReminderForTomorrow(): void {\n  * Show a toast notification for available update\n  */\n export function showUpdateToast(version: string, releaseNotes?: string): void {\n+  const isAur = isAurUpdateMode()\n+\n   toast.success(`Update available: version ${version}`, {\n     duration: 30000,\n     description: releaseNotes\n       ? `What's new:\\n${releaseNotes.slice(0, 100)}${releaseNotes.length > 100 ? '...' : ''}`\n-      : 'A new version is available for download.',\n+      : isAur\n+        ? 'A new version is available. Update with yay.'\n+        : 'A new version is available for download.',\n     action: {\n       label: (\n         <div className=\"flex items-center gap-2\">\n-          <Download size={14} />\n-          <span>Download</span>\n+          {isAur ? <Terminal size={14} /> : <Download size={14} />}\n+          <span>{isAur ? 'Use yay' : 'Download'}</span>\n         </div>\n       ),\n       onClick: () => {\n-        // Trigger download via global store\n+        if (isAur) {\n+          toast.info('Run in terminal', {\n+            description: 'yay -S termul-manager'\n+          })\n+          return\n+        }\n+\n         const { downloadUpdate } = updaterStore.getState()\n         downloadUpdate()\n       }"
+      },
+      {
+        "path": "src/renderer/lib/tauri-updater-api.ts",
+        "status": "modified",
+        "patch": "@@ -13,14 +13,21 @@ import { keepPreviousVersion, setCurrentVersion } from './tauri-rollback-api'\n \n const STABLE_UPDATE_MANIFEST_URL =\n   'https://github.com/gnoviawan/termul/releases/latest/download/latest.json'\n+const UPSTREAM_LATEST_RELEASE_URL = 'https://api.github.com/repos/gnoviawan/termul/releases/latest'\n+const AUR_UPDATE_CHECK_TIMEOUT_MS = 8000\n+\n+export type UpdateMode = 'tauri' | 'aur'\n+\n+const UPDATE_MODE: UpdateMode =\n+  import.meta.env.VITE_TERMUL_UPDATE_MODE === 'aur' ? 'aur' : 'tauri'\n \n /**\n- * Stable channel policy: the shipped app only checks the stable GitHub Releases\n- * manifest at /releases/latest/download/latest.json. Prerelease tags are\n- * intentionally excluded from automatic detection by stable clients.\n+ * Default mode uses Tauri's signed updater manifest and self-update flow.\n+ * AUR mode only checks upstream GitHub Releases and asks users to update with yay.\n  */\n \n-let pendingUpdate: Update | null = null\n+let pendingTauriUpdate: Update | null = null\n+let pendingAurUpdate: UpdateInfo | null = null\n let autoUpdateEnabled = true\n let lastCheckedAt: string | null = null\n let downloadedVersion: string | null = null\n@@ -33,6 +40,14 @@ export interface TauriUpdaterEventHandlers {\n   onError?: (error: string) => void\n }\n \n+export function getUpdateMode(): UpdateMode {\n+  return UPDATE_MODE\n+}\n+\n+export function isAurUpdateMode(): boolean {\n+  return UPDATE_MODE === 'aur'\n+}\n+\n function getErrorMessage(error: unknown, fallback: string): string {\n   if (error instanceof Error && error.message.trim()) {\n     return error.message\n@@ -54,9 +69,9 @@ function getErrorMessage(error: unknown, fallback: string): string {\n   return fallback\n }\n \n-function createUpdaterCheckError(error: unknown): Error {\n+function createUpdaterCheckError(error: unknown, sourceUrl: string): Error {\n   const details = getErrorMessage(error, 'Unknown updater error')\n-  return new Error(`Failed to check for updates from ${STABLE_UPDATE_MANIFEST_URL}: ${details}`)\n+  return new Error(`Failed to check for updates from ${sourceUrl}: ${details}`)\n }\n \n async function syncRecoveryVersionMetadata(): Promise<string> {\n@@ -162,34 +177,131 @@ function mapDownloadEventToProgress(\n   }\n }\n \n+interface GitHubRelease {\n+  tag_name?: string\n+  name?: string\n+  body?: string\n+  html_url?: string\n+  published_at?: string\n+}\n+\n+function normalizeVersion(version: string): string {\n+  // Ignore AUR pkgrel/build metadata; app updates only track upstream release versions.\n+  return version.trim().replace(/^v/i, '').split(/[+-]/)[0] ?? version\n+}\n+\n+function compareVersions(a: string, b: string): number {\n+  const partsA = normalizeVersion(a).split('.').map((part) => Number.parseInt(part, 10) || 0)\n+  const partsB = normalizeVersion(b).split('.').map((part) => Number.parseInt(part, 10) || 0)\n+  const length = Math.max(partsA.length, partsB.length, 3)\n+\n+  for (let index = 0; index < length; index += 1) {\n+    const diff = (partsA[index] ?? 0) - (partsB[index] ?? 0)\n+    if (diff !== 0) return diff\n+  }\n+\n+  return 0\n+}\n+\n+function mapGitHubReleaseToInfo(release: GitHubRelease): UpdateInfo {\n+  const version = normalizeVersion(release.tag_name ?? release.name ?? '')\n+  return {\n+    version,\n+    releaseDate: release.published_at ?? new Date().toISOString(),\n+    releaseNotes: release.body ?? undefined,\n+    isSecurityUpdate: false,\n+    downloadUrl: release.html_url\n+  }\n+}\n+\n+async function checkAurUpdate(): Promise<UpdateInfo | null> {\n+  const controller = new AbortController()\n+  const timeoutId = window.setTimeout(() => {\n+    controller.abort()\n+  }, AUR_UPDATE_CHECK_TIMEOUT_MS)\n+\n+  const [currentVersion, response] = await Promise.all([\n+    getVersion(),\n+    fetch(UPSTREAM_LATEST_RELEASE_URL, {\n+      headers: {\n+        Accept: 'application/vnd.github+json'\n+      },\n+      signal: controller.signal\n+    })\n+  ]).finally(() => {\n+    window.clearTimeout(timeoutId)\n+  })\n+\n+  if (!response.ok) {\n+    throw new Error(`GitHub returned HTTP ${response.status}`)\n+  }\n+\n+  const release = (await response.json()) as GitHubRelease\n+  const latestVersion = normalizeVersion(release.tag_name ?? release.name ?? '')\n+\n+  if (!latestVersion) {\n+    throw new Error('Latest release has no version tag')\n+  }\n+\n+  return compareVersions(latestVersion, currentVersion) > 0\n+    ? mapGitHubReleaseToInfo(release)\n+    : null\n+}\n+\n export async function checkForUpdates(): Promise<UpdateInfo | null> {\n   try {\n+    if (isAurUpdateMode()) {\n+      const update = await checkAurUpdate()\n+      pendingAurUpdate = update\n+      lastCheckedAt = new Date().toISOString()\n+      return update\n+    }\n+\n     const update = await check()\n-    pendingUpdate = update\n+    pendingTauriUpdate = update\n     downloadedVersion = update && downloadedVersion === update.version ? downloadedVersion : null\n     preparedUpdateVersion =\n       update && preparedUpdateVersion === update.version ? preparedUpdateVersion : null\n     lastCheckedAt = new Date().toISOString()\n     return update ? mapTauriUpdateToInfo(update) : null\n   } catch (error) {\n     lastCheckedAt = new Date().toISOString()\n-    throw createUpdaterCheckError(error)\n+    throw createUpdaterCheckError(\n+      error,\n+      isAurUpdateMode() ? UPSTREAM_LATEST_RELEASE_URL : STABLE_UPDATE_MANIFEST_URL\n+    )\n   }\n }\n \n export async function downloadUpdate(\n   onProgress?: (progress: DownloadProgress) => void\n ): Promise<IpcResult<void>> {\n-  if (!pendingUpdate) {\n+  if (isAurUpdateMode()) {\n+    if (!pendingAurUpdate) {\n+      return {\n+        success: false,\n+        error: 'No update available to download',\n+        code: UpdaterErrorCodes.UPDATE_NOT_AVAILABLE\n+      }\n+    }\n+\n+    return {\n+      success: false,\n+      error: 'AUR build cannot self-update. Update with: yay -S termul-manager',\n+      code: UpdaterErrorCodes.UPDATE_NOT_AVAILABLE\n+    }\n+  }\n+\n+  if (!pendingTauriUpdate) {\n     return {\n       success: false,\n       error: 'No update available to download',\n-      code: 'UPDATE_NOT_AVAILABLE'\n+      code: UpdaterErrorCodes.UPDATE_NOT_AVAILABLE\n     }\n   }\n \n   try {\n-    const updateVersion = pendingUpdate.version\n+    const updateVersion = pendingTauriUpdate.version\n \n     if (preparedUpdateVersion !== updateVersion) {\n       const preparationResult = await prepareUpdateRecovery()\n@@ -211,7 +323,7 @@ export async function downloadUpdate(\n       })\n     }\n \n-    await pendingUpdate.downloadAndInstall((event) => {\n+    await pendingTauriUpdate.downloadAndInstall((event) => {\n       if (!onProgress) return\n \n       const mapped = mapDownloadEventToProgress(event, downloadedSoFar, totalBytes)\n@@ -233,7 +345,15 @@ export async function downloadUpdate(\n }\n \n export async function installAndRestart(): Promise<IpcResult<void>> {\n-  if (!pendingUpdate || downloadedVersion !== pendingUpdate.version) {\n+  if (isAurUpdateMode()) {\n+    return {\n+      success: false,\n+      error: 'AUR build cannot self-install updates. Update with: yay -S termul-manager',\n+      code: UpdaterErrorCodes.UPDATE_NOT_AVAILABLE\n+    }\n+  }\n+\n+  if (!pendingTauriUpdate || downloadedVersion !== pendingTauriUpdate.version) {\n     return {\n       success: false,\n       error: 'No downloaded update ready to install',\n@@ -254,12 +374,20 @@ export async function installAndRestart(): Promise<IpcResult<void>> {\n }\n \n export async function getUpdaterState(): Promise<IpcResult<UpdateState>> {\n+  const updateAvailable = isAurUpdateMode() ? pendingAurUpdate !== null : pendingTauriUpdate !== null\n+  const version = isAurUpdateMode()\n+    ? pendingAurUpdate?.version ?? null\n+    : pendingTauriUpdate?.version ?? null\n+  const downloaded = isAurUpdateMode()\n+    ? false\n+    : pendingTauriUpdate !== null && downloadedVersion === pendingTauriUpdate.version\n+\n   return {\n     success: true,\n     data: {\n-      updateAvailable: pendingUpdate !== null,\n-      downloaded: pendingUpdate !== null && downloadedVersion === pendingUpdate.version,\n-      version: pendingUpdate?.version ?? null,\n+      updateAvailable,\n+      downloaded,\n+      version,\n       isChecking: false,\n       isDownloading: false,\n       downloadProgress: null,\n@@ -291,13 +419,15 @@ export function registerUpdateEventHandlers(handlers: TauriUpdaterEventHandlers)\n }\n \n export async function clearPendingUpdate(): Promise<void> {\n-  pendingUpdate = null\n+  pendingTauriUpdate = null\n+  pendingAurUpdate = null\n   downloadedVersion = null\n   preparedUpdateVersion = null\n }\n \n export function _resetUpdaterStateForTesting(): void {\n-  pendingUpdate = null\n+  pendingTauriUpdate = null\n+  pendingAurUpdate = null\n   downloadedVersion = null\n   preparedUpdateVersion = null\n   lastCheckedAt = null"
+      },
+      {
+        "path": "src/renderer/pages/AppPreferences.tsx",
+        "status": "modified",
+        "patch": "@@ -26,8 +26,10 @@ import {\n } from '@/hooks/use-keyboard-shortcuts'\n import { useUpdaterState, useUpdaterActions } from '@/stores/updater-store'\n import { shellApi, terminalApi } from '@/lib/api'\n+import { isAurUpdateMode } from '@/lib/tauri-updater-api'\n \n export default function AppPreferences(): React.JSX.Element {\n+  const isAurUpdater = isAurUpdateMode()\n   const fontFamily = useTerminalFontFamily()\n   const fontSize = useTerminalFontSize()\n   const bufferSize = useTerminalBufferSize()\n@@ -492,7 +494,9 @@ export default function AppPreferences(): React.JSX.Element {\n                       <div className=\"flex-1\">\n                         <div className=\"text-sm font-medium text-foreground\">Version {version} is available!</div>\n                         <div className=\"text-xs text-muted-foreground mt-0.5\">\n-                          A new version is ready to download.\n+                          {isAurUpdater\n+                            ? 'Update through AUR with: yay -S termul-manager'\n+                            : 'A new version is ready to download.'}\n                         </div>\n                       </div>\n                     </div>"
+      },
+      {
+        "path": "src/renderer/vite-env.d.ts",
+        "status": "modified",
+        "patch": "@@ -2,6 +2,7 @@\n \n interface ImportMetaEnv {\n   readonly PACKAGE_VERSION: string\n+  readonly VITE_TERMUL_UPDATE_MODE?: 'tauri' | 'aur'\n }\n \n interface ImportMeta {"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "feat: add AUR update support": false,
+      "add AUR update mode that checks upstream GitHub releases and points users to yay": false,
+      "keep signed Tauri updater as the default for official builds": false,
+      "add release workflow to publish termul-manager updates to AUR": false,
+      "The upstream repo needs an `AUR_SSH_PRIVATE_KEY` secret.": false,
+      "The matching public key must belong to an AUR account that maintains or co-maintains `termul-manager`.": false,
+      "AUR package built locally as termul-manager 0.3.2-12": false,
+      "**New Features**": false,
+      "Added support for Arch Linux (AUR) installations with yay-based updates": false,
+      "Update notifications now display platform-specific instructions based on your installation method": false,
+      "AUR users are guided to use `yay -S termul-manager` for updates through in-app notifications": false,
+      "fix(updater): split AUR update checks": false,
+      "Use signed Tauri updates by default.": false,
+      "Let AUR builds check upstream GitHub releases and direct users to yay.": false,
+      "ci: publish AUR on release": false,
+      "fix(updater): harden AUR publishing": false,
+      "Default mode uses Tauri's signed updater manifest and self-update flow.": false,
+      "AUR mode only checks upstream GitHub Releases and asks users to update with yay.": false,
+      "Ignore AUR pkgrel/build metadata; app updates only track upstream release versions.": false
+    },
+    "runtimeObservable": {},
+    "checksAdequate": {},
+    "surface": {},
+    "claimStatus": "identified",
+    "required": false
+  }
+}

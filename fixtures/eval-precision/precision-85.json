@@ -1,0 +1,81 @@
+{
+  "id": "precision-85",
+  "description": "Real change: https://github.com/gnoviawan/troupe/pull/85 at head 2c17e2dd483f13af89afee03f8131cca44396372, merged 2026-04-26T07:31:28Z. No later PR references it as fixed or reverted. Layer L1. Cleaned input. MIT, see NOTICE.",
+  "change": {
+    "title": "Merge dev into main",
+    "description": "Merges recent updates from dev to main, including removal of macos release build.",
+    "commits": [
+      {
+        "sha": "b077268",
+        "message": "ci: remove macos build targets from release workflow"
+      },
+      {
+        "sha": "c1d73dc",
+        "message": "Merge pull request #84 from gnoviawan/fix/remove-macos-build\n\nci: remove macos build targets from release workflow"
+      },
+      {
+        "sha": "2c17e2d",
+        "message": "Merge dev to main"
+      }
+    ],
+    "files": [
+      {
+        "path": ".github/workflows/release.yml",
+        "status": "modified",
+        "patch": "@@ -128,14 +128,7 @@ jobs:\n             runner: windows-latest\n             rust_target: x86_64-pc-windows-msvc\n             args: --target x86_64-pc-windows-msvc\n-          - platform: macos-arm64\n-            runner: macos-14\n-            rust_target: aarch64-apple-darwin\n-            args: --target aarch64-apple-darwin\n-          - platform: macos-x64\n-            runner: macos-15-intel\n-            rust_target: x86_64-apple-darwin\n-            args: --target x86_64-apple-darwin\n+\n           - platform: linux-x64\n             runner: ubuntu-22.04\n             rust_target: x86_64-unknown-linux-gnu"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "failed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "skipped"
+    },
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "skipped"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "skipped"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Merge dev into main": false,
+      "Merges recent updates from dev to main, including removal of macos release build.": false,
+      "ci: remove macos build targets from release workflow": false,
+      "Merge pull request #84 from gnoviawan/fix/remove-macos-build": false,
+      "Merge dev to main": false
+    },
+    "runtimeObservable": {},
+    "checksAdequate": {},
+    "surface": {},
+    "claimStatus": "identified",
+    "required": false
+  }
+}

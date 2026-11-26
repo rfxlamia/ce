@@ -1,0 +1,74 @@
+{
+  "id": "precision-84",
+  "description": "Real change: https://github.com/gnoviawan/troupe/pull/84 at head b0772688a42ae5d73b46256592f62234d353725a, merged 2026-04-26T07:27:37Z. No later PR references it as fixed or reverted. Layer L1. Cleaned input. MIT, see NOTICE.",
+  "change": {
+    "title": "ci: remove macos build targets from release workflow",
+    "description": "Removing macOS build targets from release pipeline to prevent hanging builds. The macos runner queued for >24h.\n\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n\n## Summary by CodeRabbit\n\n* **Chores**\n  * Removed macOS builds from the release workflow. Releases are now available for Windows and Linux only.\n\n<!-- end of auto-generated comment: release notes by coderabbit.ai -->",
+    "commits": [
+      {
+        "sha": "b077268",
+        "message": "ci: remove macos build targets from release workflow"
+      }
+    ],
+    "files": [
+      {
+        "path": ".github/workflows/release.yml",
+        "status": "modified",
+        "patch": "@@ -128,14 +128,7 @@ jobs:\n             runner: windows-latest\n             rust_target: x86_64-pc-windows-msvc\n             args: --target x86_64-pc-windows-msvc\n-          - platform: macos-arm64\n-            runner: macos-14\n-            rust_target: aarch64-apple-darwin\n-            args: --target aarch64-apple-darwin\n-          - platform: macos-x64\n-            runner: macos-13\n-            rust_target: x86_64-apple-darwin\n-            args: --target x86_64-apple-darwin\n+\n           - platform: linux-x64\n             runner: ubuntu-22.04\n             rust_target: x86_64-unknown-linux-gnu"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "passed"
+    },
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "skipped"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "skipped"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "ci: remove macos build targets from release workflow": false,
+      "Removing macOS build targets from release pipeline to prevent hanging builds.": false,
+      "The macos runner queued for >24h.": false,
+      "**Chores**": false,
+      "Removed macOS builds from the release workflow.": false,
+      "Releases are now available for Windows and Linux only.": false
+    },
+    "runtimeObservable": {},
+    "checksAdequate": {},
+    "surface": {},
+    "claimStatus": "identified",
+    "required": false
+  }
+}

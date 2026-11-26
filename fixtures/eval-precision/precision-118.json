@@ -1,0 +1,85 @@
+{
+  "id": "precision-118",
+  "description": "Real change: https://github.com/gnoviawan/troupe/pull/118 at head c0cbc6db8bccaab3a73ee138ccf9437c3a056570, merged 2026-05-08T03:13:38Z. No later PR references it as fixed or reverted. Layer L2. Cleaned input. MIT, see NOTICE.",
+  "change": {
+    "title": "feat: add close button to AppPreferences and ProjectSettings headers",
+    "description": "Users navigating to the preferences or project settings pages had no obvious way to return to the workspace. They had to discover that clicking a project in the sidebar was the implicit close mechanism.\n\nThis PR adds an explicit **X** close button to each page header, making navigation intuitive and consistent with other modals/panels in the app.\n\n### Changes\n- `src/renderer/pages/AppPreferences.tsx` — added close button that navigates back to `/`\n- `src/renderer/pages/ProjectSettings.tsx` — added close button that navigates back to `/`\n\nBoth buttons:\n- Match existing focus/hover styling (`hover:bg-secondary`, `focus-visible:ring-2`)\n- Include proper `title` and `aria-label` for accessibility\n\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n\n## Summary by CodeRabbit\n\n* **New Features**\n  * Added close (X) buttons to the app preferences and project settings pages for easier navigation back to the main view.\n\n<!-- end of auto-generated comment: release notes by coderabbit.ai -->",
+    "commits": [
+      {
+        "sha": "c0cbc6d",
+        "message": "ui: add close button to AppPreferences and ProjectSettings headers"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/renderer/pages/AppPreferences.tsx",
+        "status": "modified",
+        "patch": "@@ -1,5 +1,6 @@\n import { useState, useEffect } from 'react'\n-import { RotateCcw, Keyboard, Download, CheckCircle2, AlertCircle, ExternalLink } from 'lucide-react'\n+import { useNavigate } from 'react-router-dom'\n+import { RotateCcw, Keyboard, Download, CheckCircle2, AlertCircle, ExternalLink, X } from 'lucide-react'\n import {\n   useTerminalFontFamily,\n   useTerminalFontSize,\n@@ -30,6 +31,7 @@ import { shellApi, terminalApi } from '@/lib/api'\n import { isAurUpdateMode } from '@/lib/tauri-updater-api'\n \n export default function AppPreferences(): React.JSX.Element {\n+  const navigate = useNavigate()\n   const isAurUpdater = isAurUpdateMode()\n   const fontFamily = useTerminalFontFamily()\n   const fontSize = useTerminalFontSize()\n@@ -156,6 +158,14 @@ export default function AppPreferences(): React.JSX.Element {\n               Configure global application settings\n             </p>\n           </div>\n+          <button\n+            onClick={() => { navigate('/') }}\n+            className=\"group flex items-center justify-center h-8 w-8 rounded-md hover:bg-secondary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary\"\n+            title=\"Close\"\n+            aria-label=\"Close preferences\"\n+          >\n+            <X size={18} className=\"text-muted-foreground group-hover:text-foreground\" />\n+          </button>\n         </div>\n \n         {/* Content */}"
+      },
+      {
+        "path": "src/renderer/pages/ProjectSettings.tsx",
+        "status": "modified",
+        "patch": "@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'\n import { Settings, Save, Info, Plus, X, ChevronDown, Upload } from 'lucide-react'\n import { useNavigate } from 'react-router-dom'\n import { NewProjectModal } from '@/components/NewProjectModal'\n+import { ConfirmDialog } from '@/components/ConfirmDialog'\n import {\n   useProjects,\n   useActiveProject,\n@@ -19,6 +20,7 @@ import { parseEnvFile, mergeEnvVars } from '@/lib/env-parser'\n export default function ProjectSettings() {\n   const navigate = useNavigate()\n   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false)\n+  const [isCloseConfirmOpen, setIsCloseConfirmOpen] = useState(false)\n   const activeProject = useActiveProject()\n   const activeProjectId = useActiveProjectId()\n   const {\n@@ -179,6 +181,20 @@ export default function ProjectSettings() {\n               </p>\n             </div>\n           </div>\n+          <button\n+            onClick={() => {\n+              if (hasChanges) {\n+                setIsCloseConfirmOpen(true)\n+              } else {\n+                navigate('/')\n+              }\n+            }}\n+            className=\"group flex items-center justify-center h-8 w-8 rounded-md hover:bg-secondary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary\"\n+            title=\"Close\"\n+            aria-label=\"Close project settings\"\n+          >\n+            <X size={18} className=\"text-muted-foreground group-hover:text-foreground\" />\n+          </button>\n         </div>\n \n         {/* Content */}\n@@ -457,6 +473,20 @@ export default function ProjectSettings() {\n         onClose={() => setIsNewProjectModalOpen(false)}\n         onCreateProject={addProject}\n       />\n+\n+      <ConfirmDialog\n+        isOpen={isCloseConfirmOpen}\n+        title=\"Unsaved Changes\"\n+        message={`You have unsaved changes in ${activeProject?.name ?? 'this project'}. Leaving will discard them.`}\n+        confirmLabel=\"Leave\"\n+        cancelLabel=\"Cancel\"\n+        variant=\"danger\"\n+        onConfirm={() => {\n+          setIsCloseConfirmOpen(false)\n+          navigate('/')\n+        }}\n+        onCancel={() => setIsCloseConfirmOpen(false)}\n+      />\n     </>\n   )\n }"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "skipped"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "skipped"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "feat: add close button to AppPreferences and ProjectSettings headers": false,
+      "Users navigating to the preferences or project settings pages had no obvious way to return to the workspace.": false,
+      "They had to discover that clicking a project in the sidebar was the implicit close mechanism.": false,
+      "This PR adds an explicit **X** close button to each page header, making navigation intuitive and consistent with other modals/panels in the app.": false,
+      "`src/renderer/pages/AppPreferences.tsx` — added close button that navigates back to `/`": false,
+      "`src/renderer/pages/ProjectSettings.tsx` — added close button that navigates back to `/`": false,
+      "Both buttons:": false,
+      "Match existing focus/hover styling (`hover:bg-secondary`, `focus-visible:ring-2`)": false,
+      "Include proper `title` and `aria-label` for accessibility": false,
+      "**New Features**": false,
+      "Added close (X) buttons to the app preferences and project settings pages for easier navigation back to the main view.": false,
+      "ui: add close button to AppPreferences and ProjectSettings headers": false
+    },
+    "runtimeObservable": {},
+    "checksAdequate": {},
+    "surface": {},
+    "claimStatus": "identified",
+    "required": false
+  }
+}

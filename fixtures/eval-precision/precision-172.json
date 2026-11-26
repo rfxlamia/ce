@@ -1,0 +1,106 @@
+{
+  "id": "precision-172",
+  "description": "Real change: https://github.com/gnoviawan/troupe/pull/172 at head 4835b2c6da38954fc028d50b15146537d9046cec, merged 2026-05-28T15:35:14Z. No later PR references it as fixed or reverted. Layer L2. Cleaned input. MIT, see NOTICE.",
+  "change": {
+    "title": "fix(terminal): xterm canvas overflows right-side padding",
+    "description": "## Summary\n\nThe xterm.js canvas layers (link layer, selection layer, screen) use absolute positioning (`position: absolute; top: 0; left: 0`) and span the element's full `clientWidth`. When `containerRef` was on the outer padded div (`px-4`), the canvas extended past the content area — causing the right terminal edge to have no padding.\n\n## Root Cause\n\nIn `ConnectedTerminal.tsx`, the render structure was:\n\n```tsx\n<div ref={containerRef} className=\"px-4 py-0.5 pb-1\">\n  {/* xterm.open() appends absolute-positioned canvases here */}\n</div>\n```\n\nxterm renders canvases at the full width of the parent element, ignoring CSS padding. The left side appeared padded by coincidence (text starts at x=0 from the element edge), but the right side canvas overflowed the padded region.\n\n## Fix\n\nNest `containerRef` inside a separate inner `<div>`:\n\n```diff\n- <div ref={containerRef} className=\"px-4 py-0.5 pb-1\" />\n+ <div className=\"px-4 py-0.5 pb-1\">\n+   <div ref={containerRef} className=\"w-full h-full\" />\n+ </div>\n```\n\nThe inner div's dimensions are naturally constrained by the parent's padding, so `FitAddon.fit()` correctly measures the content area. Both left and right edges now have proper padding.\n\n## Changes\n\n- **`src/renderer/components/terminal/ConnectedTerminal.tsx`** — moved `containerRef` to a new inner wrapper div\n\n## Testing\n\n- [ ] Visual: both left and right terminal edges show proper padding\n- [ ] FitAddon: terminal text fills the padded area without overflow\n- [ ] WebGL renderer: canvas layers stay within padded bounds\n- [ ] Resize: terminal re-fits correctly on pane resize/split\n- [ ] Project switch: cached terminal re-attaches correctly in nested container\n\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n\n## Summary by CodeRabbit\n\n* **Refactor**\n  * Simplified the terminal component's internal markup structure to improve code maintainability and clarity, with no changes to user-facing functionality.\n\n<!-- review_stack_entry_start -->\n\n[![Review Change Stack](https://storage.googleapis.com/coderabbit_public_assets/review-stack-in-coderabbit-ui.svg)](https://app.coderabbit.ai/change-stack/gnoviawan/termul/pull/172?utm_source=github_walkthrough&utm_medium=github&utm_campaign=change_stack)\n\n<!-- review_stack_entry_end -->\n\n<!-- end of auto-generated comment: release notes by coderabbit.ai -->",
+    "commits": [
+      {
+        "sha": "4835b2c",
+        "message": "fix(terminal): move xterm container ref inside padding wrapper\n\nThe xterm canvas layers use absolute positioning (position: absolute;\ntop: 0; left: 0) and fill the element's full clientWidth. When containerRef\nwas on the padded div (px-4), the canvas overflowed the right-side padding,\ncausing no padding on the right terminal edge.\n\nFix: Move containerRef to a new inner div that sits inside the padded outer\ndiv. The inner div's dimensions are naturally reduced by the parent's padding,\nso FitAddon.fit() correctly sizes the terminal within the padded content area."
+      }
+    ],
+    "files": [
+      {
+        "path": "src/renderer/components/terminal/ConnectedTerminal.tsx",
+        "status": "modified",
+        "patch": "@@ -1539,7 +1539,6 @@ function ConnectedTerminalComponent({\n \t\t<ContextMenu>\n \t\t\t<ContextMenuTrigger asChild>\n \t\t\t\t<div\n-\t\t\t\t\tref={containerRef}\n \t\t\t\t\tclassName={`w-full h-full bg-[#1e1e1e] px-4 py-0.5 pb-1 ${className}`}\n \t\t\t\t\tonClick={handleContainerClick}\n \t\t\t\t\tonMouseDown={(e) => {\n@@ -1550,7 +1549,9 @@ function ConnectedTerminalComponent({\n \t\t\t\t\t\t\tterminalRef.current.focus();\n \t\t\t\t\t\t}\n \t\t\t\t\t}}\n-\t\t\t\t/>\n+\t\t\t\t>\n+\t\t\t\t\t<div ref={containerRef} className=\"w-full h-full\" />\n+\t\t\t\t</div>\n \t\t\t</ContextMenuTrigger>\n \t\t\t<ContextMenuContent className=\"w-40\">\n \t\t\t\t<ContextMenuItem"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "passed"
+    },
+    {
+      "name": "Scan for leaked secrets",
+      "status": "passed"
+    },
+    {
+      "name": "Review dependency changes",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "passed"
+    },
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "skipped"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "skipped"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "fix(terminal): xterm canvas overflows right-side padding": false,
+      "The xterm.js canvas layers (link layer, selection layer, screen) use absolute positioning (`position: absolute; top: 0; left: 0`) and span the element's full `clientWidth`.": false,
+      "When `containerRef` was on the outer padded div (`px-4`), the canvas extended past the content area — causing the right terminal edge to have no padding.": false,
+      "In `ConnectedTerminal.tsx`, the render structure was:": false,
+      "xterm renders canvases at the full width of the parent element, ignoring CSS padding.": false,
+      "The left side appeared padded by coincidence (text starts at x=0 from the element edge), but the right side canvas overflowed the padded region.": false,
+      "Nest `containerRef` inside a separate inner `<div>`:": false,
+      "The inner div's dimensions are naturally constrained by the parent's padding, so `FitAddon.fit()` correctly measures the content area.": false,
+      "Both left and right edges now have proper padding.": false,
+      "**`src/renderer/components/terminal/ConnectedTerminal.tsx`** — moved `containerRef` to a new inner wrapper div": false,
+      "**Refactor**": false,
+      "Simplified the terminal component's internal markup structure to improve code maintainability and clarity, with no changes to user-facing functionality.": false,
+      "[![Review Change Stack](https://storage.googleapis.com/coderabbit_public_assets/review-stack-in-coderabbit-ui.svg)](https://app.coderabbit.ai/change-stack/gnoviawan/termul/pull/172?utm_source=github_walkthrough&utm_medium=github&utm_campaign=change_stack)": false,
+      "fix(terminal): move xterm container ref inside padding wrapper": false,
+      "The xterm canvas layers use absolute positioning (position: absolute;\ntop: 0; left: 0) and fill the element's full clientWidth.": false,
+      "When containerRef\nwas on the padded div (px-4), the canvas overflowed the right-side padding,\ncausing no padding on the right terminal edge.": false,
+      "Fix: Move containerRef to a new inner div that sits inside the padded outer\ndiv.": false,
+      "The inner div's dimensions are naturally reduced by the parent's padding,\nso FitAddon.fit() correctly sizes the terminal within the padded content area.": false
+    },
+    "runtimeObservable": {},
+    "checksAdequate": {},
+    "surface": {},
+    "claimStatus": "identified",
+    "required": false
+  }
+}

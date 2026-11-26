@@ -1,0 +1,117 @@
+{
+  "id": "precision-94",
+  "description": "Real change: https://github.com/gnoviawan/troupe/pull/94 at head d2b30f07222e5644bc92864c003aa60570c4299f, merged 2026-05-01T09:32:08Z. No later PR references it as fixed or reverted. Layer L2. Cleaned input. MIT, see NOTICE.",
+  "change": {
+    "title": "chore: merge dev with updater recovery fix into main",
+    "description": "## Summary\n\nMerge <code>dev</code> branch yang sudah include fix untuk updater recovery (PR #93) ke <code>main</code> untuk tag v0.3.4.\n\n### Context\n- PR #93 memperbaiki auto-update yang gagal karena <code>latest.json</code> tidak ada di release v0.3.3\n- Diperlukan tag baru v0.3.4 untuk menggantikan v0.3.3 yang broken\n\n### Changes Included\n- GitHub API fallback saat <code>latest.json</code> missing\n- Manual update mode dengan \"Open Download Page\" button\n- CI hardening: <code>createUpdaterArtifacts: true</code> dan verifier <code>.sig</code> assets",
+    "commits": [
+      {
+        "sha": "d4e6e54",
+        "message": "fix(updater): recover from missing latest.json and harden CI pipeline\n\n- Add createUpdaterArtifacts: true to both tauri.conf.json and tauri.conf.prod.json\n- Add isManualUpdateMode to updater types, store, and API\n- Implement GitHub API fallback when latest.json is missing (e.g., v0.3.3 without updater manifest)\n- Open browser to release page in manual-update mode for download/install\n- Show amber manual-update banner and 'Open Download Page' button in AppPreferences\n- Harden release.yml: fail publish step if latest.json or .sig files are missing"
+      },
+      {
+        "sha": "d2b30f0",
+        "message": "Merge pull request #93 from gnoviawan/fix/updater-recovery-and-ci-hardening\n\nfix(updater): recover from missing latest.json and harden CI pipeline"
+      }
+    ],
+    "files": [
+      {
+        "path": ".github/workflows/release.yml",
+        "status": "modified",
+        "patch": "@@ -268,12 +268,24 @@ jobs:\n             }\n \n             const hasLatestJson = assetNames.includes('latest.json')\n-            if (!hasLatestJson) {\n+            const hasSigFiles = assetNames.some((name) => name.endsWith('.sig'))\n+\n+            if (!hasLatestJson || !hasSigFiles) {\n               const publishedAssets = assetNames.join(', ')\n-              core.warning(\n-                `Stable release is missing latest.json. ` +\n-                  `Draft assets: ${publishedAssets}`\n+              core.setFailed(\n+                [\n+                  `Stable release is missing required updater assets.`,\n+                  `  - latest.json present: ${hasLatestJson}`,\n+                  `  - .sig files present: ${hasSigFiles}`,\n+                  `Draft assets: ${publishedAssets}`,\n+                  ``,\n+                  `To fix this, ensure:`,\n+                  `  1. 'bundle.createUpdaterArtifacts' is true in tauri.conf.json`,\n+                  `  2. TAURI_SIGNING_PRIVATE_KEY is configured in GitHub secrets`,\n+                  `  3. The tauri-action build step receives the signing env vars.`,\n+                ].join('\\n')\n               )\n+              return\n             }\n \n       - name: Publish draft release"
+      },
+      {
+        "path": "src-tauri/tauri.conf.json",
+        "status": "modified",
+        "patch": "@@ -48,6 +48,7 @@\n \t\"bundle\": {\n \t\t\"active\": true,\n \t\t\"targets\": \"all\",\n+\t\t\"createUpdaterArtifacts\": true,\n \t\t\"icon\": [\n \t\t\t\"icons/32x32.png\",\n \t\t\t\"icons/128x128.png\","
+      },
+      {
+        "path": "src-tauri/tauri.conf.prod.json",
+        "status": "modified",
+        "patch": "@@ -2,6 +2,7 @@\n   \"$schema\": \"https://schema.tauri.app/config/2\",\n   \"identifier\": \"com.termul-manager.app\",\n   \"bundle\": {\n+    \"createUpdaterArtifacts\": true,\n     \"windows\": {\n       \"allowDowngrades\": true,\n       \"webviewInstallMode\": {"
+      },
+      {
+        "path": "src/renderer/lib/tauri-updater-api.ts",
+        "status": "modified",
+        "patch": "@@ -1,6 +1,7 @@\n import { getVersion } from '@tauri-apps/api/app'\n import { check, type DownloadEvent, type Update } from '@tauri-apps/plugin-updater'\n import { relaunch } from '@tauri-apps/plugin-process'\n+import { openUrl } from '@tauri-apps/plugin-opener'\n import type { IpcResult } from '@shared/types/ipc.types'\n import {\n   UpdaterErrorCodes,\n@@ -28,10 +29,12 @@ const UPDATE_MODE: UpdateMode =\n \n let pendingTauriUpdate: Update | null = null\n let pendingAurUpdate: UpdateInfo | null = null\n+let manualUpdateInfo: UpdateInfo | null = null\n let autoUpdateEnabled = true\n let lastCheckedAt: string | null = null\n let downloadedVersion: string | null = null\n let preparedUpdateVersion: string | null = null\n+let isManualUpdateMode = false\n \n export interface TauriUpdaterEventHandlers {\n   onUpdateAvailable?: (update: Update) => void\n@@ -259,20 +262,79 @@ export async function checkForUpdates(): Promise<UpdateInfo | null> {\n \n     const update = await check()\n     pendingTauriUpdate = update\n+    isManualUpdateMode = false\n+    manualUpdateInfo = null\n     downloadedVersion = update && downloadedVersion === update.version ? downloadedVersion : null\n     preparedUpdateVersion =\n       update && preparedUpdateVersion === update.version ? preparedUpdateVersion : null\n     lastCheckedAt = new Date().toISOString()\n     return update ? mapTauriUpdateToInfo(update) : null\n   } catch (error) {\n     lastCheckedAt = new Date().toISOString()\n+\n+    if (!isAurUpdateMode()) {\n+      const errorMsg = getErrorMessage(error, '')\n+      const isManifestMissing =\n+        errorMsg.includes('valid release JSON') ||\n+        errorMsg.includes('Could not fetch') ||\n+        errorMsg.includes('404')\n+      if (isManifestMissing) {\n+        try {\n+          const fallback = await checkGitHubFallback()\n+          if (fallback) {\n+            isManualUpdateMode = true\n+            manualUpdateInfo = fallback\n+            pendingTauriUpdate = null\n+            return fallback\n+          }\n+          return null\n+        } catch (fallbackError) {\n+          throw createUpdaterCheckError(fallbackError, UPSTREAM_LATEST_RELEASE_URL)\n+        }\n+      }\n+    }\n+\n     throw createUpdaterCheckError(\n       error,\n       isAurUpdateMode() ? UPSTREAM_LATEST_RELEASE_URL : STABLE_UPDATE_MANIFEST_URL\n     )\n   }\n }\n \n+async function checkGitHubFallback(): Promise<UpdateInfo | null> {\n+  const controller = new AbortController()\n+  const timeoutId = window.setTimeout(() => {\n+    controller.abort()\n+  }, AUR_UPDATE_CHECK_TIMEOUT_MS)\n+\n+  const [currentVersion, response] = await Promise.all([\n+    getVersion(),\n+    fetch(UPSTREAM_LATEST_RELEASE_URL, {\n+      headers: {\n+        Accept: 'application/vnd.github+json'\n+      },\n+      signal: controller.signal\n+    })\n+  ]).finally(() => {\n+    window.clearTimeout(timeoutId)\n+  })\n+\n+  if (!response.ok) {\n+    throw new Error(`GitHub returned HTTP ${response.status}`)\n+  }\n+\n+  const release = (await response.json()) as GitHubRelease\n+  const latestVersion = normalizeVersion(release.tag_name ?? release.name ?? '')\n+\n+  if (!latestVersion) {\n+    throw new Error('Latest release has no version tag')\n+  }\n+\n+  return compareVersions(latestVersion, currentVersion) > 0\n+    ? mapGitHubReleaseToInfo(release)\n+    : null\n+}\n+\n export async function downloadUpdate(\n   onProgress?: (progress: DownloadProgress) => void\n ): Promise<IpcResult<void>> {\n@@ -292,6 +354,11 @@ export async function downloadUpdate(\n     }\n   }\n \n+  if (isManualUpdateMode && manualUpdateInfo) {\n+    await openUrl(manualUpdateInfo.downloadUrl ?? UPSTREAM_LATEST_RELEASE_URL)\n+    return { success: true, data: undefined }\n+  }\n+\n   if (!pendingTauriUpdate) {\n     return {\n       success: false,\n@@ -353,6 +420,11 @@ export async function installAndRestart(): Promise<IpcResult<void>> {\n     }\n   }\n \n+  if (isManualUpdateMode && manualUpdateInfo) {\n+    await openUrl(manualUpdateInfo.downloadUrl ?? UPSTREAM_LATEST_RELEASE_URL)\n+    return { success: true, data: undefined }\n+  }\n+\n   if (!pendingTauriUpdate || downloadedVersion !== pendingTauriUpdate.version) {\n     return {\n       success: false,\n@@ -374,13 +446,15 @@ export async function installAndRestart(): Promise<IpcResult<void>> {\n }\n \n export async function getUpdaterState(): Promise<IpcResult<UpdateState>> {\n-  const updateAvailable = isAurUpdateMode() ? pendingAurUpdate !== null : pendingTauriUpdate !== null\n+  const updateAvailable = isAurUpdateMode()\n+    ? pendingAurUpdate !== null\n+    : pendingTauriUpdate !== null || isManualUpdateMode\n   const version = isAurUpdateMode()\n     ? pendingAurUpdate?.version ?? null\n-    : pendingTauriUpdate?.version ?? null\n+    : (pendingTauriUpdate?.version ?? manualUpdateInfo?.version ?? null)\n   const downloaded = isAurUpdateMode()\n     ? false\n-    : pendingTauriUpdate !== null && downloadedVersion === pendingTauriUpdate.version\n+    : !isManualUpdateMode && pendingTauriUpdate !== null && downloadedVersion === pendingTauriUpdate.version\n \n   return {\n     success: true,\n@@ -392,7 +466,8 @@ export async function getUpdaterState(): Promise<IpcResult<UpdateState>> {\n       isDownloading: false,\n       downloadProgress: null,\n       error: null,\n-      lastChecked: lastCheckedAt\n+      lastChecked: lastCheckedAt,\n+      isManualUpdateMode: !isAurUpdateMode() && isManualUpdateMode\n     }\n   }\n }\n@@ -421,15 +496,23 @@ export function registerUpdateEventHandlers(handlers: TauriUpdaterEventHandlers)\n export async function clearPendingUpdate(): Promise<void> {\n   pendingTauriUpdate = null\n   pendingAurUpdate = null\n+  manualUpdateInfo = null\n   downloadedVersion = null\n   preparedUpdateVersion = null\n+  isManualUpdateMode = false\n }\n \n export function _resetUpdaterStateForTesting(): void {\n   pendingTauriUpdate = null\n   pendingAurUpdate = null\n+  manualUpdateInfo = null\n   downloadedVersion = null\n   preparedUpdateVersion = null\n   lastCheckedAt = null\n   autoUpdateEnabled = true\n+  isManualUpdateMode = false\n+}\n+\n+export function isInManualUpdateMode(): boolean {\n+  return !isAurUpdateMode() && isManualUpdateMode\n }"
+      },
+      {
+        "path": "src/renderer/pages/AppPreferences.tsx",
+        "status": "modified",
+        "patch": "@@ -1,5 +1,5 @@\n import { useState, useEffect } from 'react'\n-import { RotateCcw, Keyboard, Download, CheckCircle2, AlertCircle } from 'lucide-react'\n+import { RotateCcw, Keyboard, Download, CheckCircle2, AlertCircle, ExternalLink } from 'lucide-react'\n import {\n   useTerminalFontFamily,\n   useTerminalFontSize,\n@@ -54,8 +54,8 @@ export default function AppPreferences(): React.JSX.Element {\n   const resetAllShortcuts = useResetAllShortcuts()\n \n   // Updater state\n-  const { isChecking, updateAvailable, version, lastChecked, autoUpdateEnabled, skippedVersion, error: updateError } = useUpdaterState()\n-  const { checkForUpdates, setAutoUpdateEnabled } = useUpdaterActions()\n+  const { isChecking, updateAvailable, version, lastChecked, autoUpdateEnabled, skippedVersion, error: updateError, isManualUpdateMode } = useUpdaterState()\n+  const { checkForUpdates, downloadUpdate, installAndRestart, setAutoUpdateEnabled } = useUpdaterActions()\n \n   // Load available shells\n   useEffect(() => {\n@@ -495,14 +495,21 @@ export default function AppPreferences(): React.JSX.Element {\n                     <label className=\"block text-sm font-medium text-secondary-foreground mb-2\">\n                       Update Available\n                     </label>\n-                    <div className=\"bg-green-500/10 border border-green-500/20 rounded-md px-4 py-3 flex items-center gap-3\">\n-                      <CheckCircle2 size={18} className=\"text-green-500 flex-shrink-0\" />\n+                    <div className={cn(\n+                      'border rounded-md px-4 py-3 flex items-center gap-3',\n+                      isManualUpdateMode\n+                        ? 'bg-amber-500/10 border-amber-500/20'\n+                        : 'bg-green-500/10 border-green-500/20'\n+                    )}>\n+                      <CheckCircle2 size={18} className={cn('flex-shrink-0', isManualUpdateMode ? 'text-amber-500' : 'text-green-500')} />\n                       <div className=\"flex-1\">\n                         <div className=\"text-sm font-medium text-foreground\">Version {version} is available!</div>\n                         <div className=\"text-xs text-muted-foreground mt-0.5\">\n                           {isAurUpdater\n                             ? 'Update through AUR with: yay -S termul-manager'\n-                            : 'A new version is ready to download.'}\n+                            : isManualUpdateMode\n+                              ? 'Automatic update is unavailable. Please download and install the latest version manually.'\n+                              : 'A new version is ready to download.'}\n                         </div>\n                       </div>\n                     </div>\n@@ -529,14 +536,25 @@ export default function AppPreferences(): React.JSX.Element {\n                   <label className=\"block text-sm font-medium text-secondary-foreground mb-2\">\n                     Check for Updates\n                   </label>\n-                  <button\n-                    onClick={checkForUpdates}\n-                    disabled={isChecking}\n-                    className=\"flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 disabled:bg-primary/50 disabled:cursor-not-allowed border border-primary rounded-lg text-sm text-primary-foreground transition-colors\"\n-                  >\n-                    <Download size={16} />\n-                    {isChecking ? 'Checking for updates...' : 'Check for Updates'}\n-                  </button>\n+                  <div className=\"flex items-center gap-2\">\n+                    <button\n+                      onClick={checkForUpdates}\n+                      disabled={isChecking}\n+                      className=\"flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 disabled:bg-primary/50 disabled:cursor-not-allowed border border-primary rounded-lg text-sm text-primary-foreground transition-colors\"\n+                    >\n+                      <Download size={16} />\n+                      {isChecking ? 'Checking for updates...' : 'Check for Updates'}\n+                    </button>\n+                    {updateAvailable && isManualUpdateMode && (\n+                      <button\n+                        onClick={installAndRestart}\n+                        className=\"flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-500/90 border border-amber-500 rounded-lg text-sm text-white transition-colors\"\n+                      >\n+                        <ExternalLink size={16} />\n+                        Open Download Page\n+                      </button>\n+                    )}\n+                  </div>\n                   {lastChecked && (\n                     <p className=\"text-xs text-muted-foreground mt-1\">\n                       Last checked: {formatLastChecked(lastChecked)}"
+      },
+      {
+        "path": "src/renderer/stores/updater-store.ts",
+        "status": "modified",
+        "patch": "@@ -60,6 +60,7 @@ export interface UpdaterStoreState {\n   autoUpdateEnabled: boolean\n   releaseNotes: string | null\n   hasActiveTerminals: boolean\n+  isManualUpdateMode: boolean\n \n   // Actions\n   checkForUpdates: () => Promise<void>\n@@ -99,6 +100,7 @@ export const useUpdaterStore = create<UpdaterStoreState>((set, get) => ({\n   autoUpdateEnabled: true,\n   releaseNotes: null,\n   hasActiveTerminals: false,\n+  isManualUpdateMode: false,\n \n   /**\n    * Check for available updates via the Tauri updater plugin\n@@ -159,7 +161,8 @@ export const useUpdaterStore = create<UpdaterStoreState>((set, get) => ({\n         releaseNotes: updateInfo.releaseNotes ?? null,\n         downloadProgress: 0,\n         error: null,\n-        lastChecked: checkedAt\n+        lastChecked: checkedAt,\n+        isManualUpdateMode: false\n       })\n     } catch (err) {\n       const errorMessage = err instanceof Error ? err.message : 'Failed to check for updates'\n@@ -504,7 +507,8 @@ export const useUpdaterStore = create<UpdaterStoreState>((set, get) => ({\n       lastChecked: state.lastChecked ? new Date(state.lastChecked) : null,\n       autoUpdateEnabled: current.autoUpdateEnabled,\n       releaseNotes: null,\n-      hasActiveTerminals: hasActiveTerminalSessions()\n+      hasActiveTerminals: hasActiveTerminalSessions(),\n+      isManualUpdateMode: state.isManualUpdateMode ?? false\n     }))\n   }\n }))\n@@ -600,7 +604,8 @@ export function useUpdaterState() {\n       lastChecked: state.lastChecked,\n       autoUpdateEnabled: state.autoUpdateEnabled,\n       releaseNotes: state.releaseNotes,\n-      hasActiveTerminals: state.hasActiveTerminals\n+      hasActiveTerminals: state.hasActiveTerminals,\n+      isManualUpdateMode: state.isManualUpdateMode\n     }))\n   )\n }"
+      },
+      {
+        "path": "src/shared/types/updater.types.ts",
+        "status": "modified",
+        "patch": "@@ -19,6 +19,7 @@ export interface UpdateState {\n   downloadProgress: DownloadProgress | null\n   error: string | null\n   lastChecked: string | null // ISO timestamp\n+  isManualUpdateMode?: boolean\n }\n \n // Data stored when user skips a version"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "skipped"
+    },
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "skipped"
+    },
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "failed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "chore: merge dev with updater recovery fix into main": false,
+      "Merge <code>dev</code> branch yang sudah include fix untuk updater recovery (PR #93) ke <code>main</code> untuk tag v0.3.4.": false,
+      "PR #93 memperbaiki auto-update yang gagal karena <code>latest.json</code> tidak ada di release v0.3.3": false,
+      "Diperlukan tag baru v0.3.4 untuk menggantikan v0.3.3 yang broken": false,
+      "GitHub API fallback saat <code>latest.json</code> missing": false,
+      "Manual update mode dengan \"Open Download Page\" button": false,
+      "CI hardening: <code>createUpdaterArtifacts: true</code> dan verifier <code>.sig</code> assets": false,
+      "fix(updater): recover from missing latest.json and harden CI pipeline": false,
+      "Add createUpdaterArtifacts: true to both tauri.conf.json and tauri.conf.prod.json": false,
+      "Add isManualUpdateMode to updater types, store, and API": false,
+      "Implement GitHub API fallback when latest.json is missing (e.g., v0.3.3 without updater manifest)": false,
+      "Open browser to release page in manual-update mode for download/install": false,
+      "Show amber manual-update banner and 'Open Download Page' button in AppPreferences": false,
+      "Harden release.yml: fail publish step if latest.json or .sig files are missing": false,
+      "Merge pull request #93 from gnoviawan/fix/updater-recovery-and-ci-hardening": false
+    },
+    "runtimeObservable": {},
+    "checksAdequate": {},
+    "surface": {},
+    "claimStatus": "identified",
+    "required": false
+  }
+}

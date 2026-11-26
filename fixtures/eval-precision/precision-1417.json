@@ -1,0 +1,149 @@
+{
+  "id": "precision-1417",
+  "description": "Real change: https://github.com/gnoviawan/troupe/pull/1417 at head c9a54903a3192c705238992f6896c6a990f92162, merged 2026-10-19T00:41:01Z. No later PR references it as fixed or reverted. Layer L1. Cleaned input. MIT, see NOTICE.",
+  "change": {
+    "title": "chore: update CHANGELOG for v0.4.52",
+    "description": "## Summary\n\nAdds the v0.4.52 entry to CHANGELOG.md, matching the curated release notes (0.4.50 style, bro-plain wording, Canvas Editor marked experimental).\n\n## Related Issue\n\nNo related issue — release chore.\n\n## Type of Change\n\n## What Changed\n\n- `CHANGELOG.md`: new `## [0.4.52] - 2026-10-19` entry inserted before `## [0.4.0]` (Unreleased stays on top for the next cycle). 0.4.21 and 0.4.50 were never filed — untouched here.\n\n## How It Was Tested\n\n## Screenshots or Recordings\n\nNot applicable — docs-only change.\n\n## CI & Review Gate\n\n## Checklist\n\n- [ ] A human reviewed the complete diff before submission\n\n<!-- This is an auto-generated description by cubic. -->\n---\n## Summary by cubic\nAdds the v0.4.52 release entry to `CHANGELOG.md`, matching the curated release notes with the Canvas Editor marked as experimental.\n\n<sup>Written for commit c9a54903a3192c705238992f6896c6a990f92162. Summary will update on new commits.</sup>\n\n<a href=\"https://cubic.dev/pr/gnoviawan/termul/pull/1417?utm_source=github\" target=\"_blank\" rel=\"noopener noreferrer\" data-no-image-dialog=\"true\"><picture><source media=\"(prefers-color-scheme: dark)\" srcset=\"https://www.cubic.dev/buttons/review-in-cubic-dark.svg\"><source media=\"(prefers-color-scheme: light)\" srcset=\"https://www.cubic.dev/buttons/review-in-cubic-light.svg\"><img alt=\"View guided diff\" src=\"https://www.cubic.dev/buttons/review-in-cubic-light.svg\"></picture></a> <a href=\"https://www.cubic.dev/action/auto-fix/pr/gnoviawan/termul/1417?returnTo=https%3A%2F%2Fgithub.com%2Fgnoviawan%2Ftermul%2Fpull%2F1417&source=description\" target=\"_blank\" rel=\"noopener noreferrer\" data-no-image-dialog=\"true\"><picture><source media=\"(prefers-color-scheme: dark)\" srcset=\"https://www.cubic.dev/buttons/turn-on-auto-fix-dark.svg\"><source media=\"(prefers-color-scheme: light)\" srcset=\"https://www.cubic.dev/buttons/turn-on-auto-fix-light.svg\"><img alt=\"Turn on auto-fix\" src=\"https://www.cubic.dev/buttons/turn-on-auto-fix-light.svg\"></picture></a>\n\n<!-- End of auto-generated description by cubic. -->\n\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n\n## Summary by CodeRabbit\n\n* **New Features**\n  * Added an experimental canvas editor, settings pages, chat updates, and syntax colors in the editor.\n* **Bug Fixes**\n  * Fixed issues affecting agent chats, the editor and explorer, and saving files on the web.\n* **Documentation**\n  * Added a documentation site and a changelog entry with release highlights and links to the full changelog.\n\n<!-- end of auto-generated comment: release notes by coderabbit.ai -->",
+    "commits": [
+      {
+        "sha": "c9a5490",
+        "message": "chore: update CHANGELOG for v0.4.52"
+      }
+    ],
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "status": "modified",
+        "patch": "@@ -82,6 +82,38 @@ All notable changes to this project will be documented in this file.\n - **Web** — A timed-out `send_prompt` (socket dropped mid-turn) no longer toasts a send failure: the outcome is unknown until replay delivers `prompt_complete`, so the generic error is downgraded to a transient host log (#844)\n - **ACP** — A rejected durability probe releases its slot so the next over-limit flush retries; probe bookkeeping and clamp-log dedup are cleared on session drop (no phantom pins, no pin resurrection)\n \n+## [0.4.52] - 2026-10-19\n+\n+### Highlights\n+\n+- **Canvas Editor (experimental).** There's a new canvas for drawing and diagrams, built on figcraft. Agents can work on it through MCP tools — from the desktop app or a browser — with an agent cursor and inline guidance while they work. Canvases autosave, keep their state when closed (up to a limit), and cope with files changing underneath them and editor crashes. It's early days, so treat it as experimental. (#1369, #1396–#1405 via #1414)\n+- **Settings, one page each.** Every Preferences and Project settings category now gets its own page instead of one long scroll. (#1380, thanks @julianromli)\n+- **Smaller chat touches.** You can see which Claude account an agent is using right in the launcher, a pill shows the subagents running in the current turn, and what an agent supports moved into the model tooltip. (#1394, #1368, #1387, thanks @yolkmonday)\n+- **Syntax colors match Cursor.** The editor highlighting now matches the Cursor theme. (#963, thanks @julianromli)\n+\n+### Fixes\n+\n+**Agent chats**\n+- An idle agent no longer burns a thread — it now parks properly between turns. (#1398)\n+- You can't switch a chat to a Claude account that isn't signed in. (#1395)\n+\n+**Editor and explorer**\n+- Browsing files on Windows works again on verbatim paths. (#1383)\n+\n+**Web**\n+- Saving a file over a dead connection fails fast instead of hanging forever. (#1366)\n+\n+### Under the hood\n+\n+- There's a new docs site covering setup, terminals, files, git, the browser, AI agents, SSH, phones, settings and troubleshooting. (#1373–#1379)\n+- The macOS release build retries the stapling step and logs what the stapler says. (#1389)\n+\n+### Contributors\n+\n+Thanks to @julianromli (#963, #1380), @yolkmonday (#1368), and @gnoviawan for their work in this release.\n+\n+**Full changelog:** https://github.com/gnoviawan/termul/compare/v0.4.50...v0.4.52\n+\n ## [0.4.0] - 2026-05-31\n \n ### Features"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Standalone Server Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Web Client Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "skipped"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Description",
+      "status": "passed"
+    },
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "skipped"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "passed"
+    },
+    {
+      "name": "Standalone Server Build",
+      "status": "passed"
+    },
+    {
+      "name": "Web Client Build",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Description",
+      "status": "passed"
+    },
+    {
+      "name": "Scan for leaked secrets",
+      "status": "passed"
+    },
+    {
+      "name": "Review dependency changes",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "skipped"
+    },
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "skipped"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "chore: update CHANGELOG for v0.4.52": false,
+      "Adds the v0.4.52 entry to CHANGELOG.md, matching the curated release notes (0.4.50 style, bro-plain wording, Canvas Editor marked experimental).": false,
+      "No related issue — release chore.": false,
+      "`CHANGELOG.md`: new `## [0.4.52] - 2026-10-19` entry inserted before `## [0.4.0]` (Unreleased stays on top for the next cycle).": false,
+      "0.4.21 and 0.4.50 were never filed — untouched here.": false,
+      "Not applicable — docs-only change.": false,
+      "---": false,
+      "Adds the v0.4.52 release entry to `CHANGELOG.md`, matching the curated release notes with the Canvas Editor marked as experimental.": false,
+      "<sup>Written for commit c9a54903a3192c705238992f6896c6a990f92162.": false,
+      "Summary will update on new commits.</sup>": false,
+      "<a href=\"https://cubic.dev/pr/gnoviawan/termul/pull/1417?utm_source=github\" target=\"_blank\" rel=\"noopener noreferrer\" data-no-image-dialog=\"true\"><picture><source media=\"(prefers-color-scheme: dark)\" srcset=\"https://www.cubic.dev/buttons/review-in-cubic-dark.svg\"><source media=\"(prefers-color-scheme: light)\" srcset=\"https://www.cubic.dev/buttons/review-in-cubic-light.svg\"><img alt=\"View guided diff\" src=\"https://www.cubic.dev/buttons/review-in-cubic-light.svg\"></picture></a> <a href=\"https://www.cubic.dev/action/auto-fix/pr/gnoviawan/termul/1417?returnTo=https%3A%2F%2Fgithub.com%2Fgnoviawan%2Ftermul%2Fpull%2F1417&source=description\" target=\"_blank\" rel=\"noopener noreferrer\" data-no-image-dialog=\"true\"><picture><source media=\"(prefers-color-scheme: dark)\" srcset=\"https://www.cubic.dev/buttons/turn-on-auto-fix-dark.svg\"><source media=\"(prefers-color-scheme: light)\" srcset=\"https://www.cubic.dev/buttons/turn-on-auto-fix-light.svg\"><img alt=\"Turn on auto-fix\" src=\"https://www.cubic.dev/buttons/turn-on-auto-fix-light.svg\"></picture></a>": false,
+      "**New Features**": false,
+      "Added an experimental canvas editor, settings pages, chat updates, and syntax colors in the editor.": false,
+      "**Bug Fixes**": false,
+      "Fixed issues affecting agent chats, the editor and explorer, and saving files on the web.": false,
+      "**Documentation**": false,
+      "Added a documentation site and a changelog entry with release highlights and links to the full changelog.": false
+    },
+    "runtimeObservable": {},
+    "checksAdequate": {},
+    "surface": {},
+    "claimStatus": "identified",
+    "required": false
+  }
+}

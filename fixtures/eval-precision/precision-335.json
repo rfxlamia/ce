@@ -1,0 +1,89 @@
+{
+  "id": "precision-335",
+  "description": "Real change: https://github.com/gnoviawan/troupe/pull/335 at head 82603deed9d139b6279818a12481363903f225dc, merged 2026-06-17T09:26:00Z. No later PR references it as fixed or reverted. Layer L2. Cleaned input. MIT, see NOTICE.",
+  "change": {
+    "title": "fix(ui): align Explorer sidebar header typography with Projects",
+    "description": "## Summary\r\n\r\n- Align Explorer sidebar header typography with the Projects panel header for consistent workspace chrome.\r\n\r\n## Related Issue\r\n\r\nCloses #334\r\n\r\n## Type of Change\r\n\r\n- [ ] feat: new feature\r\n- [ ] fix: bug fix\r\n- [ ] docs: documentation only\r\n- [ ] refactor: internal cleanup with no behavior change\r\n- [ ] perf: performance improvement\r\n- [ ] test: adds or updates tests\r\n- [ ] build: build or dependency changes\r\n- [ ] ci: CI/CD workflow changes\r\n- [ ] chore: maintenance or tooling\r\n- [ ] revert: reverts a previous change\r\n\r\n## What Changed\r\n\r\n- Updated the Explorer header label in `FileExplorer.tsx` to use `text-sidebar-foreground` and removed `font-semibold`, matching `ProjectSidebar.tsx`.\r\n\r\n## How It Was Tested\r\n\r\n- [ ] `bun run lint`\r\n- [ ] `bun run test`\r\n- [ ] Not applicable\r\n\r\n## Screenshots or Recordings\r\n\r\n<img width=\"3110\" height=\"753\" alt=\"image\" src=\"https://github.com/user-attachments/assets/6769c1f4-63d3-4547-86d1-887ef2209b23\" />\r\n\r\n\r\n## Checklist\r\n\r\n- [ ] I updated docs when needed\r\n- [ ] I added or updated tests when needed\r\n\r\n\r\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\r\n\r\n## Summary by CodeRabbit\r\n\r\n* **Style**\r\n  * Updated the Explorer header label styling for improved visual consistency.\r\n\r\n<!-- end of auto-generated comment: release notes by coderabbit.ai -->",
+    "commits": [
+      {
+        "sha": "99a5d7e",
+        "message": "fix(ui): align Explorer sidebar header typography with Projects\n\nMatch the file explorer panel title styling to the project sidebar for visual consistency."
+      },
+      {
+        "sha": "82603de",
+        "message": "Merge branch 'dev' into fix/explorer-header-typography"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/renderer/components/file-explorer/FileExplorer.tsx",
+        "status": "modified",
+        "patch": "@@ -856,8 +856,8 @@ export function FileExplorer({ side = 'right' }: FileExplorerProps): React.JSX.E\n       style={{ width: explorerWidth }}\n     >\n       {/* Header */}\n-      <div className=\"flex items-center justify-between px-3 h-9 border-b border-border flex-shrink-0 rounded-t-xl\">\n-        <span className=\"label-section text-sidebar-foreground\">Explorer</span>\n+      <div className=\"flex items-center justify-between px-3 h-10 border-b border-border flex-shrink-0 rounded-t-xl\">\n+        <span className=\"text-xs tracking-wider text-sidebar-foreground uppercase\">Explorer</span>\n         <button\n           onClick={collapseAll}\n           className=\"text-muted-foreground hover:text-foreground transition-colors p-0.5\""
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "passed"
+    },
+    {
+      "name": "Scan for leaked secrets",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "passed"
+    },
+    {
+      "name": "Review dependency changes",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Description",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "fix(ui): align Explorer sidebar header typography with Projects": false,
+      "Align Explorer sidebar header typography with the Projects panel header for consistent workspace chrome.": false,
+      "Closes #334": false,
+      "Updated the Explorer header label in `FileExplorer.tsx` to use `text-sidebar-foreground` and removed `font-semibold`, matching `ProjectSidebar.tsx`.": false,
+      "<img width=\"3110\" height=\"753\" alt=\"image\" src=\"https://github.com/user-attachments/assets/6769c1f4-63d3-4547-86d1-887ef2209b23\" />": false,
+      "**Style**": false,
+      "Updated the Explorer header label styling for improved visual consistency.": false,
+      "Match the file explorer panel title styling to the project sidebar for visual consistency.": false,
+      "Merge branch 'dev' into fix/explorer-header-typography": false
+    },
+    "runtimeObservable": {},
+    "checksAdequate": {},
+    "surface": {},
+    "claimStatus": "identified",
+    "required": false
+  }
+}

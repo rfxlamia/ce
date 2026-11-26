@@ -1,0 +1,119 @@
+{
+  "id": "precision-575",
+  "description": "Real change: https://github.com/gnoviawan/troupe/pull/575 at head be7f1c8a5cab18f31a3af3c7babea38d4acb3c37, merged 2026-08-08T12:07:41Z. No later PR references it as fixed or reverted. Layer L1. Cleaned input. MIT, see NOTICE.",
+  "change": {
+    "title": "fix(release): publish_release reads server artifact at root",
+    "description": "## Summary\n\nPromote the publish_release server-artifact path fix to main so v0.4.10's `Validate, upload, and publish release` job can find the `termul-server` binary + signature + manifest (all build jobs already succeed).\n\n## Related Issue\n\nCloses #\n\nNo related issue - release hotfix promotion.\n\n## Type of Change\n\n- [ ] feat: new feature\n- [ ] fix: bug fix\n- [ ] docs: documentation only\n- [ ] style: formatting or non-functional styling changes\n- [ ] refactor: internal cleanup with no behavior change\n- [ ] perf: performance improvement\n- [ ] test: adds or updates tests\n- [ ] build: build or dependency changes\n- [ ] chore: maintenance or tooling\n- [ ] revert: reverts a previous change\n\n## What Changed\n\n- `.github/workflows/release.yml`: `publish_release` reads the server artifact at `release-inputs/release-standalone-server/termul-server[.sig]` and `server-manifest.json` (was `.../server-collected/...`).\n\n## How It Was Tested\n\n- [ ] Not applicable\n\n## Screenshots or Recordings\n\nN/A - CI workflow change.\n\n## CI & Review Gate\n\n## Checklist",
+    "commits": [
+      {
+        "sha": "be7f1c8",
+        "message": "fix(release): publish_release reads server artifact at root (upload-artifact flattens server-collected/ contents) (#574)"
+      }
+    ],
+    "files": [
+      {
+        "path": ".github/workflows/release.yml",
+        "status": "modified",
+        "patch": "@@ -555,9 +555,9 @@ jobs:\n             done < <(find \"$root/assets\" -maxdepth 1 -type f -print0)\n           done\n \n-          cp release-inputs/release-standalone-server/server-collected/termul-server release-assets/termul-server\n-          cp release-inputs/release-standalone-server/server-collected/termul-server.sig release-assets/termul-server.sig\n-          manifests+=(\"release-inputs/release-standalone-server/server-collected/server-manifest.json\")\n+          cp release-inputs/release-standalone-server/termul-server release-assets/termul-server\n+          cp release-inputs/release-standalone-server/termul-server.sig release-assets/termul-server.sig\n+          manifests+=(\"release-inputs/release-standalone-server/server-manifest.json\")\n \n           # Channel selection: stable (`v*` tag) vs Insider RC (`v*-rc.*` tag).\n           # The merge validator derives the asset URL tag from the channel:"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "passed"
+    },
+    {
+      "name": "ACP Registry Bundle Freshness",
+      "status": "failed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Web Client Build",
+      "status": "passed"
+    },
+    {
+      "name": "Standalone Server Build",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Description",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "passed"
+    },
+    {
+      "name": "Scan for leaked secrets",
+      "status": "passed"
+    },
+    {
+      "name": "Review dependency changes",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "passed"
+    },
+    {
+      "name": "Audit GitHub Actions workflows",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "passed"
+    },
+    {
+      "name": "Audit GitHub Actions workflows",
+      "status": "passed"
+    },
+    {
+      "name": "Scan for leaked secrets",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "fix(release): publish_release reads server artifact at root": false,
+      "Promote the publish_release server-artifact path fix to main so v0.4.10's `Validate, upload, and publish release` job can find the `termul-server` binary + signature + manifest (all build jobs already succeed).": false,
+      "Closes #": false,
+      "No related issue - release hotfix promotion.": false,
+      "`.github/workflows/release.yml`: `publish_release` reads the server artifact at `release-inputs/release-standalone-server/termul-server[.sig]` and `server-manifest.json` (was `.../server-collected/...`).": false,
+      "N/A - CI workflow change.": false,
+      "fix(release): publish_release reads server artifact at root (upload-artifact flattens server-collected/ contents) (#574)": false
+    },
+    "runtimeObservable": {},
+    "checksAdequate": {},
+    "surface": {},
+    "claimStatus": "identified",
+    "required": false
+  }
+}

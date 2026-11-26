@@ -1,0 +1,100 @@
+{
+  "id": "precision-283",
+  "description": "Real change: https://github.com/gnoviawan/troupe/pull/283 at head e1235d4c6e5719b34fc4dfbfc9958410f0f18409, merged 2026-06-04T08:59:44Z. No later PR references it as fixed or reverted. Layer L1. Cleaned input. MIT, see NOTICE.",
+  "change": {
+    "title": "chore(github): require contributor intent on issue forms",
+    "description": "## Summary\n\n- Adds a **required** contributor-intent dropdown to bug and feature issue templates.\n- Options: **Yes** (plans to open a PR), **No** (for maintainers), **Unsure** (open to guidance).\n- Every new issue will show the choice in the body for clearer triage.\n\n## Test plan\n\n- [ ] Open **New issue → Bug Report** on GitHub and confirm the dropdown appears after the intro, is required, and all three options submit.\n- [ ] Open **New issue → Feature Request** and confirm the same field and options.\n- [ ] Submit a test issue with each option and verify the rendered issue body includes the selected value.\n\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n\n## Summary by CodeRabbit\n\n* **Chores**\n  * Enhanced issue reporting templates with new required fields: bug reports now ask if reporters will contribute fixes, and feature requests inquire about contributor intent.\n\n<!-- end of auto-generated comment: release notes by coderabbit.ai -->",
+    "commits": [
+      {
+        "sha": "e1235d4",
+        "message": "chore(github): require contributor intent on issue forms\n\nAdd a required dropdown (yes / no / unsure) so every bug and feature report states whether the reporter plans to open a PR."
+      }
+    ],
+    "files": [
+      {
+        "path": ".github/ISSUE_TEMPLATE/bug_report.yml",
+        "status": "modified",
+        "patch": "@@ -8,6 +8,18 @@ body:\n       value: |\n         Thanks for reporting a bug. Please search existing issues first and include enough detail for someone else to reproduce the problem.\n \n+  - type: dropdown\n+    id: contributor-intent\n+    attributes:\n+      label: Will you contribute a fix?\n+      description: Helps maintainers prioritize issues and avoid duplicate work.\n+      options:\n+        - \"Yes — I plan to open a pull request\"\n+        - \"No — reporting for maintainers to handle\"\n+        - \"Unsure — open to contributing with guidance\"\n+    validations:\n+      required: true\n+\n   - type: textarea\n     id: summary\n     attributes:"
+      },
+      {
+        "path": ".github/ISSUE_TEMPLATE/feature_request.yml",
+        "status": "modified",
+        "patch": "@@ -8,6 +8,18 @@ body:\n       value: |\n         Thanks for the suggestion. Please check for similar requests first and explain the user problem, not just the solution.\n \n+  - type: dropdown\n+    id: contributor-intent\n+    attributes:\n+      label: Will you contribute an implementation?\n+      description: Helps maintainers prioritize requests and avoid duplicate work.\n+      options:\n+        - \"Yes — I plan to open a pull request\"\n+        - \"No — reporting for maintainers to handle\"\n+        - \"Unsure — open to contributing with guidance\"\n+    validations:\n+      required: true\n+\n   - type: textarea\n     id: problem\n     attributes:"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "skipped"
+    },
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "skipped"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "passed"
+    },
+    {
+      "name": "Scan for leaked secrets",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "passed"
+    },
+    {
+      "name": "Review dependency changes",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "skipped"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "chore(github): require contributor intent on issue forms": false,
+      "Adds a **required** contributor-intent dropdown to bug and feature issue templates.": false,
+      "Options: **Yes** (plans to open a PR), **No** (for maintainers), **Unsure** (open to guidance).": false,
+      "Every new issue will show the choice in the body for clearer triage.": false,
+      "**Chores**": false,
+      "Enhanced issue reporting templates with new required fields: bug reports now ask if reporters will contribute fixes, and feature requests inquire about contributor intent.": false,
+      "Add a required dropdown (yes / no / unsure) so every bug and feature report states whether the reporter plans to open a PR.": false
+    },
+    "runtimeObservable": {},
+    "checksAdequate": {},
+    "surface": {},
+    "claimStatus": "identified",
+    "required": false
+  }
+}

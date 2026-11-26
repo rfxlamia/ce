@@ -1,0 +1,90 @@
+{
+  "id": "precision-176",
+  "description": "Real change: https://github.com/gnoviawan/troupe/pull/176 at head 256a47a39e27789e4c55feae8bbf8affda0464c6, merged 2026-05-28T16:46:47Z. No later PR references it as fixed or reverted. Layer L2. Cleaned input. MIT, see NOTICE.",
+  "change": {
+    "title": "feat: add middle-click close for terminal and browser tabs",
+    "description": "## Summary\n- add middle-click close support (`auxclick`, button `1`) for terminal tabs in `WorkspaceTabBar`\n- add middle-click close support (`auxclick`, button `1`) for browser tabs in `WorkspaceTabBar`\n- preserve existing interactions: left-click select, right-click context menu, drag-reorder, and existing close flows\n- add regression tests for terminal/browser middle-click close behavior\n\n## Related Issue\n- N/A\n\n## Screenshots\n- N/A (interaction-only behavior change)\n\n## Testing Steps\n- `bun run lint` (passes with existing repository warnings)\n- `bun run typecheck`\n- `bun run test`\n- `bun run dev`\n\n<!-- This is an auto-generated comment: release notes by coderabbit.ai -->\n\n## Summary by CodeRabbit\n\n## New Features\n* Workspace tabs can now be closed by middle-clicking on them in the tab bar\n\n<!-- review_stack_entry_start -->\n\n[![Review Change Stack](https://storage.googleapis.com/coderabbit_public_assets/review-stack-in-coderabbit-ui.svg)](https://app.coderabbit.ai/change-stack/gnoviawan/termul/pull/176?utm_source=github_walkthrough&utm_medium=github&utm_campaign=change_stack)\n\n<!-- review_stack_entry_end -->\n\n<!-- end of auto-generated comment: release notes by coderabbit.ai -->",
+    "commits": [
+      {
+        "sha": "256a47a",
+        "message": "feat: add middle-click close for terminal and browser tabs"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/renderer/components/workspace/WorkspaceTabBar.test.tsx",
+        "status": "modified",
+        "patch": "@@ -10,6 +10,8 @@ const mockReorderTabsInPane = vi.fn()\n const mockCloseTab = vi.fn()\n const mockTogglePaneFullscreen = vi.fn()\n const mockCloseFileIfIdle = vi.fn(() => true)\n+const mockRemoveBrowserTab = vi.fn()\n+const mockClearAnnotationsForTab = vi.fn()\n \n const mockWorkspaceStoreState = {\n   fullscreenPaneId: null as string | null,\n@@ -59,6 +61,29 @@ vi.mock('@/stores/terminal-store', () => ({\n   )\n }))\n \n+vi.mock('@/stores/browser-session-store', () => ({\n+  useBrowserSessionStore: Object.assign(\n+    vi.fn((selector: (state: { getTab: (id: string) => { title: string; url: string } | null }) => unknown) =>\n+      selector({\n+        getTab: () => ({ title: 'Docs', url: 'https://example.com' })\n+      })\n+    ),\n+    {\n+      getState: () => ({\n+        removeTab: mockRemoveBrowserTab\n+      })\n+    }\n+  )\n+}))\n+\n+vi.mock('@/stores/annotation-store', () => ({\n+  useAnnotationStore: {\n+    getState: () => ({\n+      clearAnnotationsForTab: mockClearAnnotationsForTab\n+    })\n+  }\n+}))\n+\n const mockStartTabDrag = vi.hoisted(() => vi.fn())\n const mockSetReorderPreview = vi.hoisted(() => vi.fn())\n const mockClearReorderPreview = vi.hoisted(() => vi.fn())\n@@ -118,6 +143,8 @@ beforeEach(() => {\n   mockCloseTab.mockReset()\n   mockTogglePaneFullscreen.mockReset()\n   mockCloseFileIfIdle.mockReset()\n+  mockRemoveBrowserTab.mockReset()\n+  mockClearAnnotationsForTab.mockReset()\n   mockWorkspaceStoreState.fullscreenPaneId = null\n   mockCloseFileIfIdle.mockReturnValue(true)\n   mockEditorOpenFiles.clear()\n@@ -352,6 +379,55 @@ describe('WorkspaceTabBar', () => {\n     expect(mockCloseTab).not.toHaveBeenCalled()\n   })\n \n+  it('closes terminal tab on middle click without affecting regular click behavior', async () => {\n+    const onCloseTerminal = vi.fn()\n+    const tabs: WorkspaceTab[] = [{ type: 'terminal', id: 'tab-1', terminalId: 'term-1' }]\n+\n+    const { container } = render(\n+      <WorkspaceTabBar\n+        paneId=\"pane-a\"\n+        tabs={tabs}\n+        activeTabId=\"tab-1\"\n+        onCloseTerminal={onCloseTerminal}\n+      />\n+    )\n+\n+    await flushShellEffect()\n+\n+    const tabEl = container.querySelector('[draggable=\"true\"]') as HTMLElement\n+    expect(tabEl).toBeTruthy()\n+\n+    fireEvent.click(tabEl)\n+    expect(mockSetActiveTab).toHaveBeenCalledWith('pane-a', 'tab-1')\n+    expect(onCloseTerminal).not.toHaveBeenCalled()\n+\n+    fireEvent(tabEl, new MouseEvent('auxclick', { bubbles: true, button: 1 }))\n+    expect(onCloseTerminal).toHaveBeenCalledWith('term-1', 'tab-1')\n+  })\n+\n+  it('closes browser tab on middle click', async () => {\n+    const tabs: WorkspaceTab[] = [{ type: 'browser', id: 'browser-1', browserTabId: 'btab-1' }]\n+\n+    const { container } = render(\n+      <WorkspaceTabBar\n+        paneId=\"pane-a\"\n+        tabs={tabs}\n+        activeTabId=\"browser-1\"\n+      />\n+    )\n+\n+    await flushShellEffect()\n+\n+    const tabEl = container.querySelector('[draggable=\"true\"]') as HTMLElement\n+    expect(tabEl).toBeTruthy()\n+\n+    fireEvent(tabEl, new MouseEvent('auxclick', { bubbles: true, button: 1 }))\n+\n+    expect(mockRemoveBrowserTab).toHaveBeenCalledWith('btab-1')\n+    expect(mockClearAnnotationsForTab).toHaveBeenCalledWith('btab-1')\n+    expect(mockCloseTab).toHaveBeenCalledWith('pane-a', 'browser-1')\n+  })\n+\n   it('calls startTabDrag when dragging a terminal tab', async () => {\n     const tabs: WorkspaceTab[] = [{ type: 'terminal', id: 'tab-1', terminalId: 'term-1' }]\n "
+      },
+      {
+        "path": "src/renderer/components/workspace/WorkspaceTabBar.tsx",
+        "status": "modified",
+        "patch": "@@ -113,6 +113,14 @@ function TerminalTabInline({\n \t\t\t\tonDragLeave={onDragLeave}\n \t\t\t\tonDrop={onDrop}\n \t\t\t\tonClick={onSelect}\n+\t\t\t\tonAuxClick={(e) => {\n+\t\t\t\t\tif (e.button !== 1) return;\n+\t\t\t\t\te.preventDefault();\n+\t\t\t\t\te.stopPropagation();\n+\t\t\t\t\tif (!isClosing) {\n+\t\t\t\t\t\tonClose();\n+\t\t\t\t\t}\n+\t\t\t\t}}\n \t\t\t\tonContextMenu={(e) => {\n \t\t\t\t\te.preventDefault();\n \t\t\t\t\te.stopPropagation();\n@@ -354,6 +362,12 @@ function BrowserTabInline({\n \t\t\t\tonDragLeave={onDragLeave}\n \t\t\t\tonDrop={onDrop}\n \t\t\t\tonClick={onSelect}\n+\t\t\t\tonAuxClick={(e) => {\n+\t\t\t\t\tif (e.button !== 1) return;\n+\t\t\t\t\te.preventDefault();\n+\t\t\t\t\te.stopPropagation();\n+\t\t\t\t\tonClose();\n+\t\t\t\t}}\n \t\t\t\tonContextMenu={(e) => {\n \t\t\t\t\te.preventDefault();\n \t\t\t\t\te.stopPropagation();"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "passed"
+    },
+    {
+      "name": "Review dependency changes",
+      "status": "passed"
+    },
+    {
+      "name": "Scan for leaked secrets",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "feat: add middle-click close for terminal and browser tabs": false,
+      "add middle-click close support (`auxclick`, button `1`) for terminal tabs in `WorkspaceTabBar`": false,
+      "add middle-click close support (`auxclick`, button `1`) for browser tabs in `WorkspaceTabBar`": false,
+      "preserve existing interactions: left-click select, right-click context menu, drag-reorder, and existing close flows": false,
+      "add regression tests for terminal/browser middle-click close behavior": false,
+      "N/A": false,
+      "N/A (interaction-only behavior change)": false,
+      "`bun run lint` (passes with existing repository warnings)": false,
+      "`bun run typecheck`": false,
+      "`bun run test`": false,
+      "`bun run dev`": false,
+      "Workspace tabs can now be closed by middle-clicking on them in the tab bar": false,
+      "[![Review Change Stack](https://storage.googleapis.com/coderabbit_public_assets/review-stack-in-coderabbit-ui.svg)](https://app.coderabbit.ai/change-stack/gnoviawan/termul/pull/176?utm_source=github_walkthrough&utm_medium=github&utm_campaign=change_stack)": false
+    },
+    "runtimeObservable": {},
+    "checksAdequate": {},
+    "surface": {},
+    "claimStatus": "identified",
+    "required": false
+  }
+}

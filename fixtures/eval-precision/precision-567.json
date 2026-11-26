@@ -1,0 +1,121 @@
+{
+  "id": "precision-567",
+  "description": "Real change: https://github.com/gnoviawan/troupe/pull/567 at head 6bdca4dd48cf00de6ca4586d5756e858e505ede0, merged 2026-08-08T08:05:16Z. No later PR references it as fixed or reverted. Layer L1. Cleaned input. MIT, see NOTICE.",
+  "change": {
+    "title": "fix(release): gate macOS preflight + codesign verify via env.APPLE_CERTIFICATE",
+    "description": "## Summary\n\nPromote the release.yml macOS-gate fix to main so the v0.4.10 release pipeline can run. The previous attempt referenced `secrets.APPLE_CERTIFICATE` directly in step `if:` conditionals, which GitHub rejects (`secrets` context is unavailable in step `if:`), causing every release.yml run to fail with 0 jobs. This exposes the secret via job-level `env:` and gates on `env.APPLE_CERTIFICATE` instead.\n\n## Related Issue\n\nCloses #\n\nNo related issue - release hotfix promotion.\n\n## Type of Change\n\n- [ ] feat: new feature\n- [ ] fix: bug fix\n- [ ] docs: documentation only\n- [ ] style: formatting or non-functional styling changes\n- [ ] refactor: internal cleanup with no behavior change\n- [ ] perf: performance improvement\n- [ ] test: adds or updates tests\n- [ ] build: build or dependency changes\n- [ ] chore: maintenance or tooling\n- [ ] revert: reverts a previous change\n\n## What Changed\n\n- `.github/workflows/release.yml`: added job-level `env: APPLE_CERTIFICATE` on the `build` job; both macOS-only steps now gate on `env.APPLE_CERTIFICATE != ''` (was the invalid `secrets.APPLE_CERTIFICATE`).\n\n## How It Was Tested\n\n- [ ] Not applicable\n\n## Screenshots or Recordings\n\nN/A - CI workflow change.\n\n## CI & Review Gate\n\n## Checklist",
+    "commits": [
+      {
+        "sha": "6bdca4d",
+        "message": "fix(release): gate macOS preflight + codesign verify via env.APPLE_CERTIFICATE (secrets context unavailable in step if) (#566)"
+      }
+    ],
+    "files": [
+      {
+        "path": ".github/workflows/release.yml",
+        "status": "modified",
+        "patch": "@@ -132,6 +132,8 @@ jobs:\n     needs: changelog\n     if: github.event_name == 'push'\n     runs-on: ${{ matrix.runner }}\n+    env:\n+      APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}\n     strategy:\n       fail-fast: false\n       matrix:\n@@ -165,7 +167,7 @@ jobs:\n           persist-credentials: false\n \n       - name: Preflight Apple and updater credentials\n-        if: startsWith(matrix.platform, 'macos-') && secrets.APPLE_CERTIFICATE != ''\n+        if: startsWith(matrix.platform, 'macos-') && env.APPLE_CERTIFICATE != ''\n         shell: bash\n         env:\n           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}\n@@ -285,7 +287,7 @@ jobs:\n           NODE\n \n       - name: Verify macOS bundle library portability and signing\n-        if: startsWith(matrix.platform, 'macos-') && secrets.APPLE_CERTIFICATE != ''\n+        if: startsWith(matrix.platform, 'macos-') && env.APPLE_CERTIFICATE != ''\n         shell: bash\n         env:\n           RUST_TARGET: ${{ matrix.rust_target }}"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "Verify Tauri Frontend Build",
+      "status": "passed"
+    },
+    {
+      "name": "Web Client Build",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Title",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Windows Smoke Check",
+      "status": "passed"
+    },
+    {
+      "name": "Lint, Typecheck & Test",
+      "status": "passed"
+    },
+    {
+      "name": "ACP Registry Bundle Freshness",
+      "status": "passed"
+    },
+    {
+      "name": "Rust Checks",
+      "status": "passed"
+    },
+    {
+      "name": "Standalone Server Build",
+      "status": "passed"
+    },
+    {
+      "name": "Validate PR Description",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "passed"
+    },
+    {
+      "name": "Audit GitHub Actions workflows",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "passed"
+    },
+    {
+      "name": "Scan for leaked secrets",
+      "status": "passed"
+    },
+    {
+      "name": "Review dependency changes",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "passed"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "passed"
+    },
+    {
+      "name": "Scan for leaked secrets",
+      "status": "passed"
+    },
+    {
+      "name": "Audit GitHub Actions workflows",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "fix(release): gate macOS preflight + codesign verify via env.APPLE_CERTIFICATE": false,
+      "Promote the release.yml macOS-gate fix to main so the v0.4.10 release pipeline can run.": false,
+      "The previous attempt referenced `secrets.APPLE_CERTIFICATE` directly in step `if:` conditionals, which GitHub rejects (`secrets` context is unavailable in step `if:`), causing every release.yml run to fail with 0 jobs.": false,
+      "This exposes the secret via job-level `env:` and gates on `env.APPLE_CERTIFICATE` instead.": false,
+      "Closes #": false,
+      "No related issue - release hotfix promotion.": false,
+      "`.github/workflows/release.yml`: added job-level `env: APPLE_CERTIFICATE` on the `build` job; both macOS-only steps now gate on `env.APPLE_CERTIFICATE != ''` (was the invalid `secrets.APPLE_CERTIFICATE`).": false,
+      "N/A - CI workflow change.": false,
+      "fix(release): gate macOS preflight + codesign verify via env.APPLE_CERTIFICATE (secrets context unavailable in step if) (#566)": false
+    },
+    "runtimeObservable": {},
+    "checksAdequate": {},
+    "surface": {},
+    "claimStatus": "identified",
+    "required": false
+  }
+}
