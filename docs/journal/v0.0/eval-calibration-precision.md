@@ -166,6 +166,96 @@ c4eb814eaa2f9f195c4b4dfd79896cdf75f11ba4da2c09cfe024465705daa6e1  precision-1384
 
 The selection, run and analysis scripts were smoke-tested before this freeze. A stub gateway with no network reproduced `combine` on 29 of 29 fixtures and listed the one fixture it left unrun. The seeded order was also reproduced twice.
 
+## Results
+
+Added after the live run. The pre-registration above is unchanged.
+
+### Run
+
+- 2026-11-26, one repeat, shipped defaults: claim 0.6, observable 0.6, adequate 0.7, band 0.1, `onUncertain` evidence. Model `typesafe/jev-1.14-20261014`.
+- 30 of 30 fixtures completed. None errored, none was left unrun.
+- 468 billed requests, below the ceiling of 900.
+- The analyzer reproduced `required` and `decidedBy` from `perClaim` on 30 of 30 fixtures.
+
+### Analyzer correction
+
+When no claim is identified, CE asks the assessment questions about one Change_Subject instead (claims-assessment-eval, Requirement 3). Its id is `change`, not a candidate id. The pre-registered analyzer maps `perClaim` entries to candidate text by id. It therefore printed an empty text for the Change_Subject and counted it in its "claims" and "flagged claims" columns.
+
+The table below counts claims and Change_Subjects separately. The Change_Subject text is the first non-blank line of the title, so in every fixture here it is the pull request title. No reported outcome changes: `SKIPPED` counts and drivers come from the same records.
+
+| layer | n | `SKIPPED` | 95% CI | flagged claims | flagged Change_Subjects |
+| --- | --- | --- | --- | --- | --- |
+| L1 | 10 | 10/10 | 69.2% to 100.0% | 0/2 | 0/9 |
+| L2 | 20 | 1/20 | 0.1% to 24.9% | 90/93 (96.8%) | 8/9 |
+| L2 change | 10 | 1/10 | 0.3% to 44.5% | 82/85 (96.5%) | 0/1 |
+| L2 chore | 10 | 0/10 | 0.0% to 30.8% | 8/8 | 8/8 |
+
+"Flagged" means `needed` or `uncertain`. The median per-PR flagged fraction is 0% in L1 and 100% in L2, whether or not Change_Subjects are counted.
+
+### Reading, as pre-registered
+
+- **L1:** 0 of 10 `EVIDENCED`, below the threshold of 3. **No precision problem on documentation and CI changes in this set.** 9 of 10 had no claim. The one with claims (`precision-566`, 2 claims) flagged neither.
+- **L2:** 20 of 20 completed, so L2 is not inconclusive; it is reported descriptively. The pre-registered wording needs 0 `SKIPPED`. L2 has 1 (`precision-786`, a dead-code removal with no claim), so **the condition is not met and the wording is not used.** The numbers stand on their own: 19 of 20 `EVIDENCED`, 90 of 93 claims flagged, median 100% per pull request.
+- **Variation:** not measured. No single fixture outcome is read as stable.
+
+### Drivers of `EVIDENCED` in L2
+
+1. **Claims (11 fixtures: the 9 `EVIDENCED` change pull requests, plus `564` and `94` in chore).** 83 of the 93 L2 claims were `needed`. Their RO ranges 0.60 to 0.94 (median 0.84) and their CA ranges 0.06 to 0.69 (median 0.18). This is the pattern the pre-registration named, so the next step is to examine why `checksAdequate` is low on real changes. One candidate cause: CE sees only check names, not test content.
+
+   One exception. In `precision-176` the pull request adds regression tests in the same diff, and 6 of its 7 claims got CA 0.70 to 0.81, so none of the six was `needed`. 4 of them fell within the band around 0.7 and were `uncertain`; the other 2 were above the band and were not flagged. CA does respond to tests that are visible in the diff.
+2. **Change_Subject (8 fixtures).** 8 of the 9 L2 fixtures with no claim ended `EVIDENCED` through the Change_Subject alone:
+   - 5 release pull requests (`260`, `318`, `560`, `565`, `904`, title "chore: release vX") were `needed`, RO 0.80 to 0.84, CA 0.15 to 0.23. In all five, the diff changes the version string shown in `src/renderer/components/ProjectSidebar.tsx` (checked on each fixture), and no check covers it, so `needed` matches CE's definition. Whether a version bump should ask for evidence is a product question, not a result of this record.
+   - 1 registry snapshot sync (`599`) was `needed`, RO 0.62.
+   - 2 were `uncertain` and became `EVIDENCED` by the policy:
+     - `453` (registry snapshot): RO 0.55 is in the band around 0.6 and CA is 0.16, so a small change in RO would make it `needed`.
+     - `166` (bun workflow migration): RO 0.28 and CA 0.61. CA is in the band around 0.7, but with RO at 0.28 `needed` is false for any CA value, so that band hit cannot change `needed`. The claim-level case of `precision-1384` (RO 0.30, CA 0.75) has the same shape. This follows Decision D4 and Requirement 6.3 of claims-assessment-eval as written: either probability in its band counts.
+3. **Claim stage.** Some lines that are not behavior statements became claims, for example "**New Features**" in `precision-89` (`needed`, RO 0.85) and "Closes #334" in `precision-335` (`uncertain`). In both fixtures other claims were also `needed`, so these did not decide the outcome. They were not counted systematically.
+
+### Comparison with the troupe record (descriptive)
+
+In the troupe record, non-regression claims were caught 84.1% to 85.8% of the time. Here, 96.8% of L2 claims are flagged. The extractor (D32), the cleaning and the sample differ, so the difference is not attributed to any cause.
+
+### Settings recompute (not pre-registered)
+
+Issue #29 asks about two settings: adequate 0.6 vs 0.7, and `onUncertain` evidence vs skip. `combine` is pure, so every outcome can be recomputed from the stored `perClaim` probabilities without new requests.
+
+The recompute uses this record and the 54 completed troupe runs. At the shipped settings it reproduces every stored `required`, and it reproduces the troupe record's C1 counts. In the troupe columns, a regression claim counts only if its `claim.is_behavior` probability is at least 0.6, as in that record.
+
+The last row is a variant that is not in the spec. Under it, a band hit counts as `uncertain` only when it could change `needed`:
+- RO is in its band and CA is below 0.8; or
+- CA is in its band and RO is at least 0.5.
+
+| setting | L1 `SKIPPED` | L2 `SKIPPED` (change / chore) | L2 flagged Subjects | troupe C1 regression claim caught (r1 / r2 / r3) | troupe pull requests `required` |
+| --- | --- | --- | --- | --- | --- |
+| 0.7, evidence (shipped) | 10/10 | 1/20 (1 / 0) | 98/102 | 14/16, 14/16, 8/9 | 54/54 |
+| 0.6, evidence | 10/10 | 1/20 (1 / 0) | 94/102 | 13/16, 14/16, 8/9 | 54/54 |
+| 0.7, skip | 10/10 | 3/20 (1 / 2) | 89/102 | 12/16, 13/16, 8/9 | 54/54 |
+| 0.6, skip | 10/10 | 4/20 (2 / 2) | 77/102 | 10/16, 11/16, 8/9 | 49/54 |
+| 0.7, evidence, band only where it can change `needed` | 10/10 | 2/20 (1 / 1) | 96/102 | 14/16, 14/16, 8/9 | 54/54 |
+
+How to read it:
+
+- No alternative setting skips more than 4 of the 20 L2 pull requests.
+- Every alternative from issue #29 loses troupe regression claims that the shipped setting catches.
+- The band variant changes one outcome in either set, `precision-166`, and loses no troupe catch.
+
+### Conclusion
+
+No change to any default (Decision D2).
+
+- At the shipped defaults, CE stays quiet on documentation and CI pull requests (10 of 10 `SKIPPED`).
+- On app-source pull requests it asks for evidence on almost every claim.
+- None of the settings in issue #29 changes that much on this set. Each one costs troupe recall. Among the `needed` claims, the median CA is 0.18, far from either adequate threshold.
+- The open question is what `checksAdequate` sees.
+
+Follow-ups, none of them blocking:
+
+1. Investigate why `checksAdequate` is low on real changes. Start from what an Assessment_Request carries about checks: names and statuses only.
+2. Maintainer question, a spec change to Requirement 3 of claims-assessment-eval: should the Change_Subject path make release and registry-sync pull requests `EVIDENCED`?
+3. Maintainer question, a spec change to Decision D4 and Requirement 6.3: count a band hit only when it could change `needed`. On this data the gain is one pull request (`precision-166`) and nothing is lost.
+4. Claim-stage false positives on header-like lines, such as bold-only lines and `Closes #N`.
+5. Eval tooling: the `ce eval` output carries no Subject text, so an analysis has to rebuild it. The analyzer correction above came from that.
+
 ## Appendix: precision-select.mjs
 
 ```js
@@ -480,5 +570,72 @@ console.log('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
 for (const r of rows) {
   if (r.error) { console.log(`| \`${r.id}\` | ${r.layer} | ${r.kind} | ERROR | | | | | | |`); continue; }
   console.log(`| \`${r.id}\` | ${r.layer} | ${r.kind} | ${r.required ? 'EVIDENCED' : 'SKIPPED'} (${r.decidedBy}) | ${r.claimStatus} | ${r.candidates} | ${r.claims} | ${r.needed} | ${r.flagged} | ${r.drivers.join('<br>').replace(/\|/g, '/')} |`);
+}
+```
+
+## Appendix: recompute.mjs (added with the Results)
+
+Run from the scratch directory that holds `precision-live/` and `troupe-runs/r1..r3/`.
+
+```js
+// Zero-request recompute of outcomes under alternative settings, from stored perClaim probabilities.
+// Usage: node recompute.mjs <repoRoot>
+import { execFileSync } from 'node:child_process';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
+const [repo] = process.argv.slice(2);
+const L1 = new Set(['84', '819', '1417', '570', '575', '567', '85', '566', '283', '571']);
+const CHORE = new Set(['166', '260', '318', '453', '560', '564', '565', '599', '904', '94']);
+const S = {
+  'shipped 0.7 / evidence': { obs: 0.6, adq: 0.7, band: 0.1, ev: true },
+  '0.6 / evidence': { obs: 0.6, adq: 0.6, band: 0.1, ev: true },
+  '0.7 / skip': { obs: 0.6, adq: 0.7, band: 0.1, ev: false },
+  '0.6 / skip': { obs: 0.6, adq: 0.6, band: 0.1, ev: false },
+  '0.7 / evidence, flip-capable band': { obs: 0.6, adq: 0.7, band: 0.1, ev: true, flip: true },
+};
+const EPS = 0; // match combine.ts: plain |p - t| <= band in floating point
+function judge(ro, ca, s) {
+  const needed = ro >= s.obs && ca < s.adq;
+  const roB = Math.abs(ro - s.obs) <= s.band + EPS, caB = Math.abs(ca - s.adq) <= s.band + EPS;
+  const unc = s.flip ? (roB && ca < s.adq + s.band + EPS) || (caB && ro >= s.obs - s.band - EPS) : roB || caB;
+  return { needed, unc, flag: needed || (unc && s.ev) };
+}
+const required = (pcs, s) => { const j = pcs.map((p) => judge(p.runtimeObservable, p.checksAdequate, s)); return j.some((x) => x.needed) || (s.ev && j.some((x) => x.unc)); };
+// sanity: shipped must reproduce stored required
+const P = 'precision-live';
+const prec = readdirSync(P).filter((f) => f.endsWith('.json')).map((f) => { const j = JSON.parse(readFileSync(`${P}/${f}`)); const n = f.match(/\d+/)[0]; return { n, a: j.assessments[0] }; });
+for (const { n, a } of prec) if (required(a.perClaim, S['shipped 0.7 / evidence']) !== a.required) throw new Error(`mismatch precision-${n}`);
+// troupe
+const fx = {};
+const ls = execFileSync('git', ['-C', repo, 'ls-tree', '--name-only', 'calibrate/troupe-29', 'fixtures/eval-troupe/'], { encoding: 'utf8' }).split('\n').filter((p) => p.endsWith('.json'));
+for (const p of ls) { const f = JSON.parse(execFileSync('git', ['-C', repo, 'show', `calibrate/troupe-29:${p}`], { encoding: 'utf8' })); fx[f.id] = f; }
+const runs = ['r1', 'r2', 'r3'];
+const tr = [];
+for (const r of runs) for (const id of Object.keys(fx)) {
+  const p = `troupe-runs/${r}/${id}.json`; if (!existsSync(p)) continue;
+  const j = JSON.parse(readFileSync(p)); const a = j.assessments[0];
+  if (required(a.perClaim, S['shipped 0.7 / evidence']) !== a.required) throw new Error(`mismatch ${id}@${r}`);
+  const f = fx[id]; const reg = Object.keys(f.labels.isBehavior).filter((t) => f.labels.isBehavior[t]);
+  const cls = reg.some((t) => f.labels.checksAdequate[t] === true) ? 'C2' : 'C1';
+  const prob = (q, t) => j.samples.find((s) => s.question === q && s.subject === t)?.probability;
+  const regPairs = reg.filter((t) => (prob('claim.is_behavior', t) ?? 0) >= 0.6).map((t) => [prob('assess.runtime_observable', t), prob('assess.checks_adequate', t)]).filter(([x, y]) => x !== undefined && y !== undefined);
+  tr.push({ id, r, cls, a, regPairs });
+}
+console.log('troupe runs used:', tr.length, '; all shipped required reproduced');
+console.log('| setting | L1 SKIPPED | L2 SKIPPED | L2 change SKIPPED | L2 chore SKIPPED | L2 flagged subjects | troupe C1 reg. claim caught r1/r2/r3 | troupe PR required (all runs) |');
+console.log('| --- | --- | --- | --- | --- | --- | --- | --- |');
+for (const [name, s] of Object.entries(S)) {
+  const sk = (f) => prec.filter(f).filter(({ a }) => !required(a.perClaim, s)).length + '/' + prec.filter(f).length;
+  const l2 = prec.filter(({ n }) => !L1.has(n)).flatMap(({ a }) => a.perClaim);
+  const fl = l2.filter((p) => judge(p.runtimeObservable, p.checksAdequate, s).flag).length;
+  const c1 = runs.map((r) => { const x = tr.filter((t) => t.r === r && t.cls === 'C1'); return `${x.filter((t) => t.regPairs.some(([ro, ca]) => judge(ro, ca, s).flag)).length}/${x.length}`; }).join(' / ');
+  const req = tr.filter((t) => required(t.a.perClaim, s)).length;
+  console.log(`| ${name} | ${sk(({ n }) => L1.has(n))} | ${sk(({ n }) => !L1.has(n))} | ${sk(({ n }) => !L1.has(n) && !CHORE.has(n))} | ${sk(({ n }) => CHORE.has(n))} | ${fl}/${l2.length} | ${c1} | ${req}/${tr.length} |`);
+}
+// which outcomes change under flip-capable
+for (const { n, a } of prec) if (required(a.perClaim, S['shipped 0.7 / evidence']) !== required(a.perClaim, S['0.7 / evidence, flip-capable band'])) console.log('precision flip changes:', n);
+for (const t of tr) {
+  const s0 = S['shipped 0.7 / evidence'], s4 = S['0.7 / evidence, flip-capable band'];
+  if (required(t.a.perClaim, s0) !== required(t.a.perClaim, s4)) console.log('troupe PR flip changes:', t.id, t.r);
+  if (t.regPairs.some(([ro, ca]) => judge(ro, ca, s0).flag) !== t.regPairs.some(([ro, ca]) => judge(ro, ca, s4).flag)) console.log('troupe reg-claim flip changes:', t.id, t.r, JSON.stringify(t.regPairs));
 }
 ```
