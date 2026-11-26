@@ -1,0 +1,51 @@
+{
+  "id": "api-auth-covered",
+  "description": "Near miss: API change with integration tests in the diff that cover it.",
+  "change": {
+    "title": "Reject requests without a bearer token with status 401",
+    "commits": [
+      {
+        "sha": "a1b2c3d",
+        "message": "Reject requests without a bearer token with status 401"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/middleware/auth.ts",
+        "status": "modified",
+        "patch": "@@ -1,4 +1,5 @@\n export function auth(req, res, next) {\n   const token = req.headers.authorization?.split(\" \")[1];\n+  if (!token) return res.status(401).end();\n   next();\n }"
+      },
+      {
+        "path": "test/auth.integration.test.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,4 @@\n+it(\"returns 401 without token\", async () => {\n+  const r = await request(app).get(\"/orders\");\n+  expect(r.status).toBe(401);\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "test/auth.integration.test.ts > returns 401 without token",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Reject requests without a bearer token with status 401": true
+    },
+    "runtimeObservable": {
+      "Reject requests without a bearer token with status 401": true
+    },
+    "checksAdequate": {
+      "Reject requests without a bearer token with status 401": true
+    },
+    "surface": {
+      "Reject requests without a bearer token with status 401": "http_api"
+    },
+    "claimStatus": "identified",
+    "required": false
+  }
+}

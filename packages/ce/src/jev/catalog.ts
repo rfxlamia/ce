@@ -9,6 +9,16 @@ import {
   type NoulQuestion,
   type Question,
 } from '@typesafe-ai/sdk';
+import type { Cut } from '../assessment/types.js';
+import {
+  REQUEST_HEADROOM_TOKENS,
+  STATE_BUDGET_TOKENS,
+  estimateTokens,
+  fitCheckResults,
+  isTestFile,
+  truncateToTokens,
+} from '../context/budget.js';
+import type { ChangeContext } from '../context/types.js';
 import type { BuiltCatalogQuestion, Jev_Request } from './types.js';
 
 /**
@@ -154,5 +164,117 @@ export function finalImageQuestions(claim: string, pngBytes: Uint8Array): Jev_Re
       state_reached: CATALOG.runtimeStateReached.built(),
       locate_subject: CATALOG.runtimeLocateSubject.built(),
     },
+  };
+}
+
+const filesSummary = (context: ChangeContext): string =>
+  context.change.files.map((f) => `${f.path} ${f.status}`).join('\n');
+
+/** Shortens `text` by exactly the `excess` tokens it must give up (never below empty). */
+function shortenBy(text: string, excess: number): string {
+  return truncateToTokens(text, Math.max(0, estimateTokens(text) - excess)).text;
+}
+
+/**
+ * Builds the Classification_Request: one `claim.is_behavior` question about one
+ * Claim_Candidate. Only the title and files summary is shortened to fit the state
+ * budget; the candidate text is never touched. State labels are not question text.
+ */
+export function buildClassificationRequest(
+  context: ChangeContext,
+  candidate: { id: string; text: string },
+): { request: Jev_Request; cuts: Cut[] } {
+  let title = context.change.title ?? '';
+  let files = filesSummary(context);
+  const render = (): string => `candidate: ${candidate.text}\ntitle: ${title}\nfiles: ${files}`;
+  const over = (): number => estimateTokens(render()) - STATE_BUDGET_TOKENS;
+  const cuts: Cut[] = [];
+
+  if (over() > 0 && files.length > 0) {
+    while (over() > 0 && files.length > 0) files = shortenBy(files, over());
+    cuts.push({ file: '<files>', reason: 'truncated', isTest: false });
+  }
+  if (over() > 0 && title.length > 0) {
+    while (over() > 0 && title.length > 0) title = shortenBy(title, over());
+    cuts.push({ file: '<title>', reason: 'truncated', isTest: false });
+  }
+  if (over() > 0) {
+    throw new Error(
+      `claim.is_behavior: candidate ${candidate.id} alone exceeds the state budget of ${STATE_BUDGET_TOKENS} tokens`,
+    );
+  }
+
+  return {
+    request: {
+      stage: 'assessment',
+      state: render(),
+      questions: { is_behavior: CATALOG.claimIsBehavior.built() },
+    },
+    cuts,
+  };
+}
+
+/**
+ * Builds the Assessment_Request: the three assessment questions about one Subject.
+ * Check results are capped with `fitCheckResults`. When the state is over budget,
+ * patches are cut one file at a time, non-test files first, last file to first
+ * (Decision D21). State labels are not question text.
+ */
+export function buildAssessmentRequest(
+  context: ChangeContext,
+  subject: { id: string; text: string },
+): { request: Jev_Request; cuts: Cut[] } {
+  const cuts: Cut[] = [];
+
+  const { kept } = fitCheckResults(context.checks, REQUEST_HEADROOM_TOKENS);
+  const keptSet = new Set(kept);
+  context.checks.forEach((check, n) => {
+    if (!keptSet.has(check)) cuts.push({ file: `check:${n}`, reason: 'check-cap', isTest: false });
+  });
+
+  const files = context.change.files;
+  const patches = files.map((f) => f.patch);
+  const filesText = filesSummary(context);
+  const checksText = kept.map((c) => `${c.name} ${c.status}`).join('\n');
+  const render = (): string =>
+    `claim: ${subject.text}\nfiles: ${filesText}\npatches:\n` +
+    files.map((f, i) => `${f.path}\n${patches[i]}`).join('\n') +
+    `\nchecks: ${checksText}`;
+  const over = (): number => estimateTokens(render()) - STATE_BUDGET_TOKENS;
+
+  if (over() > 0) {
+    const indexes = files.map((_, i) => i);
+    const order = [
+      ...indexes.filter((i) => !isTestFile(files[i]!.path)).reverse(),
+      ...indexes.filter((i) => isTestFile(files[i]!.path)).reverse(),
+    ];
+    for (const i of order) {
+      if (over() <= 0) break;
+      if (patches[i]!.length === 0) continue;
+      while (over() > 0 && patches[i]!.length > 0) patches[i] = shortenBy(patches[i]!, over());
+      cuts.push({
+        file: files[i]!.path,
+        reason: patches[i]!.length === 0 ? 'dropped' : 'truncated',
+        isTest: isTestFile(files[i]!.path),
+      });
+    }
+    if (over() > 0) {
+      throw new Error(
+        `assessment request for ${subject.id} exceeds the state budget of ${STATE_BUDGET_TOKENS} tokens with all patches empty`,
+      );
+    }
+  }
+
+  return {
+    request: {
+      stage: 'assessment',
+      state: render(),
+      questions: {
+        runtime_observable: CATALOG.assessRuntimeObservable.built(),
+        checks_adequate: CATALOG.assessChecksAdequate.built(),
+        surface: CATALOG.assessSurface.built(),
+      },
+    },
+    cuts,
   };
 }

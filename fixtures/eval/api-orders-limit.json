@@ -1,0 +1,46 @@
+{
+  "id": "api-orders-limit",
+  "description": "New query parameter, no API test.",
+  "change": {
+    "title": "Add a limit query parameter to the list orders endpoint",
+    "commits": [
+      {
+        "sha": "a1b2c3d",
+        "message": "Add a limit query parameter to the list orders endpoint"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/routes/orders.ts",
+        "status": "modified",
+        "patch": "@@ -1,1 +1,2 @@\n const limit = Number(req.query.limit ?? 50);\n+const rows = await db.orders.findMany({ take: limit });"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "unit-tests",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Add a limit query parameter to the list orders endpoint": true
+    },
+    "runtimeObservable": {
+      "Add a limit query parameter to the list orders endpoint": true
+    },
+    "checksAdequate": {
+      "Add a limit query parameter to the list orders endpoint": false
+    },
+    "surface": {
+      "Add a limit query parameter to the list orders endpoint": "http_api"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

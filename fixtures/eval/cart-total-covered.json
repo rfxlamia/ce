@@ -1,0 +1,51 @@
+{
+  "id": "cart-total-covered",
+  "description": "Near miss: user-facing change, an end-to-end test in the diff already covers it.",
+  "change": {
+    "title": "Round the cart total to two decimals on the checkout page",
+    "commits": [
+      {
+        "sha": "a1b2c3d",
+        "message": "Round the cart total to two decimals on the checkout page"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/checkout/CartTotal.tsx",
+        "status": "modified",
+        "patch": "@@ -1,4 +1,5 @@\n export function CartTotal({ items }: Props) {\n   const total = sum(items);\n-  return <span data-testid=\"total\">${total}</span>;\n+  const shown = total.toFixed(2);\n+  return <span data-testid=\"total\">${shown}</span>;\n }"
+      },
+      {
+        "path": "e2e/cart-total.spec.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,4 @@\n+test(\"shows rounded total\", async ({ page }) => {\n+  await page.goto(\"/checkout\");\n+  await expect(page.getByTestId(\"total\")).toHaveText(\"$10.50\");\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "e2e/cart-total.spec.ts > shows rounded total",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Round the cart total to two decimals on the checkout page": true
+    },
+    "runtimeObservable": {
+      "Round the cart total to two decimals on the checkout page": true
+    },
+    "checksAdequate": {
+      "Round the cart total to two decimals on the checkout page": true
+    },
+    "surface": {
+      "Round the cart total to two decimals on the checkout page": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": false
+  }
+}

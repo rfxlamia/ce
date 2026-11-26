@@ -1,0 +1,51 @@
+{
+  "id": "banner-dismiss-covered",
+  "description": "User-facing change covered by a passing browser test in the diff.",
+  "change": {
+    "title": "Hide the banner after the user dismisses it",
+    "commits": [
+      {
+        "sha": "a1b2c3d",
+        "message": "Hide the banner after the user dismisses it"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/ui/Banner.tsx",
+        "status": "modified",
+        "patch": "@@ -1,6 +1,12 @@\n export function Banner() {\n+  const [hidden, setHidden] = useState(false);\n+  function dismiss() {\n+    setHidden(true);\n+  }\n+  if (hidden) return null;\n   return (\n     <div id=\"banner\">\n+      <button id=\"dismiss\" onClick={dismiss}>Dismiss</button>\n     </div>\n   );\n }"
+      },
+      {
+        "path": "tests/banner.spec.ts",
+        "status": "added",
+        "patch": "@@ -0,0 +1,4 @@\n+test(\"banner dismisses\", async ({ page }) => {\n+  await page.click(\"#dismiss\");\n+  await expect(page.locator(\"#banner\")).toBeHidden();\n+});"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "tests/banner.spec.ts > banner dismisses",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Hide the banner after the user dismisses it": true
+    },
+    "runtimeObservable": {
+      "Hide the banner after the user dismisses it": true
+    },
+    "checksAdequate": {
+      "Hide the banner after the user dismisses it": true
+    },
+    "surface": {
+      "Hide the banner after the user dismisses it": "browser_ui"
+    },
+    "claimStatus": "identified",
+    "required": false
+  }
+}

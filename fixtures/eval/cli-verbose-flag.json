@@ -1,0 +1,46 @@
+{
+  "id": "cli-verbose-flag",
+  "description": "CLI flag, no CLI test.",
+  "change": {
+    "title": "Add a verbose flag that prints each processed file",
+    "commits": [
+      {
+        "sha": "a1b2c3d",
+        "message": "Add a verbose flag that prints each processed file"
+      }
+    ],
+    "files": [
+      {
+        "path": "src/cli/args.ts",
+        "status": "modified",
+        "patch": "@@ -1,6 +1,7 @@\n export function main(argv: string[]) {\n-  const opts = parse(argv);\n+  const opts = parse(argv, { boolean: [\"verbose\"] });\n   for (const file of opts.files) {\n+    if (opts.verbose) console.log(`processing ${file}`);\n     process(file);\n   }\n }"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "lint",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Add a verbose flag that prints each processed file": true
+    },
+    "runtimeObservable": {
+      "Add a verbose flag that prints each processed file": true
+    },
+    "checksAdequate": {
+      "Add a verbose flag that prints each processed file": false
+    },
+    "surface": {
+      "Add a verbose flag that prints each processed file": "cli"
+    },
+    "claimStatus": "identified",
+    "required": true
+  }
+}

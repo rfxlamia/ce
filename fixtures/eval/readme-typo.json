@@ -1,0 +1,40 @@
+{
+  "id": "readme-typo",
+  "description": "Docs only.",
+  "change": {
+    "title": "Fix a typo in the README",
+    "commits": [
+      {
+        "sha": "a1b2c3d",
+        "message": "Fix a typo in the README"
+      }
+    ],
+    "files": [
+      {
+        "path": "README.md",
+        "status": "modified",
+        "patch": "@@ -1,1 +1,2 @@\n Install the packge with npm.\n+Install the package with npm."
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "lint",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Fix a typo in the README": false
+    },
+    "runtimeObservable": {},
+    "checksAdequate": {},
+    "surface": {},
+    "claimStatus": "not_identified",
+    "required": false
+  }
+}

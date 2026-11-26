@@ -1,0 +1,40 @@
+{
+  "id": "docs-near-miss-login",
+  "description": "Near miss: the title sounds like behaviour, but only documentation changed, so no claim is identified and no evidence is required.",
+  "change": {
+    "title": "Document that login redirects to the dashboard",
+    "commits": [
+      {
+        "sha": "a1b2c3d",
+        "message": "Document that login redirects to the dashboard"
+      }
+    ],
+    "files": [
+      {
+        "path": "docs/auth.md",
+        "status": "modified",
+        "patch": "@@ -1,1 +1,2 @@\n Users sign in with email.\n+After sign in the user lands on the dashboard."
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "build",
+      "status": "passed"
+    },
+    {
+      "name": "lint",
+      "status": "passed"
+    }
+  ],
+  "labels": {
+    "isBehavior": {
+      "Document that login redirects to the dashboard": false
+    },
+    "runtimeObservable": {},
+    "checksAdequate": {},
+    "surface": {},
+    "claimStatus": "not_identified",
+    "required": false
+  }
+}
