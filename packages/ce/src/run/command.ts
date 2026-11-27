@@ -1,11 +1,15 @@
 // `ce run` command (Requirements 10.x).
 // Pure function of its arguments: no process.exit, no process.env, no process.cwd(), no .env loading.
 
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import type { ResolveContextOptions } from '../context/resolve.js';
-import { V0_SUPPORTED_SURFACES } from '../outcome/index.js';
+import { RunRecordSchema } from '../evidence/schema.js';
+import { buildSummary } from '../evidence/summary.js';
+import type { SummaryInput } from '../evidence/summary.js';
 import { TargetUnreachableError } from '../runtime/target.js';
 import { run } from './pipeline.js';
-import type { CapabilityRegistry, CreateGateway, RunResult } from './types.js';
+import type { CapabilityRegistry, CreateGateway, ResolvedRunWithBundle, RunResult } from './types.js';
 
 type Writable = { write(text: string): unknown };
 
@@ -66,8 +70,32 @@ export function parseRunArgs(argv: readonly string[]): ParsedRunArgs | null {
   return parsed;
 }
 
-function isV0Surface(surface: string): boolean {
-  return (V0_SUPPORTED_SURFACES as readonly string[]).includes(surface);
+/** Reads the written run.json back. Returns undefined when it cannot be read or does not parse. */
+async function readWrittenRecord(runDir: string) {
+  try {
+    const text = await readFile(join(runDir, 'run.json'), 'utf8');
+    const parsed = RunRecordSchema.safeParse(JSON.parse(text));
+    return parsed.success ? parsed.data : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+async function summaryInputFor(result: ResolvedRunWithBundle): Promise<SummaryInput> {
+  if (result.bundleWritten && result.reportPath !== undefined) {
+    const record = await readWrittenRecord(result.runDir);
+    if (record !== undefined) return { kind: 'bundle', record, reportPath: result.reportPath };
+  }
+  return {
+    kind: 'no_bundle',
+    outcome: result.outcome,
+    reason: result.reason,
+    ...(result.errorStage !== undefined ? { errorStage: result.errorStage } : {}),
+    ...(result.surface !== undefined ? { surface: result.surface } : {}),
+    claimTexts: result.claimTexts ?? [],
+    ...(result.finalState !== undefined ? { finalState: result.finalState } : {}),
+    ...(result.failureFields !== undefined ? { failureFields: result.failureFields } : {}),
+  };
 }
 
 export async function runRunCommand(argv: readonly string[], deps: RunCommandDeps): Promise<number> {
@@ -107,18 +135,7 @@ export async function runRunCommand(argv: readonly string[], deps: RunCommandDep
     return 1;
   }
 
-
-  stdout.write(`Outcome: ${result.outcome}\n`);
-
-  if (result.reason === 'surface-unsupported') {
-    stdout.write('Reason: surface-unsupported\n');
-    if (result.surface !== undefined) {
-      stdout.write(`Surface: ${result.surface}\n`);
-      if (isV0Surface(result.surface)) {
-        stdout.write(`No capability is registered for ${result.surface} yet.\n`);
-      }
-    }
-  }
+  stdout.write(buildSummary(await summaryInputFor(result)));
 
   if (result.error !== undefined) {
     stderr.write(`${result.error.message}\n`);

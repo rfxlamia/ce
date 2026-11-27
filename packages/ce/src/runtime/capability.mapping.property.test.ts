@@ -147,6 +147,7 @@ describe('observe-decide-execute-loop Property 24: Loop_Result to RuntimeResult 
           eventLog: [],
           finalSignals: {},
           stopReason: 'done',
+          modelIds: [],
         };
         const input = {
           loopResult,
@@ -227,6 +228,7 @@ describe('observe-decide-execute-loop Property 24: Loop_Result to RuntimeResult 
         eventLog: [],
         finalSignals: {},
         stopReason: 'max-steps',
+        modelIds: [],
       },
       selectedClaim: { status: 'not_identified', text: 'x' },
       change: { title: 'x', files: [], commits: [], claims: [], provenance: [] },
@@ -258,6 +260,7 @@ describe('observe-decide-execute-loop Property 24: Loop_Result to RuntimeResult 
         eventLog: [],
         finalSignals: {},
         stopReason: 'max-steps',
+        modelIds: [],
       },
       selectedClaim: { status: 'not_identified', text: 'x' },
       change: { title: 'x', files: [], commits: [], claims: [], provenance: [] },

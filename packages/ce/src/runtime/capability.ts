@@ -14,7 +14,8 @@ import { ConfigDefaults } from '../config/defaults.js';
 import { parseDuration } from '../config/duration.js';
 import type { CapabilityEntry, RuntimeHookInput } from '../run/types.js';
 import { changeTermsFrom } from './decide.js';
-import { runLoop, type LoopClock, type LoopResult, type RunLoopInput } from './loop.js';
+import type { RuntimeTrace } from '../evidence/trace.js';
+import { runLoop, type LoopClock, type LoopResult, type RunLoopInput, type StepLogEntry } from './loop.js';
 import { createRedactor } from './observe.js';
 import type { PlaywrightPage } from './playwright-types.js';
 import { targetOptionsFromConfig, type TargetHandle, type TargetOptions } from './target.js';
@@ -89,15 +90,28 @@ export function mapLoopResultToRuntimeResult(input: MapLoopResultInput): Runtime
   for (const step of loopResult.steps) {
     if (step.executed !== true) continue; // refused or timed-out Actions were not performed
     const action = step.action;
-    if (action.kind === 'click' || action.kind === 'fill') {
-      const element = step.observation.elements.find((e) => e.ref === action.ref);
-      const target = element === undefined ? action.ref : `${element.role} "${element.name}"`;
-      const description = action.kind === 'fill' ? `${target} from fixture "${action.fixtureKey}"` : target;
-      actions.push({ kind: action.kind, description: redact(description) });
-    } else if (action.kind === 'goto') {
-      actions.push({ kind: 'goto', description: redact(action.url) });
+    if (action.kind === 'click' || action.kind === 'fill' || action.kind === 'goto') {
+      actions.push({ kind: action.kind, description: describeAction(step, redact) });
     }
   }
+
+  const trace: RuntimeTrace = {
+    steps: loopResult.steps.map((s) => ({
+      step: s.observation.step,
+      url: s.observation.url,
+      title: s.observation.title,
+      screenshot: s.observation.screenshot,
+      action: { kind: s.action.kind, description: describeAction(s, redact) },
+      executed: s.executed === true,
+      probabilities: { ...s.probabilities },
+    })),
+    eventLog: loopResult.eventLog.map((e) => ({ step: e.step, kind: e.kind, detail: e.detail })),
+    stopReason: loopResult.stopReason,
+    modelIds: [...loopResult.modelIds],
+  };
+  if (loopResult.finalScreenshot !== undefined) trace.finalScreenshot = loopResult.finalScreenshot;
+  if (loopResult.finalImageModel !== undefined) trace.finalImageModel = loopResult.finalImageModel;
+  if (loopResult.finalImageError !== undefined) trace.finalImageError = loopResult.finalImageError;
 
   return {
     finalState: loopResult.finalState,
@@ -109,20 +123,25 @@ export function mapLoopResultToRuntimeResult(input: MapLoopResultInput): Runtime
       observations: loopResult.observations.map((o) => ({ step: o.step, screenshot: o.screenshot })),
       artifacts: { runDir, reportPath: path.join(runDir, 'report.html') },
     },
+    trace,
   };
+}
+
+/** Redacted description of the Action of one step. Empty for `done` and `give_up`. */
+export function describeAction(step: StepLogEntry, redact: (text: string) => string): string {
+  const action = step.action;
+  if (action.kind === 'click' || action.kind === 'fill') {
+    const element = step.observation.elements.find((e) => e.ref === action.ref);
+    const target = element === undefined ? action.ref : `${element.role} "${element.name}"`;
+    return redact(action.kind === 'fill' ? `${target} from fixture "${action.fixtureKey}"` : target);
+  }
+  if (action.kind === 'goto') return redact(action.url);
+  return '';
 }
 
 // ---------------------------------------------------------------------------
 // createBrowserCapability (Requirement 13)
 // ---------------------------------------------------------------------------
-
-/** Thrown by `run` when no run directory was computed; nothing is opened or launched. */
-export class RunDirMissingError extends Error {
-  constructor() {
-    super('browser_ui capability requires a run directory (runDir is absent)');
-    this.name = 'RunDirMissingError';
-  }
-}
 
 /** A launched browser: hands out pages already configured with the viewport, and closes. */
 export interface BrowserLike {
@@ -165,7 +184,6 @@ export function createBrowserCapability(deps: BrowserCapabilityDeps): Capability
     surfaces: ['browser_ui'],
     run: async (input: RuntimeHookInput): Promise<RuntimeResult> => {
       const { context, claims, assessment, config, gateway, runDir, signal } = input;
-      if (runDir === undefined) throw new RunDirMissingError();
 
       const runtime = config.runtime ?? {};
       const defaults = ConfigDefaults.runtime ?? {};

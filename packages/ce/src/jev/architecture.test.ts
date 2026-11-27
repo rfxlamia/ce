@@ -115,9 +115,11 @@ describe('architecture: Jev module boundaries', () => {
     // - generate-config-schema.ts belongs to the config module and imports config/json-schema.
     //   It predates this rule and does not touch the gateway; it is listed here so the rule
     //   stays strict for every other script, including the Verification_Script.
+    // - generate-run-schema.ts is the same case for the evidence module (evidence/json-schema).
     const extraAllowed: Record<string, RegExp[]> = {
       'scripts/update-catalog-snapshot.ts': [/^\.\.\/jev\/catalog(\.js)?$/],
       'scripts/generate-config-schema.ts': [/^\.\.\/config\/json-schema(\.js)?$/],
+      'scripts/generate-run-schema.ts': [/^\.\.\/evidence\/json-schema(\.js)?$/],
     };
     const probeSpec = /^\.\.\/jev\/probe(\.js)?$/;
     const violations: string[] = [];

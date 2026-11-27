@@ -1,5 +1,6 @@
 import type { Assessment, Surface } from '../assessment/index.js';
 import type { Stage, StageError } from '../errors.js';
+import type { RuntimeTrace } from '../evidence/trace.js';
 import type { EvidenceSummary } from './evidence.js';
 
 /** The four SPEC §7.1 outcomes. The only literal declaration outside resolve.ts. */
@@ -23,6 +24,8 @@ export type ResolveReason =
 export interface RuntimeResult {
   finalState: FinalState;
   evidence: EvidenceSummary;
+  /** Populated by the capability when available. Ignored by resolveOutcome. */
+  trace?: RuntimeTrace;
 }
 
 export interface ResolveInput {

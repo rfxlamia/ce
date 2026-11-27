@@ -173,9 +173,8 @@ describe('runRunCommand outcomes', () => {
     expect(code).toBe(0);
     const lines = stdoutText().split('\n');
     expect(lines[0]).toBe('Outcome: UNSUPPORTED');
-    expect(lines).toContain('Reason: surface-unsupported');
-    expect(lines).toContain('Surface: browser_ui');
-    expect(lines).toContain('No capability is registered for browser_ui yet.');
+    expect(lines.some((l) => l.startsWith('Why: ') && l.includes('browser_ui'))).toBe(true);
+    expect(lines.some((l) => l.startsWith('Report: '))).toBe(true);
     expect(stderrText()).toBe('');
   });
 });
@@ -242,11 +241,15 @@ describe('runRunCommand failures', () => {
       reason: 'no-observation',
       surface: 'browser_ui',
       exitCode: 1,
+      bundleWritten: false,
+      runDir: cwd,
+      claimTexts: [],
     } as unknown as RunResult;
     vi.mocked(run).mockResolvedValueOnce(result);
     const code = await runRunCommand([], deps());
     expect(code).toBe(1);
-    expect(stdoutText()).toBe('Outcome: ERROR\n');
+    expect(stdoutText().split('\n')[0]).toBe('Outcome: ERROR');
+    expect(stdoutText()).toContain('Report: no bundle was written');
     expect(stderrText()).toBe('Reason: no-observation\nSurface: browser_ui\n');
   });
 });

@@ -1,0 +1,4269 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1"
+        },
+        "ceVersion": {
+          "type": "string"
+        },
+        "jevModels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string",
+          "const": "SKIPPED"
+        },
+        "outcomeReason": {
+          "type": "string",
+          "enum": [
+            "stage-error",
+            "assessment-missing",
+            "not-required",
+            "surface-unsupported",
+            "evidence-collected",
+            "no-observation",
+            "evidence-incomplete"
+          ]
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "type": "number",
+              "const": 0
+            },
+            "target": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "start": {
+                  "type": "string"
+                },
+                "ready": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "timeout": {
+                      "type": "string",
+                      "pattern": "^[1-9]\\d*(ms|s|m)$"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "routes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "context": {
+              "type": "object",
+              "properties": {
+                "base": {
+                  "type": "string"
+                },
+                "include": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "exclude": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "redact": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "checks": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "assessment": {
+              "type": "object",
+              "properties": {
+                "thresholds": {
+                  "type": "object",
+                  "properties": {
+                    "claim": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "observable": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "adequate": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "uncertainty-band": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "on-uncertain": {
+                  "type": "string",
+                  "enum": [
+                    "evidence",
+                    "skip"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            },
+            "runtime": {
+              "type": "object",
+              "properties": {
+                "max-steps": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "timeout": {
+                  "type": "string",
+                  "pattern": "^[1-9]\\d*(ms|s|m)$"
+                },
+                "viewport": {
+                  "type": "object",
+                  "properties": {
+                    "width": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "height": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "fixtures": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "jev": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "openrouter",
+                    "typesafe"
+                  ]
+                },
+                "model": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "output": {
+              "type": "object",
+              "properties": {
+                "dir": {
+                  "type": "string"
+                },
+                "fail-on": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "error",
+                      "unsupported",
+                      "evidenced-not-reached"
+                    ]
+                  }
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "context": {
+          "type": "object",
+          "properties": {
+            "change": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "base": {
+                  "type": "string"
+                },
+                "head": {
+                  "type": "string"
+                },
+                "files": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      },
+                      "oldPath": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "added",
+                          "modified",
+                          "deleted",
+                          "renamed"
+                        ]
+                      },
+                      "provenance": {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "git",
+                              "github",
+                              "cli",
+                              "junit",
+                              "config",
+                              "runtime"
+                            ]
+                          },
+                          "ref": {
+                            "type": "string"
+                          },
+                          "location": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "provider"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "status",
+                      "provenance"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "commits": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "claims": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      },
+                      "provenance": {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "git",
+                              "github",
+                              "cli",
+                              "junit",
+                              "config",
+                              "runtime"
+                            ]
+                          },
+                          "ref": {
+                            "type": "string"
+                          },
+                          "location": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "provider"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "text",
+                      "provenance"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "provenance": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "provider": {
+                        "type": "string",
+                        "enum": [
+                          "git",
+                          "github",
+                          "cli",
+                          "junit",
+                          "config",
+                          "runtime"
+                        ]
+                      },
+                      "ref": {
+                        "type": "string"
+                      },
+                      "location": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "provider"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "files",
+                "commits",
+                "claims",
+                "provenance"
+              ],
+              "additionalProperties": false
+            },
+            "candidates": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "provenance": {
+                    "type": "object",
+                    "properties": {
+                      "provider": {
+                        "type": "string",
+                        "enum": [
+                          "git",
+                          "github",
+                          "cli",
+                          "junit",
+                          "config",
+                          "runtime"
+                        ]
+                      },
+                      "ref": {
+                        "type": "string"
+                      },
+                      "location": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "provider"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "text",
+                  "provenance"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "checks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "passed",
+                      "failed",
+                      "skipped"
+                    ]
+                  },
+                  "covers": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "provenance": {
+                    "type": "object",
+                    "properties": {
+                      "provider": {
+                        "type": "string",
+                        "enum": [
+                          "git",
+                          "github",
+                          "cli",
+                          "junit",
+                          "config",
+                          "runtime"
+                        ]
+                      },
+                      "ref": {
+                        "type": "string"
+                      },
+                      "location": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "provider"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "name",
+                  "status",
+                  "provenance"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "providers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "enum": [
+                      "git",
+                      "github",
+                      "cli",
+                      "junit"
+                    ]
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "used",
+                      "unavailable"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "not-a-repository",
+                      "base-unresolved",
+                      "merge-base-missing",
+                      "git-failed",
+                      "head-missing",
+                      "source-absent",
+                      "source-unreadable",
+                      "source-malformed",
+                      "no-input",
+                      "not-configured"
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "status"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "truncated": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "dropped",
+                      "truncated",
+                      "env-file",
+                      "sensitive-file",
+                      "binary",
+                      "candidate-cap",
+                      "check-cap"
+                    ]
+                  }
+                },
+                "required": [
+                  "file",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "redactions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string"
+                  },
+                  "count": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "file",
+                  "count"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "change",
+            "candidates",
+            "checks",
+            "providers",
+            "truncated",
+            "redactions"
+          ],
+          "additionalProperties": false
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "probability": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "provenance": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "git",
+                      "github",
+                      "cli",
+                      "junit",
+                      "config",
+                      "runtime"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string"
+                  },
+                  "location": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "provider"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "id",
+              "text",
+              "probability",
+              "provenance"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "assessment": {
+          "type": "object",
+          "properties": {
+            "required": {
+              "type": "boolean"
+            },
+            "decidedBy": {
+              "type": "string",
+              "enum": [
+                "classifier",
+                "policy"
+              ]
+            },
+            "surface": {
+              "type": "string",
+              "enum": [
+                "browser_ui",
+                "http_api",
+                "cli",
+                "backend_internal",
+                "native_app",
+                "non_runtime"
+              ]
+            },
+            "claimStatus": {
+              "type": "string",
+              "enum": [
+                "identified",
+                "not_identified"
+              ]
+            },
+            "perClaimProbabilities": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "claimId": {
+                    "type": "string"
+                  },
+                  "runtimeObservable": {
+                    "type": "number"
+                  },
+                  "checksAdequate": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "claimId",
+                  "runtimeObservable",
+                  "checksAdequate"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "questions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "idVersion": {
+                    "type": "string"
+                  },
+                  "subjectId": {
+                    "type": "string"
+                  },
+                  "probability": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "probabilities": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "additionalProperties": {
+                          "type": "number"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "idVersion",
+                  "subjectId",
+                  "probability",
+                  "probabilities"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "settings": {
+              "type": "object",
+              "properties": {
+                "claimThreshold": {
+                  "type": "number"
+                },
+                "observableThreshold": {
+                  "type": "number"
+                },
+                "adequateThreshold": {
+                  "type": "number"
+                },
+                "uncertaintyBand": {
+                  "type": "number"
+                },
+                "onUncertain": {
+                  "type": "string",
+                  "enum": [
+                    "evidence",
+                    "skip"
+                  ]
+                }
+              },
+              "required": [
+                "claimThreshold",
+                "observableThreshold",
+                "adequateThreshold",
+                "uncertaintyBand",
+                "onUncertain"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "required",
+            "decidedBy",
+            "surface",
+            "claimStatus",
+            "perClaimProbabilities",
+            "questions",
+            "settings"
+          ],
+          "additionalProperties": false
+        },
+        "subject": {
+          "type": "null"
+        },
+        "steps": {
+          "maxItems": 0,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "url": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "action": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "description"
+                ],
+                "additionalProperties": false
+              },
+              "executed": {
+                "type": "boolean"
+              },
+              "screenshot": {
+                "type": "string",
+                "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[^\\n]+$"
+              },
+              "probabilities": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "number"
+                }
+              }
+            },
+            "required": [
+              "step",
+              "url",
+              "title",
+              "action",
+              "executed",
+              "screenshot",
+              "probabilities"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "eventLog": {
+          "maxItems": 0,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "dialog",
+                  "download",
+                  "popup",
+                  "settle",
+                  "refusal"
+                ]
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "step",
+              "kind",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "finalImage": {
+          "type": "null"
+        },
+        "runtime": {
+          "type": "null"
+        },
+        "finalState": {
+          "type": "null"
+        },
+        "error": {
+          "type": "null"
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[^\\n]+$"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "screenshot",
+                  "log",
+                  "jev-calls"
+                ]
+              }
+            },
+            "required": [
+              "path",
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "timings": {
+          "type": "object",
+          "properties": {
+            "startedAt": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            },
+            "durationMs": {
+              "type": "number",
+              "minimum": 0
+            },
+            "stages": {
+              "type": "object",
+              "properties": {
+                "config": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "context": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "assessment": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "runtime": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "config",
+                "context",
+                "assessment",
+                "runtime"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "startedAt",
+            "durationMs",
+            "stages"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "ceVersion",
+        "jevModels",
+        "outcome",
+        "outcomeReason",
+        "config",
+        "context",
+        "claims",
+        "assessment",
+        "subject",
+        "steps",
+        "eventLog",
+        "finalImage",
+        "runtime",
+        "finalState",
+        "error",
+        "artifacts",
+        "timings"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1"
+        },
+        "ceVersion": {
+          "type": "string"
+        },
+        "jevModels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string",
+          "const": "EVIDENCED"
+        },
+        "outcomeReason": {
+          "type": "string",
+          "enum": [
+            "stage-error",
+            "assessment-missing",
+            "not-required",
+            "surface-unsupported",
+            "evidence-collected",
+            "no-observation",
+            "evidence-incomplete"
+          ]
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "type": "number",
+              "const": 0
+            },
+            "target": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "start": {
+                  "type": "string"
+                },
+                "ready": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "timeout": {
+                      "type": "string",
+                      "pattern": "^[1-9]\\d*(ms|s|m)$"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "routes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "context": {
+              "type": "object",
+              "properties": {
+                "base": {
+                  "type": "string"
+                },
+                "include": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "exclude": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "redact": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "checks": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "assessment": {
+              "type": "object",
+              "properties": {
+                "thresholds": {
+                  "type": "object",
+                  "properties": {
+                    "claim": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "observable": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "adequate": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "uncertainty-band": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "on-uncertain": {
+                  "type": "string",
+                  "enum": [
+                    "evidence",
+                    "skip"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            },
+            "runtime": {
+              "type": "object",
+              "properties": {
+                "max-steps": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "timeout": {
+                  "type": "string",
+                  "pattern": "^[1-9]\\d*(ms|s|m)$"
+                },
+                "viewport": {
+                  "type": "object",
+                  "properties": {
+                    "width": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "height": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "fixtures": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "jev": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "openrouter",
+                    "typesafe"
+                  ]
+                },
+                "model": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "output": {
+              "type": "object",
+              "properties": {
+                "dir": {
+                  "type": "string"
+                },
+                "fail-on": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "error",
+                      "unsupported",
+                      "evidenced-not-reached"
+                    ]
+                  }
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "context": {
+          "type": "object",
+          "properties": {
+            "change": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "base": {
+                  "type": "string"
+                },
+                "head": {
+                  "type": "string"
+                },
+                "files": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      },
+                      "oldPath": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "added",
+                          "modified",
+                          "deleted",
+                          "renamed"
+                        ]
+                      },
+                      "provenance": {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "git",
+                              "github",
+                              "cli",
+                              "junit",
+                              "config",
+                              "runtime"
+                            ]
+                          },
+                          "ref": {
+                            "type": "string"
+                          },
+                          "location": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "provider"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "status",
+                      "provenance"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "commits": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "claims": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      },
+                      "provenance": {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "git",
+                              "github",
+                              "cli",
+                              "junit",
+                              "config",
+                              "runtime"
+                            ]
+                          },
+                          "ref": {
+                            "type": "string"
+                          },
+                          "location": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "provider"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "text",
+                      "provenance"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "provenance": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "provider": {
+                        "type": "string",
+                        "enum": [
+                          "git",
+                          "github",
+                          "cli",
+                          "junit",
+                          "config",
+                          "runtime"
+                        ]
+                      },
+                      "ref": {
+                        "type": "string"
+                      },
+                      "location": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "provider"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "files",
+                "commits",
+                "claims",
+                "provenance"
+              ],
+              "additionalProperties": false
+            },
+            "candidates": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "provenance": {
+                    "type": "object",
+                    "properties": {
+                      "provider": {
+                        "type": "string",
+                        "enum": [
+                          "git",
+                          "github",
+                          "cli",
+                          "junit",
+                          "config",
+                          "runtime"
+                        ]
+                      },
+                      "ref": {
+                        "type": "string"
+                      },
+                      "location": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "provider"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "text",
+                  "provenance"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "checks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "passed",
+                      "failed",
+                      "skipped"
+                    ]
+                  },
+                  "covers": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "provenance": {
+                    "type": "object",
+                    "properties": {
+                      "provider": {
+                        "type": "string",
+                        "enum": [
+                          "git",
+                          "github",
+                          "cli",
+                          "junit",
+                          "config",
+                          "runtime"
+                        ]
+                      },
+                      "ref": {
+                        "type": "string"
+                      },
+                      "location": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "provider"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "name",
+                  "status",
+                  "provenance"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "providers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "enum": [
+                      "git",
+                      "github",
+                      "cli",
+                      "junit"
+                    ]
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "used",
+                      "unavailable"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "not-a-repository",
+                      "base-unresolved",
+                      "merge-base-missing",
+                      "git-failed",
+                      "head-missing",
+                      "source-absent",
+                      "source-unreadable",
+                      "source-malformed",
+                      "no-input",
+                      "not-configured"
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "status"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "truncated": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "dropped",
+                      "truncated",
+                      "env-file",
+                      "sensitive-file",
+                      "binary",
+                      "candidate-cap",
+                      "check-cap"
+                    ]
+                  }
+                },
+                "required": [
+                  "file",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "redactions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string"
+                  },
+                  "count": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "file",
+                  "count"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "change",
+            "candidates",
+            "checks",
+            "providers",
+            "truncated",
+            "redactions"
+          ],
+          "additionalProperties": false
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "probability": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "provenance": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "git",
+                      "github",
+                      "cli",
+                      "junit",
+                      "config",
+                      "runtime"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string"
+                  },
+                  "location": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "provider"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "id",
+              "text",
+              "probability",
+              "provenance"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "assessment": {
+          "type": "object",
+          "properties": {
+            "required": {
+              "type": "boolean"
+            },
+            "decidedBy": {
+              "type": "string",
+              "enum": [
+                "classifier",
+                "policy"
+              ]
+            },
+            "surface": {
+              "type": "string",
+              "enum": [
+                "browser_ui",
+                "http_api",
+                "cli",
+                "backend_internal",
+                "native_app",
+                "non_runtime"
+              ]
+            },
+            "claimStatus": {
+              "type": "string",
+              "enum": [
+                "identified",
+                "not_identified"
+              ]
+            },
+            "perClaimProbabilities": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "claimId": {
+                    "type": "string"
+                  },
+                  "runtimeObservable": {
+                    "type": "number"
+                  },
+                  "checksAdequate": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "claimId",
+                  "runtimeObservable",
+                  "checksAdequate"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "questions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "idVersion": {
+                    "type": "string"
+                  },
+                  "subjectId": {
+                    "type": "string"
+                  },
+                  "probability": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "probabilities": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "additionalProperties": {
+                          "type": "number"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "idVersion",
+                  "subjectId",
+                  "probability",
+                  "probabilities"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "settings": {
+              "type": "object",
+              "properties": {
+                "claimThreshold": {
+                  "type": "number"
+                },
+                "observableThreshold": {
+                  "type": "number"
+                },
+                "adequateThreshold": {
+                  "type": "number"
+                },
+                "uncertaintyBand": {
+                  "type": "number"
+                },
+                "onUncertain": {
+                  "type": "string",
+                  "enum": [
+                    "evidence",
+                    "skip"
+                  ]
+                }
+              },
+              "required": [
+                "claimThreshold",
+                "observableThreshold",
+                "adequateThreshold",
+                "uncertaintyBand",
+                "onUncertain"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "required",
+            "decidedBy",
+            "surface",
+            "claimStatus",
+            "perClaimProbabilities",
+            "questions",
+            "settings"
+          ],
+          "additionalProperties": false
+        },
+        "subject": {
+          "type": "string"
+        },
+        "steps": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "url": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "action": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "description"
+                ],
+                "additionalProperties": false
+              },
+              "executed": {
+                "type": "boolean"
+              },
+              "screenshot": {
+                "type": "string",
+                "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[^\\n]+$"
+              },
+              "probabilities": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "number"
+                }
+              }
+            },
+            "required": [
+              "step",
+              "url",
+              "title",
+              "action",
+              "executed",
+              "screenshot",
+              "probabilities"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "eventLog": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "dialog",
+                  "download",
+                  "popup",
+                  "settle",
+                  "refusal"
+                ]
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "step",
+              "kind",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "finalImage": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "model": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "error": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "screenshot": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[^\\n]+$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "model",
+                "error",
+                "screenshot"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "runtime": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "stopReason": {
+                  "type": "string",
+                  "enum": [
+                    "done",
+                    "reached",
+                    "give_up",
+                    "max-steps",
+                    "time-budget",
+                    "aborted"
+                  ]
+                }
+              },
+              "required": [
+                "stopReason"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "finalState": {
+          "type": "string",
+          "enum": [
+            "reached",
+            "not_reached"
+          ]
+        },
+        "error": {
+          "type": "null"
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[^\\n]+$"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "screenshot",
+                  "log",
+                  "jev-calls"
+                ]
+              }
+            },
+            "required": [
+              "path",
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "timings": {
+          "type": "object",
+          "properties": {
+            "startedAt": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            },
+            "durationMs": {
+              "type": "number",
+              "minimum": 0
+            },
+            "stages": {
+              "type": "object",
+              "properties": {
+                "config": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "context": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "assessment": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "runtime": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "config",
+                "context",
+                "assessment",
+                "runtime"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "startedAt",
+            "durationMs",
+            "stages"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "ceVersion",
+        "jevModels",
+        "outcome",
+        "outcomeReason",
+        "config",
+        "context",
+        "claims",
+        "assessment",
+        "subject",
+        "steps",
+        "eventLog",
+        "finalImage",
+        "runtime",
+        "finalState",
+        "error",
+        "artifacts",
+        "timings"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1"
+        },
+        "ceVersion": {
+          "type": "string"
+        },
+        "jevModels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string",
+          "const": "UNSUPPORTED"
+        },
+        "outcomeReason": {
+          "type": "string",
+          "enum": [
+            "stage-error",
+            "assessment-missing",
+            "not-required",
+            "surface-unsupported",
+            "evidence-collected",
+            "no-observation",
+            "evidence-incomplete"
+          ]
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "type": "number",
+              "const": 0
+            },
+            "target": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "start": {
+                  "type": "string"
+                },
+                "ready": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "timeout": {
+                      "type": "string",
+                      "pattern": "^[1-9]\\d*(ms|s|m)$"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "routes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "context": {
+              "type": "object",
+              "properties": {
+                "base": {
+                  "type": "string"
+                },
+                "include": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "exclude": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "redact": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "checks": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "assessment": {
+              "type": "object",
+              "properties": {
+                "thresholds": {
+                  "type": "object",
+                  "properties": {
+                    "claim": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "observable": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "adequate": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "uncertainty-band": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "on-uncertain": {
+                  "type": "string",
+                  "enum": [
+                    "evidence",
+                    "skip"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            },
+            "runtime": {
+              "type": "object",
+              "properties": {
+                "max-steps": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "timeout": {
+                  "type": "string",
+                  "pattern": "^[1-9]\\d*(ms|s|m)$"
+                },
+                "viewport": {
+                  "type": "object",
+                  "properties": {
+                    "width": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "height": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "fixtures": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "jev": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "openrouter",
+                    "typesafe"
+                  ]
+                },
+                "model": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "output": {
+              "type": "object",
+              "properties": {
+                "dir": {
+                  "type": "string"
+                },
+                "fail-on": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "error",
+                      "unsupported",
+                      "evidenced-not-reached"
+                    ]
+                  }
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "context": {
+          "type": "object",
+          "properties": {
+            "change": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "base": {
+                  "type": "string"
+                },
+                "head": {
+                  "type": "string"
+                },
+                "files": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string"
+                      },
+                      "oldPath": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "added",
+                          "modified",
+                          "deleted",
+                          "renamed"
+                        ]
+                      },
+                      "provenance": {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "git",
+                              "github",
+                              "cli",
+                              "junit",
+                              "config",
+                              "runtime"
+                            ]
+                          },
+                          "ref": {
+                            "type": "string"
+                          },
+                          "location": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "provider"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "status",
+                      "provenance"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "commits": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "claims": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      },
+                      "provenance": {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "git",
+                              "github",
+                              "cli",
+                              "junit",
+                              "config",
+                              "runtime"
+                            ]
+                          },
+                          "ref": {
+                            "type": "string"
+                          },
+                          "location": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "provider"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "text",
+                      "provenance"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "provenance": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "provider": {
+                        "type": "string",
+                        "enum": [
+                          "git",
+                          "github",
+                          "cli",
+                          "junit",
+                          "config",
+                          "runtime"
+                        ]
+                      },
+                      "ref": {
+                        "type": "string"
+                      },
+                      "location": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "provider"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "files",
+                "commits",
+                "claims",
+                "provenance"
+              ],
+              "additionalProperties": false
+            },
+            "candidates": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "provenance": {
+                    "type": "object",
+                    "properties": {
+                      "provider": {
+                        "type": "string",
+                        "enum": [
+                          "git",
+                          "github",
+                          "cli",
+                          "junit",
+                          "config",
+                          "runtime"
+                        ]
+                      },
+                      "ref": {
+                        "type": "string"
+                      },
+                      "location": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "provider"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "text",
+                  "provenance"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "checks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "passed",
+                      "failed",
+                      "skipped"
+                    ]
+                  },
+                  "covers": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "provenance": {
+                    "type": "object",
+                    "properties": {
+                      "provider": {
+                        "type": "string",
+                        "enum": [
+                          "git",
+                          "github",
+                          "cli",
+                          "junit",
+                          "config",
+                          "runtime"
+                        ]
+                      },
+                      "ref": {
+                        "type": "string"
+                      },
+                      "location": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "provider"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "name",
+                  "status",
+                  "provenance"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "providers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "enum": [
+                      "git",
+                      "github",
+                      "cli",
+                      "junit"
+                    ]
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "used",
+                      "unavailable"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "not-a-repository",
+                      "base-unresolved",
+                      "merge-base-missing",
+                      "git-failed",
+                      "head-missing",
+                      "source-absent",
+                      "source-unreadable",
+                      "source-malformed",
+                      "no-input",
+                      "not-configured"
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "status"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "truncated": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "dropped",
+                      "truncated",
+                      "env-file",
+                      "sensitive-file",
+                      "binary",
+                      "candidate-cap",
+                      "check-cap"
+                    ]
+                  }
+                },
+                "required": [
+                  "file",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "redactions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string"
+                  },
+                  "count": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "file",
+                  "count"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "change",
+            "candidates",
+            "checks",
+            "providers",
+            "truncated",
+            "redactions"
+          ],
+          "additionalProperties": false
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "probability": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "provenance": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "git",
+                      "github",
+                      "cli",
+                      "junit",
+                      "config",
+                      "runtime"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string"
+                  },
+                  "location": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "provider"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "id",
+              "text",
+              "probability",
+              "provenance"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "assessment": {
+          "type": "object",
+          "properties": {
+            "required": {
+              "type": "boolean"
+            },
+            "decidedBy": {
+              "type": "string",
+              "enum": [
+                "classifier",
+                "policy"
+              ]
+            },
+            "surface": {
+              "type": "string",
+              "enum": [
+                "browser_ui",
+                "http_api",
+                "cli",
+                "backend_internal",
+                "native_app",
+                "non_runtime"
+              ]
+            },
+            "claimStatus": {
+              "type": "string",
+              "enum": [
+                "identified",
+                "not_identified"
+              ]
+            },
+            "perClaimProbabilities": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "claimId": {
+                    "type": "string"
+                  },
+                  "runtimeObservable": {
+                    "type": "number"
+                  },
+                  "checksAdequate": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "claimId",
+                  "runtimeObservable",
+                  "checksAdequate"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "questions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "idVersion": {
+                    "type": "string"
+                  },
+                  "subjectId": {
+                    "type": "string"
+                  },
+                  "probability": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "probabilities": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "additionalProperties": {
+                          "type": "number"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "idVersion",
+                  "subjectId",
+                  "probability",
+                  "probabilities"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "settings": {
+              "type": "object",
+              "properties": {
+                "claimThreshold": {
+                  "type": "number"
+                },
+                "observableThreshold": {
+                  "type": "number"
+                },
+                "adequateThreshold": {
+                  "type": "number"
+                },
+                "uncertaintyBand": {
+                  "type": "number"
+                },
+                "onUncertain": {
+                  "type": "string",
+                  "enum": [
+                    "evidence",
+                    "skip"
+                  ]
+                }
+              },
+              "required": [
+                "claimThreshold",
+                "observableThreshold",
+                "adequateThreshold",
+                "uncertaintyBand",
+                "onUncertain"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "required",
+            "decidedBy",
+            "surface",
+            "claimStatus",
+            "perClaimProbabilities",
+            "questions",
+            "settings"
+          ],
+          "additionalProperties": false
+        },
+        "subject": {
+          "type": "null"
+        },
+        "steps": {
+          "maxItems": 0,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "url": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "action": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "description"
+                ],
+                "additionalProperties": false
+              },
+              "executed": {
+                "type": "boolean"
+              },
+              "screenshot": {
+                "type": "string",
+                "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[^\\n]+$"
+              },
+              "probabilities": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "number"
+                }
+              }
+            },
+            "required": [
+              "step",
+              "url",
+              "title",
+              "action",
+              "executed",
+              "screenshot",
+              "probabilities"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "eventLog": {
+          "maxItems": 0,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "dialog",
+                  "download",
+                  "popup",
+                  "settle",
+                  "refusal"
+                ]
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "step",
+              "kind",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "finalImage": {
+          "type": "null"
+        },
+        "runtime": {
+          "type": "null"
+        },
+        "finalState": {
+          "type": "null"
+        },
+        "error": {
+          "type": "null"
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[^\\n]+$"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "screenshot",
+                  "log",
+                  "jev-calls"
+                ]
+              }
+            },
+            "required": [
+              "path",
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "timings": {
+          "type": "object",
+          "properties": {
+            "startedAt": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            },
+            "durationMs": {
+              "type": "number",
+              "minimum": 0
+            },
+            "stages": {
+              "type": "object",
+              "properties": {
+                "config": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "context": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "assessment": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "runtime": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "config",
+                "context",
+                "assessment",
+                "runtime"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "startedAt",
+            "durationMs",
+            "stages"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "ceVersion",
+        "jevModels",
+        "outcome",
+        "outcomeReason",
+        "config",
+        "context",
+        "claims",
+        "assessment",
+        "subject",
+        "steps",
+        "eventLog",
+        "finalImage",
+        "runtime",
+        "finalState",
+        "error",
+        "artifacts",
+        "timings"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1"
+        },
+        "ceVersion": {
+          "type": "string"
+        },
+        "jevModels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "type": "string",
+          "const": "ERROR"
+        },
+        "outcomeReason": {
+          "type": "string",
+          "enum": [
+            "stage-error",
+            "assessment-missing",
+            "not-required",
+            "surface-unsupported",
+            "evidence-collected",
+            "no-observation",
+            "evidence-incomplete"
+          ]
+        },
+        "config": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "version": {
+                  "type": "number",
+                  "const": 0
+                },
+                "target": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "start": {
+                      "type": "string"
+                    },
+                    "ready": {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string"
+                        },
+                        "timeout": {
+                          "type": "string",
+                          "pattern": "^[1-9]\\d*(ms|s|m)$"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "routes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "context": {
+                  "type": "object",
+                  "properties": {
+                    "base": {
+                      "type": "string"
+                    },
+                    "include": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "exclude": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "redact": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "checks": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "assessment": {
+                  "type": "object",
+                  "properties": {
+                    "thresholds": {
+                      "type": "object",
+                      "properties": {
+                        "claim": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "observable": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "adequate": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "uncertainty-band": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "on-uncertain": {
+                      "type": "string",
+                      "enum": [
+                        "evidence",
+                        "skip"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "runtime": {
+                  "type": "object",
+                  "properties": {
+                    "max-steps": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "timeout": {
+                      "type": "string",
+                      "pattern": "^[1-9]\\d*(ms|s|m)$"
+                    },
+                    "viewport": {
+                      "type": "object",
+                      "properties": {
+                        "width": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "height": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "fixtures": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "jev": {
+                  "type": "object",
+                  "properties": {
+                    "provider": {
+                      "type": "string",
+                      "enum": [
+                        "openrouter",
+                        "typesafe"
+                      ]
+                    },
+                    "model": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "output": {
+                  "type": "object",
+                  "properties": {
+                    "dir": {
+                      "type": "string"
+                    },
+                    "fail-on": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "error",
+                          "unsupported",
+                          "evidenced-not-reached"
+                        ]
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "context": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "change": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "base": {
+                      "type": "string"
+                    },
+                    "head": {
+                      "type": "string"
+                    },
+                    "files": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "path": {
+                            "type": "string"
+                          },
+                          "oldPath": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "added",
+                              "modified",
+                              "deleted",
+                              "renamed"
+                            ]
+                          },
+                          "provenance": {
+                            "type": "object",
+                            "properties": {
+                              "provider": {
+                                "type": "string",
+                                "enum": [
+                                  "git",
+                                  "github",
+                                  "cli",
+                                  "junit",
+                                  "config",
+                                  "runtime"
+                                ]
+                              },
+                              "ref": {
+                                "type": "string"
+                              },
+                              "location": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "provider"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "path",
+                          "status",
+                          "provenance"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "commits": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "claims": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "text": {
+                            "type": "string"
+                          },
+                          "provenance": {
+                            "type": "object",
+                            "properties": {
+                              "provider": {
+                                "type": "string",
+                                "enum": [
+                                  "git",
+                                  "github",
+                                  "cli",
+                                  "junit",
+                                  "config",
+                                  "runtime"
+                                ]
+                              },
+                              "ref": {
+                                "type": "string"
+                              },
+                              "location": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "provider"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "text",
+                          "provenance"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "provenance": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "git",
+                              "github",
+                              "cli",
+                              "junit",
+                              "config",
+                              "runtime"
+                            ]
+                          },
+                          "ref": {
+                            "type": "string"
+                          },
+                          "location": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "provider"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "files",
+                    "commits",
+                    "claims",
+                    "provenance"
+                  ],
+                  "additionalProperties": false
+                },
+                "candidates": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "text": {
+                        "type": "string"
+                      },
+                      "provenance": {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "git",
+                              "github",
+                              "cli",
+                              "junit",
+                              "config",
+                              "runtime"
+                            ]
+                          },
+                          "ref": {
+                            "type": "string"
+                          },
+                          "location": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "provider"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "text",
+                      "provenance"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "checks": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "passed",
+                          "failed",
+                          "skipped"
+                        ]
+                      },
+                      "covers": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "provenance": {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "git",
+                              "github",
+                              "cli",
+                              "junit",
+                              "config",
+                              "runtime"
+                            ]
+                          },
+                          "ref": {
+                            "type": "string"
+                          },
+                          "location": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "provider"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "status",
+                      "provenance"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "providers": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "enum": [
+                          "git",
+                          "github",
+                          "cli",
+                          "junit"
+                        ]
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "used",
+                          "unavailable"
+                        ]
+                      },
+                      "reason": {
+                        "type": "string",
+                        "enum": [
+                          "not-a-repository",
+                          "base-unresolved",
+                          "merge-base-missing",
+                          "git-failed",
+                          "head-missing",
+                          "source-absent",
+                          "source-unreadable",
+                          "source-malformed",
+                          "no-input",
+                          "not-configured"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "status"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "truncated": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "file": {
+                        "type": "string"
+                      },
+                      "reason": {
+                        "type": "string",
+                        "enum": [
+                          "dropped",
+                          "truncated",
+                          "env-file",
+                          "sensitive-file",
+                          "binary",
+                          "candidate-cap",
+                          "check-cap"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "file",
+                      "reason"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "redactions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "file": {
+                        "type": "string"
+                      },
+                      "count": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "file",
+                      "count"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "change",
+                "candidates",
+                "checks",
+                "providers",
+                "truncated",
+                "redactions"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "probability": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "provenance": {
+                "type": "object",
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "git",
+                      "github",
+                      "cli",
+                      "junit",
+                      "config",
+                      "runtime"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string"
+                  },
+                  "location": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "provider"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "id",
+              "text",
+              "probability",
+              "provenance"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "assessment": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "required": {
+                  "type": "boolean"
+                },
+                "decidedBy": {
+                  "type": "string",
+                  "enum": [
+                    "classifier",
+                    "policy"
+                  ]
+                },
+                "surface": {
+                  "type": "string",
+                  "enum": [
+                    "browser_ui",
+                    "http_api",
+                    "cli",
+                    "backend_internal",
+                    "native_app",
+                    "non_runtime"
+                  ]
+                },
+                "claimStatus": {
+                  "type": "string",
+                  "enum": [
+                    "identified",
+                    "not_identified"
+                  ]
+                },
+                "perClaimProbabilities": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "claimId": {
+                        "type": "string"
+                      },
+                      "runtimeObservable": {
+                        "type": "number"
+                      },
+                      "checksAdequate": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "claimId",
+                      "runtimeObservable",
+                      "checksAdequate"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "questions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "idVersion": {
+                        "type": "string"
+                      },
+                      "subjectId": {
+                        "type": "string"
+                      },
+                      "probability": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "probabilities": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {
+                              "type": "number"
+                            }
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "idVersion",
+                      "subjectId",
+                      "probability",
+                      "probabilities"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "settings": {
+                  "type": "object",
+                  "properties": {
+                    "claimThreshold": {
+                      "type": "number"
+                    },
+                    "observableThreshold": {
+                      "type": "number"
+                    },
+                    "adequateThreshold": {
+                      "type": "number"
+                    },
+                    "uncertaintyBand": {
+                      "type": "number"
+                    },
+                    "onUncertain": {
+                      "type": "string",
+                      "enum": [
+                        "evidence",
+                        "skip"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "claimThreshold",
+                    "observableThreshold",
+                    "adequateThreshold",
+                    "uncertaintyBand",
+                    "onUncertain"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "required",
+                "decidedBy",
+                "surface",
+                "claimStatus",
+                "perClaimProbabilities",
+                "questions",
+                "settings"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "subject": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "url": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "action": {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "description"
+                ],
+                "additionalProperties": false
+              },
+              "executed": {
+                "type": "boolean"
+              },
+              "screenshot": {
+                "type": "string",
+                "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[^\\n]+$"
+              },
+              "probabilities": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "number"
+                }
+              }
+            },
+            "required": [
+              "step",
+              "url",
+              "title",
+              "action",
+              "executed",
+              "screenshot",
+              "probabilities"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "eventLog": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "dialog",
+                  "download",
+                  "popup",
+                  "settle",
+                  "refusal"
+                ]
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "step",
+              "kind",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "finalImage": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "model": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "error": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "screenshot": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[^\\n]+$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "model",
+                "error",
+                "screenshot"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "runtime": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "stopReason": {
+                  "type": "string",
+                  "enum": [
+                    "done",
+                    "reached",
+                    "give_up",
+                    "max-steps",
+                    "time-budget",
+                    "aborted"
+                  ]
+                }
+              },
+              "required": [
+                "stopReason"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "finalState": {
+          "type": "null"
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "stage": {
+              "type": "string",
+              "enum": [
+                "config",
+                "context",
+                "assessment",
+                "runtime",
+                "evidence"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "enum": [
+                "stage-error",
+                "assessment-missing",
+                "not-required",
+                "surface-unsupported",
+                "evidence-collected",
+                "no-observation",
+                "evidence-incomplete"
+              ]
+            },
+            "causeName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "stage",
+            "reason",
+            "causeName",
+            "fields"
+          ],
+          "additionalProperties": false
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "pattern": "^(?!\\/)(?!(?:.*\\/)?\\.\\.(?:\\/|$))[^\\n]+$"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "screenshot",
+                  "log",
+                  "jev-calls"
+                ]
+              }
+            },
+            "required": [
+              "path",
+              "kind"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "timings": {
+          "type": "object",
+          "properties": {
+            "startedAt": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            },
+            "durationMs": {
+              "type": "number",
+              "minimum": 0
+            },
+            "stages": {
+              "type": "object",
+              "properties": {
+                "config": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "context": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "assessment": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "runtime": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "config",
+                "context",
+                "assessment",
+                "runtime"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "startedAt",
+            "durationMs",
+            "stages"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "ceVersion",
+        "jevModels",
+        "outcome",
+        "outcomeReason",
+        "config",
+        "context",
+        "claims",
+        "assessment",
+        "subject",
+        "steps",
+        "eventLog",
+        "finalImage",
+        "runtime",
+        "finalState",
+        "error",
+        "artifacts",
+        "timings"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}
