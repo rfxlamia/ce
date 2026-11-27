@@ -16,7 +16,9 @@ import type { JevGateway } from '../jev/gateway.js';
 import { createJsonlCallLog } from '../jev/log.js';
 import { exitCodeFor } from '../outcome/index.js';
 import type { RuntimeResult } from '../outcome/index.js';
-import { EMPTY_REGISTRY, selectCapability } from './capabilities.js';
+import { createBrowserCapability } from '../runtime/capability.js';
+import { openTarget } from '../runtime/target.js';
+import { createCapabilityRegistry, EMPTY_REGISTRY, selectCapability } from './capabilities.js';
 import { resolveAfterAssessment, wrapStage } from './resolve.js';
 import type {
   CapabilityRegistry,
@@ -46,13 +48,17 @@ export function runDirName(date: Date): string {
 
 /** The only place that reads process.env, process.cwd(), process.stderr and the clock. */
 function withDefaults(options: RunOptions): RunDefaults {
+  const cwd = options.cwd ?? process.cwd();
+  const env = options.env ?? process.env;
   return {
-    cwd: options.cwd ?? process.cwd(),
-    env: options.env ?? process.env,
+    cwd,
+    env,
     flags: options.flags ?? {},
     cliOptions: options.cliOptions ?? {},
     createGateway: options.createGateway ?? createJevGateway,
-    capabilities: options.capabilities ?? EMPTY_REGISTRY,
+    // Playwright is imported lazily inside the capability, never here.
+    capabilities:
+      options.capabilities ?? createCapabilityRegistry([createBrowserCapability({ cwd, env, openTarget })]),
     now: options.now ?? (() => new Date()),
     stderr: options.stderr ?? process.stderr,
   };
@@ -95,7 +101,8 @@ export async function run(options: RunOptions = {}): Promise<RunResult> {
   const config = loaded.config;
 
   let gateway: JevGateway;
-  let runDir: string | undefined;
+  // Computed once per run, also when a gateway is supplied; a capability needs it for screenshots.
+  const runDir = path.resolve(o.cwd, config.output?.dir ?? '.ce/runs', runDirName(o.now()));
   if (options.gateway !== undefined) {
     gateway = options.gateway;
   } else {
@@ -104,7 +111,6 @@ export async function run(options: RunOptions = {}): Promise<RunResult> {
       reportConfigFailure(credentials, collectSecretValues(o.env), o.stderr);
       return configFailure();
     }
-    runDir = path.resolve(o.cwd, config.output?.dir ?? '.ce/runs', runDirName(o.now()));
     const created = o.createGateway(loaded, o.env, {
       callLog: createJsonlCallLog(path.join(runDir, 'jev-calls.jsonl')),
     });
@@ -150,7 +156,7 @@ export async function run(options: RunOptions = {}): Promise<RunResult> {
       assessment,
       config,
       gateway,
-      ...(runDir !== undefined ? { runDir } : {}),
+      runDir,
     });
     return finishRun({ config, registry: o.capabilities, claims, assessment, runtime, capability: entry.name });
   } catch (e) {

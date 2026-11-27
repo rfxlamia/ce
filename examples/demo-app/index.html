@@ -41,6 +41,68 @@
       #nav-menu a:hover { background: #f1f5f9; }
       main { padding: 1.5rem; }
       #count { font-size: 2rem; font-weight: 600; }
+
+      #open-settings { margin-left: 0.5rem; }
+      #settings-modal {
+        position: fixed;
+        top: 4rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 22rem;
+        max-width: calc(100vw - 2rem);
+        box-sizing: border-box;
+        padding: 1rem;
+        background: white;
+        color: #0f172a;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.25);
+        z-index: 10;
+      }
+      #settings-modal[hidden] { display: none; }
+      #settings-modal h2 { margin: 0 0 0.75rem; font-size: 1.1rem; }
+      #settings-modal .field { margin-bottom: 0.75rem; }
+      #settings-modal button,
+      #settings-modal [role="option"] {
+        font: inherit;
+      }
+      .dropdown-trigger {
+        width: 100%;
+        text-align: left;
+        padding: 0.4rem 0.6rem;
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .dropdown-list {
+        list-style: none;
+        margin: 0.25rem 0 0;
+        padding: 0;
+        background: white;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+      }
+      .dropdown-list[hidden] { display: none; }
+      .dropdown-list [role="option"] { padding: 0.45rem 0.6rem; cursor: pointer; }
+      .dropdown-list [role="option"]:hover { background: #f1f5f9; }
+      /* Theme list flows inside the modal, so it stays within the modal and viewport. */
+      #theme-list { position: static; }
+      /* Language container clips overflow; its list is absolutely positioned
+         below the container, past the bottom edge of the modal. */
+      #language-field {
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 0;
+      }
+      #language-list {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        margin-top: 0;
+      }
+      #settings-close { margin-top: 0.75rem; }
     </style>
   </head>
   <body>
@@ -60,7 +122,33 @@
       <p>This app is the verification target for the Continuous Evidence spike. It intentionally knows nothing about CE.</p>
       <button id="increment">Increment</button>
       <output id="count">0</output>
+      <p><button id="open-settings">Open settings</button></p>
     </main>
+
+    <div id="settings-modal" role="dialog" aria-label="Settings" aria-modal="true" hidden>
+      <h2>Settings</h2>
+      <output id="current-theme" aria-label="Current theme">Theme: Light</output>
+
+      <div class="field" id="theme-field">
+        <button id="theme-trigger" class="dropdown-trigger" aria-haspopup="listbox" aria-expanded="false">Choose theme</button>
+        <ul id="theme-list" class="dropdown-list" role="listbox" aria-label="Theme options" hidden>
+          <li role="option" tabindex="0" data-value="Light">Light</li>
+          <li role="option" tabindex="0" data-value="Dark">Dark</li>
+          <li role="option" tabindex="0" data-value="System">System</li>
+        </ul>
+      </div>
+
+      <div class="field" id="language-field">
+        <button id="language-trigger" class="dropdown-trigger" aria-haspopup="listbox" aria-expanded="false">Choose language</button>
+        <ul id="language-list" class="dropdown-list" role="listbox" aria-label="Language options" hidden>
+          <li role="option" tabindex="0" data-value="English">English</li>
+          <li role="option" tabindex="0" data-value="Spanish">Spanish</li>
+          <li role="option" tabindex="0" data-value="French">French</li>
+        </ul>
+      </div>
+
+      <button id="settings-close">Close</button>
+    </div>
 
     <script type="module" src="/src/main.ts"></script>
   </body>

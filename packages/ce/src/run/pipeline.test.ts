@@ -12,8 +12,8 @@ import type { CallLog } from '../jev/log.js';
 import type { Jev_Request } from '../jev/types.js';
 import type { EvidenceSummary, RuntimeResult } from '../outcome/index.js';
 import { resolveOutcome } from '../outcome/index.js';
-import { createCapabilityRegistry, selectCapability } from './capabilities.js';
-import { run } from './pipeline.js';
+import { createCapabilityRegistry, EMPTY_REGISTRY, selectCapability } from './capabilities.js';
+import { run, runDirName } from './pipeline.js';
 import type { CapabilityRegistry, CreateGateway, ResolvedRun, RuntimeHook } from './types.js';
 
 vi.mock('../outcome/index.js', async (importOriginal) => {
@@ -216,7 +216,11 @@ describe('run() resolved outcomes', () => {
 
   it('resolves UNSUPPORTED for browser_ui on an empty registry, exit 2 with fail-on unsupported', async () => {
     const result = await resolved(
-      base({ gateway: scriptedGateway(REQUIRED_BROWSER), flags: { 'output.fail-on': ['unsupported'] } }),
+      base({
+        gateway: scriptedGateway(REQUIRED_BROWSER),
+        capabilities: EMPTY_REGISTRY,
+        flags: { 'output.fail-on': ['unsupported'] },
+      }),
     );
     expect(result.outcome).toBe('UNSUPPORTED');
     expect(result.reason).toBe('surface-unsupported');
@@ -273,7 +277,7 @@ describe('run() with a browser_ui capability', () => {
     expect(input.claims).toEqual([]);
     expect(input.assessment).toMatchObject({ required: true, surface: 'browser_ui' });
     expect(input.config).toBeDefined();
-    expect(input.runDir).toBeUndefined();
+    expect(input.runDir).toBe(join(cwd, '.ce/runs', runDirName(NOW)));
 
     expect(result.outcome).toBe('EVIDENCED');
     expect(result.reason).toBe('evidence-collected');
