@@ -86,6 +86,7 @@ Both `CI` (Claim_Identifier) and `AS` (Assessor) call the same `JevGateway` inst
 
 ```ts
 import type { Provenance } from '../context/types.js';
+import { NON_OBSERVABLE_SURFACES } from './combine.js';
 
 export type Surface =
   | 'browser_ui'
@@ -145,6 +146,11 @@ export interface AssessmentRecord {
   cuts: Cut[];
   /** Present only when no Change_Subject was asked because the Change is documentation only (Requirement 3 criterion 7). */
   subjectSkipped?: 'docs-only';
+  /**
+   * Present only when the Combiner suppressed `needed` for at least one Subject
+   * because of its surface (issue #31, Requirement 6 criterion 12).
+   */
+  surfaceSuppressed?: { subjectId: string; surface: (typeof NON_OBSERVABLE_SURFACES)[number] }[];
   /** Present only when decidedBy === 'policy' (Requirement 7 criterion 4). */
   policyDecision?: {
     policy: 'evidence' | 'skip';
@@ -175,7 +181,7 @@ Every field is a plain JSON-serializable value (Requirement 8 criterion 7): no `
 
 ### `assessment/combine.ts` — the Combiner
 
-Pure function, matches design.md section 4's "Decision combination" table exactly, using the resolved `AssessmentSettings` instead of raw config:
+Pure function of the per-Subject probabilities and the resolved `AssessmentSettings`. The `needed` line matches `docs/journal/v0.0/design.md` section 4, including the `NON_OBSERVABLE_SURFACES` exclusion (issue #31):
 
 ```ts
 export interface SubjectProbabilities {
@@ -186,12 +192,17 @@ export interface SubjectProbabilities {
   surfaceConfidence: number; // [0,1]
 }
 
+/** Fixed, catalog-independent set. A surface in it does not set `needed` (issue #31). */
+export const NON_OBSERVABLE_SURFACES = ['backend_internal', 'non_runtime'] as const satisfies readonly Surface[];
+
 export interface CombineResult {
   perClaim: PerClaimAssessment[];
   required: boolean;
   decidedBy: 'classifier' | 'policy';
   surface: Surface; // dominant surface
   policyDecision?: Assessment['policyDecision'];
+  /** Present only when at least one Subject had `needed` suppressed for its surface. */
+  surfaceSuppressed?: AssessmentRecord['surfaceSuppressed'];
 }
 
 export function combine(
@@ -200,7 +211,7 @@ export function combine(
 ): CombineResult;
 ```
 
-`combine` never calls `JevGateway`, never reads `process.env` or the clock (Requirement 6 criterion 1), and is the only function that computes `needed`, `uncertain`, `required`, `decidedBy`, and the dominant surface (Decision D6, D7). Given zero subjects, `required` is `false` and `decidedBy` is `classifier` (no `needed`, no `uncertain` — the "no Subject" case of criterion 6), and `surface` falls back to `'non_runtime'` (there being no subject to drive a dominant surface; this is an explicit decision this design adds because D7 does not define the zero-subject case, and `combine` must still be total per Requirement 6 criterion 9 — the empty-context path never reaches `combine` in production because Requirement 3 criterion 4 raises `StageError` first, so this fallback is exercised only by the totality property test, not by a real run).
+`combine` never calls `JevGateway`, never reads `process.env` or the clock (Requirement 6 criterion 1), and is the only function that computes `needed`, `uncertain`, `required`, `decidedBy`, and the dominant surface (Decision D6, D7). It never compares a surface with the capability catalog. It does compare each surface with the fixed, catalog-independent `NON_OBSERVABLE_SURFACES` set (`backend_internal`, `non_runtime`; issue #31). `needed` is `runtimeObservable >= observableThreshold AND checksAdequate < adequateThreshold AND surface ∉ NON_OBSERVABLE_SURFACES`. The rule ignores `surfaceConfidence` (no confidence gate). `uncertain` is unchanged. `surfaceSuppressed` lists, in subject order, every subject for which the probability test holds and the surface is in that set, and the key is absent when the list is empty. Decisions D5 and D7 stay as written because both are phrased on this `needed`. Given zero subjects, `required` is `false` and `decidedBy` is `classifier` (no `needed`, no `uncertain` — the "no Subject" case of criterion 6), and `surface` falls back to `'non_runtime'` (there being no subject to drive a dominant surface; this is an explicit decision this design adds because D7 does not define the zero-subject case, and `combine` must still be total per Requirement 6 criterion 9 — the empty-context path never reaches `combine` in production because Requirement 3 criterion 4 raises `StageError` first, so this fallback is exercised only by the totality property test, not by a real run).
 
 Dominant surface tie-break (Decision D7): among the driving subjects (those with `needed` or `uncertain` true; all subjects if none drive), pick the highest `surfaceConfidence`; ties go to the subject earliest in `subjects` order (which `assess.ts` builds in Claim/Change_Subject order per Requirement 2 criterion 4); a tie in `assess.surface` itself (Requirement 5 criterion 4, resolved before `combine` is called, inside `assess.ts`'s answer reading) goes to the label earliest in `SURFACE_LABELS`.
 
@@ -259,7 +270,7 @@ export function resolveAssessmentSettings(
 3. Builds the Subject list (Requirement 3): if `claims.length > 0`, one Subject per Claim, `claimStatus = 'identified'`; otherwise one Change_Subject (`id: 'change'`, `kind: 'change'`), chosen by `selectChangeSubject(context)` (Requirement 3 criterion 2, text-source priority: title → description → first commit message, first non-blank line, trimmed). If no source has a non-blank line, raises `StageError('assessment', cause)` (Decision D8) before any Assessment_Request is built. Then, when no Claim exists and `isDocsOnlyChange(context)` holds (Requirement 3 criterion 7: at least one Changed_File, and every path, `oldPath` and file-level `truncated` record is a Documentation_File), the Change_Subject is discarded: the Subject list is empty, no Assessment_Request is sent, and `combine([])` gives `required: false`, `decidedBy: 'classifier'` and `surface: 'non_runtime'`. The selection runs first so that an empty context still raises under Decision D8.
 4. For each Subject, builds one Assessment_Request with `buildAssessmentRequest(context, subject)`, sends it with `stage: 'assessment'`, and reads `runtimeObservable`, `checksAdequate` (Noul), and `surface`/`surfaceConfidence` (Choice argmax over `SURFACE_LABELS`, Requirement 5 criteria 3–4).
 5. Calls `combine(subjects, settings)`.
-6. Assembles `AssessmentRecord` from the Classification questions (`ClassifyResult.questionsAsked`), the Assessment questions just asked, the distinct `modelIds` of both, `settings`, the `cuts` the two Request_Builders recorded, `subjectSkipped: 'docs-only'` when the docs-only gate of step 3 applied, and `CombineResult.policyDecision`.
+6. Assembles `AssessmentRecord` from the Classification questions (`ClassifyResult.questionsAsked`), the Assessment questions just asked, the distinct `modelIds` of both, `settings`, the `cuts` the two Request_Builders recorded, `subjectSkipped: 'docs-only'` when the docs-only gate of step 3 applied, `CombineResult.policyDecision` when `decidedBy` is `policy`, and `CombineResult.surfaceSuppressed` when the combiner suppressed `needed` for at least one Subject (issue #31). Both optional fields are copied only when defined.
 7. Returns `{ claims, assessment }`.
 
 Any error not already a `StageError` is wrapped: `StageError('assessment', cause)` (Requirement 9 criterion 2). `assess()` reads `process.env` nowhere and knows nothing about which `JevGateway` implementation it received (Requirement 10 criteria 4–5).
@@ -583,9 +594,9 @@ The prework pass classified every acceptance criterion of Requirements 1–16 an
 
 ### Property 10: Combiner decision formulas
 
-*For all* lists of Subject probabilities and any thresholds/band, `needed(subject)` equals `(runtimeObservable >= observableThreshold) AND (checksAdequate < adequateThreshold)`; `uncertain(subject)` equals `(|runtimeObservable - observableThreshold| <= band) OR (|checksAdequate - adequateThreshold| <= band)` (including the `band = 0` boundary, where `uncertain` is true only on exact equality); and `required` equals `any(needed) OR (any(uncertain) AND onUncertain = 'evidence')`.
+*For all* lists of Subject probabilities and any thresholds/band, `needed(subject)` equals `(runtimeObservable >= observableThreshold) AND (checksAdequate < adequateThreshold) AND (surface ∉ NON_OBSERVABLE_SURFACES)`, where `NON_OBSERVABLE_SURFACES` is the fixed set `{ backend_internal, non_runtime }` and does not depend on the capability catalog (issue #31); `uncertain(subject)` equals `(|runtimeObservable - observableThreshold| <= band) OR (|checksAdequate - adequateThreshold| <= band)` (including the `band = 0` boundary, where `uncertain` is true only on exact equality); `required` equals `any(needed) OR (any(uncertain) AND onUncertain = 'evidence')`; and `surfaceSuppressed` equals, in subject order, the subjects for which `(runtimeObservable >= observableThreshold) AND (checksAdequate < adequateThreshold)` holds and the surface is in that set, and is absent when that list is empty.
 
-**Validates: Requirements 6.2, 6.3, 6.4, 6.5, 6.6, 6.10, 6.11**
+**Validates: Requirements 6.2, 6.3, 6.4, 6.5, 6.6, 6.10, 6.11, 6.12**
 
 ### Property 11: Combiner totality and output cardinality
 
@@ -692,7 +703,7 @@ The prework pass classified every acceptance criterion of Requirements 1–16 an
 | 7 | Assessment_Request state composition | Subject text + context file/patch/check fields of varying length, including some that force cutting |
 | 8 | Test_File protection | File list with a mix of test/non-test paths and patch sizes that force the state over budget |
 | 9 | Surface argmax tie-break | Probability vectors over the 6 labels, including deliberately tied maxima |
-| 10 | Combiner formulas | Subject lists with probabilities/thresholds/band drawn from `[0,1]`, including `band = 0` |
+| 10 | Combiner formulas | Subject lists with probabilities/thresholds/band drawn from `[0,1]`, including `band = 0` and surfaces in and out of `NON_OBSERVABLE_SURFACES` |
 | 11 | Combiner totality | Subject lists including the empty list |
 | 12 | decidedBy iff | Same domain as Property 10 |
 | 13 | Policy-irrelevance | Same domain as Property 10, filtered to the `decidedBy === 'classifier'` branch |

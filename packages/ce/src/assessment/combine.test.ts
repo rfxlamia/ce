@@ -115,6 +115,68 @@ describe('combine', () => {
     const r = combine([subj('a', 0.1, 0.9, 'cli', 0.5), subj('b', 0.1, 0.9, 'http_api', 0.8)], base);
     expect(r.surface).toBe('http_api');
   });
+
+  it('suppresses needed for backend_internal and records the subject (issue #31)', () => {
+    const r = combine([subj('c1', 0.73, 0.3, 'backend_internal', 0.96)], base);
+    expect(r.perClaim[0]).toMatchObject({ needed: false, uncertain: false });
+    expect(r.required).toBe(false);
+    expect(r.decidedBy).toBe('classifier');
+    expect(r.surfaceSuppressed).toEqual([{ subjectId: 'c1', surface: 'backend_internal' }]);
+    expect(r.policyDecision).toBeUndefined();
+  });
+
+  it('does not record surfaceSuppressed when the probability test already fails', () => {
+    // 0.55 is below the observable threshold, so the old needed formula is false.
+    const r = combine([subj('c1', 0.55, 0.08, 'backend_internal', 0.96)], base);
+    expect(r.perClaim[0]).toMatchObject({ needed: false, uncertain: true });
+    expect(r).toMatchObject({ required: true, decidedBy: 'policy' });
+    expect(r).not.toHaveProperty('surfaceSuppressed');
+  });
+
+  it('keeps an observable subject needed and suppresses only the non-observable one', () => {
+    const r = combine(
+      [subj('c1', 0.9, 0.1, 'browser_ui'), subj('c2', 0.9, 0.1, 'backend_internal')],
+      base,
+    );
+    expect(r.required).toBe(true);
+    expect(r.decidedBy).toBe('classifier');
+    expect(r.surface).toBe('browser_ui');
+    expect(r.surfaceSuppressed).toEqual([{ subjectId: 'c2', surface: 'backend_internal' }]);
+    expect(r.policyDecision).toBeUndefined();
+  });
+
+  it.each(['evidence', 'skip'] as const)(
+    'records suppression and the band together when onUncertain is %s',
+    (onUncertain) => {
+      const r = combine([subj('c1', 0.65, 0.1, 'backend_internal')], { ...base, onUncertain });
+      expect(r.perClaim[0]).toMatchObject({ needed: false, uncertain: true });
+      expect(r.decidedBy).toBe('policy');
+      expect(r.required).toBe(onUncertain === 'evidence');
+      expect(r.policyDecision).toEqual({
+        policy: onUncertain,
+        inBand: [{ subjectId: 'c1', probability: 'runtimeObservable' }],
+      });
+      expect(r.surfaceSuppressed).toEqual([{ subjectId: 'c1', surface: 'backend_internal' }]);
+    },
+  );
+
+  it('falls back over all subjects when every subject is suppressed and none is uncertain', () => {
+    const r = combine(
+      [
+        subj('c1', 0.9, 0.1, 'non_runtime', 0.4),
+        subj('c2', 0.85, 0.2, 'backend_internal', 0.96),
+      ],
+      base,
+    );
+    expect(r.perClaim.every((p) => p.needed === false && p.uncertain === false)).toBe(true);
+    expect(r.required).toBe(false);
+    expect(r.decidedBy).toBe('classifier');
+    expect(r.surface).toBe('backend_internal');
+    expect(r.surfaceSuppressed).toEqual([
+      { subjectId: 'c1', surface: 'non_runtime' },
+      { subjectId: 'c2', surface: 'backend_internal' },
+    ]);
+  });
 });
 
 describe('combine properties', () => {

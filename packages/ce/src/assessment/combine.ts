@@ -1,9 +1,10 @@
 // Decision combination: a pure function of per-Subject probabilities and the
 // resolved assessment settings. It never calls Jev, reads the environment or
 // the clock, compares a surface with a capability catalog, or maps `required`
-// to an Outcome (Decision D6).
+// to an Outcome (Decision D6). It does compare each surface with the fixed,
+// catalog-independent NON_OBSERVABLE_SURFACES set (issue #31).
 
-import type { Assessment, AssessmentSettings, PerClaimAssessment, Surface } from './types.js';
+import type { Assessment, AssessmentRecord, AssessmentSettings, PerClaimAssessment, Surface } from './types.js';
 
 export interface SubjectProbabilities {
   claimId: string;
@@ -11,6 +12,19 @@ export interface SubjectProbabilities {
   checksAdequate: number; // [0,1]
   surface: Surface;
   surfaceConfidence: number; // [0,1]
+}
+
+/**
+ * Surfaces for which a passing probability test does not set `needed`.
+ * Fixed and independent of the capability catalog (issue #31). The rule
+ * ignores `surfaceConfidence`.
+ */
+export const NON_OBSERVABLE_SURFACES = ['backend_internal', 'non_runtime'] as const satisfies readonly Surface[];
+
+const NON_OBSERVABLE_SET: ReadonlySet<string> = new Set(NON_OBSERVABLE_SURFACES);
+
+function isNonObservableSurface(surface: Surface): surface is (typeof NON_OBSERVABLE_SURFACES)[number] {
+  return NON_OBSERVABLE_SET.has(surface);
 }
 
 export interface CombineResult {
@@ -21,6 +35,8 @@ export interface CombineResult {
   surface: Surface;
   /** Present only when decidedBy === 'policy'. */
   policyDecision?: Assessment['record']['policyDecision'];
+  /** Present only when at least one Subject had `needed` suppressed for its surface. */
+  surfaceSuppressed?: AssessmentRecord['surfaceSuppressed'];
 }
 
 export function combine(
@@ -28,6 +44,9 @@ export function combine(
   settings: AssessmentSettings,
 ): CombineResult {
   const { observableThreshold, adequateThreshold, uncertaintyBand, onUncertain } = settings;
+
+  const probabilityNeeded = (s: SubjectProbabilities): boolean =>
+    s.runtimeObservable >= observableThreshold && s.checksAdequate < adequateThreshold;
 
   const perClaim: PerClaimAssessment[] = subjects.map((s) => {
     const observableUncertain = Math.abs(s.runtimeObservable - observableThreshold) <= uncertaintyBand;
@@ -38,10 +57,17 @@ export function combine(
       checksAdequate: s.checksAdequate,
       surface: s.surface,
       surfaceConfidence: s.surfaceConfidence,
-      needed: s.runtimeObservable >= observableThreshold && s.checksAdequate < adequateThreshold,
+      needed: probabilityNeeded(s) && !isNonObservableSurface(s.surface),
       uncertain: observableUncertain || adequateUncertain,
     };
   });
+
+  const surfaceSuppressed: NonNullable<CombineResult['surfaceSuppressed']> = [];
+  for (const s of subjects) {
+    if (probabilityNeeded(s) && isNonObservableSurface(s.surface)) {
+      surfaceSuppressed.push({ subjectId: s.claimId, surface: s.surface });
+    }
+  }
 
   const anyNeeded = perClaim.some((p) => p.needed);
   const anyUncertain = perClaim.some((p) => p.uncertain);
@@ -55,6 +81,8 @@ export function combine(
     decidedBy,
     surface: dominantSurface(perClaim),
   };
+
+  if (surfaceSuppressed.length > 0) result.surfaceSuppressed = surfaceSuppressed;
 
   if (decidedBy === 'policy') {
     const inBand: NonNullable<Assessment['record']['policyDecision']>['inBand'] = [];

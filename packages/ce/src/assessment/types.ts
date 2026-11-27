@@ -2,6 +2,7 @@
 // JSON-serializable value (no Date, Map, Set, or function).
 
 import type { Provenance } from '../context/types.js';
+import type { NON_OBSERVABLE_SURFACES } from './combine.js';
 
 export type Surface =
   | 'browser_ui'
@@ -72,6 +73,11 @@ export interface AssessmentRecord {
    * because every changed file is a Documentation_File (Requirement 3 criterion 7).
    */
   subjectSkipped?: 'docs-only';
+  /**
+   * Present only when the Combiner suppressed `needed` for at least one Subject
+   * because of its surface (issue #31).
+   */
+  surfaceSuppressed?: { subjectId: string; surface: (typeof NON_OBSERVABLE_SURFACES)[number] }[];
   /** Present only when decidedBy === 'policy' (Requirement 7 criterion 4). */
   policyDecision?: {
     policy: 'evidence' | 'skip';
