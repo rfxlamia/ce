@@ -24,3 +24,5 @@ skills-lock.json
 agent/
 # Understand-Anything knowledge graph (local)
 .ua/
+# Vitest output
+.vitest/
