@@ -78,7 +78,7 @@ interface Assessment {
 - E1. `probability` is `number | null` and `declared` is new. A Declared_Claim is a claim the user stated with `--claim`; asking Jev whether the user's own claim describes behaviour would let a model overrule the user, and R4.4 says CE uses the text as a claim. The `null` states that no probability exists, instead of inventing `1`.
 - E2. `subjects` is new: `{ id: string; kind: 'claim' | 'change'; text: string; provenance: Provenance }[]`. It records the exact text each assessment question was asked about, which for the Change_Subject is not a Claim (Requirement 3).
 - E3. `needed` and `uncertain` in `perClaim` are new, so the combination in Requirement 6 is inspectable per claim.
-- E4. `record` is new (Requirement 8). It is the inspectable list of questions, probabilities and policy inputs required by R5.6. Its list of cuts has the entries `{ file: string; reason: 'truncated' | 'dropped' | 'check-cap'; isTest: boolean }` (Requirement 4, Decision D21).
+- E4. `record` is new (Requirement 8). It is the inspectable list of questions, probabilities and policy inputs required by R5.6. Its list of cuts has the entries `{ file: string; reason: 'truncated' | 'dropped' | 'check-cap'; isTest: boolean }` (Requirement 4, Decision D21). Its optional `subjectSkipped: 'docs-only'` states that no Change_Subject was asked because the Change is documentation only (Requirement 3 criterion 7).
 
 `run.json` embeds `claims` and `assessment` (design section 3). The evidence bundle writer is a later issue; this spec supplies the objects it embeds.
 
@@ -132,6 +132,7 @@ Out of scope: the Context Resolver and its providers (already delivered), the Je
 - **Uncertainty_Band**: `assessment.uncertainty-band`.
 - **Uncertainty_Policy**: `assessment.on-uncertain`, either `evidence` or `skip`.
 - **Change_Subject**: The existing text of the Change that the assessment questions are asked about when no Claim was identified (Requirement 3). It is not a Claim.
+- **Documentation_File**: A path whose base name ends, ignoring case, in `.md`, `.mdx`, `.markdown`, `.rst` or `.adoc` (`isDocumentationFile` in `context/budget.ts`). The list is conservative on purpose: `.txt` is not in it, because files such as `requirements.txt` change run-time behaviour, and a path without an extension (`README`, `LICENSE`) is not a Documentation_File. Any other format falls through to the Change_Subject, which is the safe direction (Requirement 3 criterion 7).
 - **Subject**: Either a Claim or the Change_Subject, whichever the assessment questions are asked about. Not to be confused with the SPEC entity "Subject", which this document writes as "the observed Subject" where needed.
 - **Classification_Request**: A Jev_Request that holds one `claim.is_behavior` question for one candidate (Requirement 1).
 - **Assessment_Request**: A Jev_Request that holds `assess.runtime_observable`, `assess.checks_adequate` and `assess.surface` for one Subject (Requirement 4).
@@ -206,6 +207,7 @@ Out of scope: the Context Resolver and its providers (already delivered), the Je
 4. IF `claimStatus` is `not_identified` AND the title, the description and every commit message of the Change_Context have no non-blank line, THEN THE Assessor SHALL raise `StageError('assessment', cause)` as Decision D8 states.
 5. WHILE `claimStatus` is `identified`, THE Assessor SHALL ask the assessment questions about each Claim and SHALL NOT create a Change_Subject.
 6. WHEN the Change_Context has no title and no description, which is the case for every run without a GitHub pull request event (F5), THE Assessor SHALL take the Change_Subject from the first non-blank line of the first commit message, and the test suite SHALL cover that case with a description whose first line is blank.
+7. IF `claimStatus` is `not_identified` AND the Change_Context has at least one Changed_File AND every Changed_File `path`, every `oldPath` and every file named by a file-level record in `truncated` (reason `dropped`, `truncated`, `binary`, `sensitive-file` or `env-file`, excluding the pseudo-paths `<...>`, `commit:`, `claim:` and `check:`) is a Documentation_File, THEN THE Assessor SHALL ask no assessment question, SHALL set `subjects` and `perClaim` to empty lists, `required` to false, `decidedBy` to `classifier` and `surface` to `non_runtime`, and SHALL set `record.subjectSkipped` to `docs-only`. The text of the Change was just judged not to be a behaviour by the classifier, and a documentation-only diff changes nothing at run time, so asking `runtime_observable` about it would contradict that judgement (issue #30). Criterion 4 still applies first: a context with no text raises `StageError`. The check is made on the Change_Context the Assessor receives, after `context.include` and `context.exclude`: a file that the user excluded from the context is not considered. In every other case `record.subjectSkipped` is absent and criterion 1 applies.
 
 ### Requirement 4: Building assessment requests
 
@@ -445,6 +447,7 @@ Out of scope: the Context Resolver and its providers (already delivered), the Je
 15. THE test suite SHALL include a test that `assess` with an Effective_Config of `{}`, and with a config that holds only some `assessment` values, gives the same result as the config with the missing values filled from `ConfigDefaults`, and a test that calls `resolveAssessmentSettings(config, defaults)` with a `defaults` object that lacks a value which `config` also lacks and checks that it raises `StageError('assessment', cause)` (Requirement 10 criteria 7 and 8). The test SHALL NOT try to remove a value from `ConfigDefaults` itself.
 16. THE test suite SHALL include a test of the Change_Subject choice with a description whose first line is blank (Requirement 3 criteria 2 and 6), and a test that `isTestFile` and the ranking of `budget.ts` give the same answer for the same path.
 17. THE test suite SHALL include a test that loads the real files in `fixtures/eval/` and checks Requirement 11 criterion 11 and that no fixture holds `isBehavior` for a candidate whose provider is `cli`.
+18. THE test suite SHALL include tests of the docs-only gate of Requirement 3 criterion 7: a Change shaped like the Eval_Fixture `docs-near-miss-login` (only `docs/auth.md` changed, the title candidate rejected) sends no Assessment_Request and gives `required` false with `record.subjectSkipped` `docs-only`; a Change that also changes a non-Documentation_File, has no Changed_File, has a non-Documentation_File only in `truncated`, renames between a Documentation_File and another file, or changes only a `.txt` file still asks about the Change_Subject; and a documentation-only Change with no text still raises `StageError('assessment', cause)`.
 
 ### Requirement 17: Issue acceptance, traceability and closing the issue
 
@@ -471,7 +474,7 @@ Out of scope: the Context Resolver and its providers (already delivered), the Je
    | Done when: `ce eval` runs against live Jev and agreement is recorded in the journal | 15, 14.15 to 14.19 (loading the key from `.env`), 12.9 to 12.11 and 13.13 to 13.16 (no Git, no repeated request) |
    | Refs R4 | 1, 2 |
    | Refs R5 (R5.1 to R5.6) | 3, 4, 5, 6, 7, 8, 10.3, 10.7 to 10.9 |
-   | Refs R12 (R12.1, R12.2) | 11 to 14 (R12.1), 16 (R12.2, including 16.11 to 16.17) |
+   | Refs R12 (R12.1, R12.2) | 11 to 14 (R12.1), 16 (R12.2, including 16.11 to 16.18) |
 
 2. WHEN all implementation tasks are complete, THE implementer SHALL verify each item of the Issue_Checklist against the delivered code and SHALL record the evidence for each: a passing test name, a file path or a command output. The four checklist items are the claim identification, the three assessment questions, the decision combination with band, policy and `decidedBy`, and the fixtures with `ce eval`.
 3. WHEN all implementation tasks are complete, THE implementer SHALL verify the "Done when" line of issue #7 under Requirement 15.

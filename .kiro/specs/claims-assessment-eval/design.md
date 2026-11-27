@@ -143,6 +143,8 @@ export interface AssessmentRecord {
   modelIds: string[]; // distinct Returned_Model_Ids
   settings: AssessmentSettings; // effective, resolved values
   cuts: Cut[];
+  /** Present only when no Change_Subject was asked because the Change is documentation only (Requirement 3 criterion 7). */
+  subjectSkipped?: 'docs-only';
   /** Present only when decidedBy === 'policy' (Requirement 7 criterion 4). */
   policyDecision?: {
     policy: 'evidence' | 'skip';
@@ -254,10 +256,10 @@ export function resolveAssessmentSettings(
 
 1. Calls `resolveAssessmentSettings(config)` (Decision D20; `assess` never passes a second argument in production, so it always uses `ConfigDefaults` — the `options.defaults` seam exists only so a test can call `resolveAssessmentSettings` directly with an incomplete `defaults`, not so `assess()` itself can bypass `ConfigDefaults`).
 2. Calls `identifyClaims(context, settings, gateway)`.
-3. Builds the Subject list (Requirement 3): if `claims.length > 0`, one Subject per Claim, `claimStatus = 'identified'`; otherwise one Change_Subject (`id: 'change'`, `kind: 'change'`), chosen by `selectChangeSubject(context)` (Requirement 3 criterion 2, text-source priority: title → description → first commit message, first non-blank line, trimmed). If no source has a non-blank line, raises `StageError('assessment', cause)` (Decision D8) before any Assessment_Request is built.
+3. Builds the Subject list (Requirement 3): if `claims.length > 0`, one Subject per Claim, `claimStatus = 'identified'`; otherwise one Change_Subject (`id: 'change'`, `kind: 'change'`), chosen by `selectChangeSubject(context)` (Requirement 3 criterion 2, text-source priority: title → description → first commit message, first non-blank line, trimmed). If no source has a non-blank line, raises `StageError('assessment', cause)` (Decision D8) before any Assessment_Request is built. Then, when no Claim exists and `isDocsOnlyChange(context)` holds (Requirement 3 criterion 7: at least one Changed_File, and every path, `oldPath` and file-level `truncated` record is a Documentation_File), the Change_Subject is discarded: the Subject list is empty, no Assessment_Request is sent, and `combine([])` gives `required: false`, `decidedBy: 'classifier'` and `surface: 'non_runtime'`. The selection runs first so that an empty context still raises under Decision D8.
 4. For each Subject, builds one Assessment_Request with `buildAssessmentRequest(context, subject)`, sends it with `stage: 'assessment'`, and reads `runtimeObservable`, `checksAdequate` (Noul), and `surface`/`surfaceConfidence` (Choice argmax over `SURFACE_LABELS`, Requirement 5 criteria 3–4).
 5. Calls `combine(subjects, settings)`.
-6. Assembles `AssessmentRecord` from the Classification questions (`ClassifyResult.questionsAsked`), the Assessment questions just asked, the distinct `modelIds` of both, `settings`, the `cuts` the two Request_Builders recorded, and `CombineResult.policyDecision`.
+6. Assembles `AssessmentRecord` from the Classification questions (`ClassifyResult.questionsAsked`), the Assessment questions just asked, the distinct `modelIds` of both, `settings`, the `cuts` the two Request_Builders recorded, `subjectSkipped: 'docs-only'` when the docs-only gate of step 3 applied, and `CombineResult.policyDecision`.
 7. Returns `{ claims, assessment }`.
 
 Any error not already a `StageError` is wrapped: `StageError('assessment', cause)` (Requirement 9 criterion 2). `assess()` reads `process.env` nowhere and knows nothing about which `JevGateway` implementation it received (Requirement 10 criteria 4–5).
@@ -551,13 +553,13 @@ The prework pass classified every acceptance criterion of Requirements 1–16 an
 
 ### Property 5: claimStatus totality
 
-*For all* `Claim[]` produced by the Claim_Identifier, the Assessor sets `claimStatus` to `'identified'` if and only if the list is non-empty, and when `claimStatus` is `'not_identified'`, the Assessment carries no claim-shaped text (only the Change_Subject, whose `kind` is always `'change'`, never `'claim'`).
+*For all* `Claim[]` produced by the Claim_Identifier, the Assessor sets `claimStatus` to `'identified'` if and only if the list is non-empty, and when `claimStatus` is `'not_identified'`, the Assessment carries no claim-shaped text (only the Change_Subject, whose `kind` is always `'change'`, never `'claim'`, or no Subject at all when the docs-only gate of Requirement 3 criterion 7 applies).
 
 **Validates: Requirements 2.5, 2.6, 2.7, 2.8**
 
 ### Property 6: Change_Subject selection priority
 
-*For all* combinations of present/absent/blank `title`, `description`, and `commits[].message` on a `ChangeContext` with `claimStatus = 'not_identified'`, the chosen Change_Subject text equals the first non-blank line (trimmed) of the first of `{title, description, first commit message}` that has one, with the matching `provenance` recorded; when every source has no non-blank line, `assess()` raises `StageError('assessment', cause)` instead of selecting any text; and when `claimStatus = 'identified'`, no Change_Subject is created at all.
+*For all* combinations of present/absent/blank `title`, `description`, and `commits[].message` on a `ChangeContext` with `claimStatus = 'not_identified'`, the chosen Change_Subject text equals the first non-blank line (trimmed) of the first of `{title, description, first commit message}` that has one, with the matching `provenance` recorded; when every source has no non-blank line, `assess()` raises `StageError('assessment', cause)` instead of selecting any text; and when `claimStatus = 'identified'`, no Change_Subject is created at all. The generators of this property use contexts with no Changed_File, so the docs-only gate of Requirement 3 criterion 7 never applies to them; that gate is covered by example tests in `assessment/assess.docsonly.test.ts`.
 
 **Validates: Requirements 3.1, 3.2, 3.3, 3.4, 3.5, 3.6**
 

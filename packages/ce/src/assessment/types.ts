@@ -67,6 +67,11 @@ export interface AssessmentRecord {
   modelIds: string[]; // distinct Returned_Model_Ids
   settings: AssessmentSettings; // effective, resolved values
   cuts: Cut[];
+  /**
+   * Present only when no Claim was identified and the Change_Subject was not asked
+   * because every changed file is a Documentation_File (Requirement 3 criterion 7).
+   */
+  subjectSkipped?: 'docs-only';
   /** Present only when decidedBy === 'policy' (Requirement 7 criterion 4). */
   policyDecision?: {
     policy: 'evidence' | 'skip';
