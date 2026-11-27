@@ -130,6 +130,55 @@ describe('architecture: outcome/ boundaries', () => {
   });
 });
 
+describe('architecture: index.ts and run/ import boundaries', () => {
+  // Requirements 1.5, 1.7, 2.6, 5.2, 13.11. Only the import rule applies here;
+  // rules (a), (b), (c) stay scoped to outcome/.
+  const runScoped = sources.filter((s) => s.rel === 'index.ts' || s.rel.startsWith('run/'));
+
+  it('scans index.ts and the files of run/', () => {
+    const rels = runScoped.map((s) => s.rel);
+    expect(rels).toContain('index.ts');
+    expect(rels).toEqual(
+      expect.arrayContaining([
+        'run/capabilities.ts',
+        'run/command.ts',
+        'run/index.ts',
+        'run/pipeline.ts',
+        'run/resolve.ts',
+        'run/types.ts',
+      ]),
+    );
+    expect(runScoped.some((s) => isTest(s.rel))).toBe(false);
+  });
+
+  it('do not import @typesafe-ai/sdk', () => {
+    const offenders = runScoped
+      .filter((s) =>
+        importSpecifiers(s.code).some(
+          (spec) => spec === '@typesafe-ai/sdk' || spec.startsWith('@typesafe-ai/sdk/'),
+        ),
+      )
+      .map((s) => s.rel);
+    expect(offenders).toEqual([]);
+  });
+
+  it('do not call fetch', () => {
+    const offenders = runScoped
+      .filter((s) => /(?<![\w$.])(?:globalThis\s*\.\s*)?fetch\s*\(/.test(s.code))
+      .map((s) => s.rel);
+    expect(offenders).toEqual([]);
+  });
+
+  it('do not import jev/catalog', () => {
+    const offenders = runScoped
+      .filter((s) =>
+        importSpecifiers(s.code).some((spec) => /(^|\/)jev\/catalog(\.js)?$/.test(spec)),
+      )
+      .map((s) => s.rel);
+    expect(offenders).toEqual([]);
+  });
+});
+
 describe('architecture: Outcome literals across src/', () => {
   it('(d) only outcome/resolve.ts assigns, returns or casts to an Outcome literal (1.7, 10.3, 10.4)', () => {
     const offenders = sources

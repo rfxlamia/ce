@@ -1,4 +1,4 @@
-export type Stage = 'context' | 'assessment' | 'runtime' | 'evidence';
+export type Stage = 'config' | 'context' | 'assessment' | 'runtime' | 'evidence';
 
 /**
  * Failure of one pipeline stage. The message states the stage and the

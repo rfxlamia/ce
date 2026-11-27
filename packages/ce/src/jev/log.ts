@@ -11,7 +11,7 @@ import { z } from 'zod';
  * them can be written (Requirement 12 criteria 4 and 6).
  */
 
-const Stage = z.enum(['context', 'assessment', 'runtime', 'evidence']);
+const Stage = z.enum(['config', 'context', 'assessment', 'runtime', 'evidence']);
 
 const Probability = z.number().min(0).max(1);
 const TokenCount = z.number().int().nonnegative().nullable();

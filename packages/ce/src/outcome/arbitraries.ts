@@ -9,7 +9,7 @@ import type { EvidenceSummary } from './evidence.js';
 import { V0_SUPPORTED_SURFACES } from './types.js';
 import type { FinalState, ResolveInput, RuntimeResult } from './types.js';
 
-export const ALL_STAGES: readonly Stage[] = ['context', 'assessment', 'runtime', 'evidence'];
+export const ALL_STAGES: readonly Stage[] = ['config', 'context', 'assessment', 'runtime', 'evidence'];
 
 export const ALL_SURFACES: readonly Surface[] = [
   'browser_ui',
