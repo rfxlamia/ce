@@ -178,7 +178,7 @@ exist, CE ranks by proximity to changed selectors/text and keeps the top 240.
 
 ```
 claimOk      = p(claim.is_behavior) ≥ thresholds.claim
-needed(c)    = p(runtime_observable) ≥ t.observable AND p(checks_adequate) < t.adequate
+needed(c)    = p(runtime_observable) ≥ t.observable AND p(checks_adequate) < t.adequate AND surface(c) ∉ {backend_internal, non_runtime}
 uncertain(c) = any p within ±assessment.uncertainty-band of its threshold
 required     = any needed(c) OR (any uncertain(c) AND on-uncertain = evidence)
 supported    = surface(c) ∈ capabilityCatalog   // v0: { browser_ui }
