@@ -14,6 +14,7 @@ import { stateHash } from '../jev/hash.js';
 import type { Jev_Request } from '../jev/types.js';
 import { runRunCommand } from './command.js';
 import type { RunCommandDeps } from './command.js';
+import { EMPTY_REGISTRY } from './capabilities.js';
 import { run } from './pipeline.js';
 import type { CreateGateway, RunResult } from './types.js';
 
@@ -141,7 +142,7 @@ function deps(extra: Partial<RunCommandDeps> = {}): RunCommandDeps {
 async function fakeDeps(script: Script): Promise<RunCommandDeps> {
   const recordings = await recordingsFor(script);
   const createGateway: CreateGateway = () => ({ ok: true, gateway: new FakeJevGateway(recordings) });
-  return deps({ createGateway });
+  return deps({ createGateway, capabilities: EMPTY_REGISTRY });
 }
 
 const stdoutText = (): string => out.join('');

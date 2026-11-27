@@ -34,6 +34,7 @@
   "dependencies": {
     "@typesafe-ai/sdk": "0.7.0",
     "fast-xml-parser": "^5.12.1",
+    "playwright": "^1.65.1",
     "yaml": "^2.0.0",
     "zod": "^4.0.0"
   }
