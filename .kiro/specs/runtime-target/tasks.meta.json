@@ -1,0 +1,684 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Create `packages/ce/src/runtime/target.ts` with the public surface and pure helpers": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759604261
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759615326
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759719340
+      }
+    ],
+    "1.2.1 **Property 4: `buildProbeUrl` is slash-insensitive and keeps the base path as a prefix**": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759604337
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759728392
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759892206
+      }
+    ],
+    "1.2.2 **Property 5: `classifyStatus` is ready exactly for 200-399**": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759604400
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759901939
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760036873
+      }
+    ],
+    "1.2.3 **Property 6: Per-probe timeout is the minimum of 2000 ms and the remaining Ready_Timeout**": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759604434
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760049558
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760089102
+      }
+    ],
+    "1.2.4 **Property 7: `redactUrl` removes userinfo and is a no-op without it**": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759604470
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760089766
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760170641
+      }
+    ],
+    "1.3 Write unit tests for the helpers and the config mapping": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759604501
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759728884
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759892955
+      }
+    ],
+    "2.1 Add the log capture to `packages/ce/src/runtime/target.ts`": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759604539
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759729367
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759893564
+      }
+    ],
+    "2.2.1 **Property 12: Log_Capture never exceeds its byte bound and is always a suffix of the redacted stream**": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759604582
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759902110
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760036239
+      }
+    ],
+    "2.2.2 **Property 13: Secret redaction is invariant to how a stream is chunked, including across the end-of-stream flush**": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759604618
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760175674
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760232443
+      }
+    ],
+    "2.3 Write unit tests for the log capture": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759604651
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759902672
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760035468
+      }
+    ],
+    "3. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759604697
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760237189
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760277746
+      }
+    ],
+    "4.1 Implement `openTarget` validation, Attach_Mode and the readiness loop in `packages/ce/src/runtime/target.ts`": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759604725
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760282614
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760399745
+      }
+    ],
+    "4.2.1 **Property 1: Attach_Mode never spawns or signals a process**": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759604766
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760414498
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760583146
+      }
+    ],
+    "4.2.2 **Property 2: Readiness resolution matches the first Ready_Status, in both modes**": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759604821
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760601259
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760708844
+      }
+    ],
+    "4.2.3 **Property 3: Exhausting the Ready_Timeout resolves to Target_Unreachable_Error with the exact last outcome**": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759604863
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760709644
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760813239
+      }
+    ],
+    "4.2.4 **Property 11: Loopback classification decides the start-with-remote-url rejection**": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759604898
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760601393
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760708719
+      }
+    ],
+    "4.2.5 Extend Property 7 for errors: the `url` field and message of every error `openTarget` throws never contain the original userinfo": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759604930
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760601501
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760814214
+      }
+    ],
+    "4.3 Write unit tests for readiness and configuration errors": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759604970
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760414324
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760582538
+      }
+    ],
+    "5.1 Add Start_Mode to `packages/ce/src/runtime/target.ts`": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759605003
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760414044
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760582464
+      }
+    ],
+    "5.2.1 **Property 8: The Pre_Start_Probe decides spawn-or-reject from its outcome alone**": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759605049
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760822773
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761074625
+      }
+    ],
+    "5.2.2 **Property 9: Spawn happens before the first Readiness_Probe in Start_Mode**": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759605086
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761081524
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761209353
+      }
+    ],
+    "5.2.3 **Property 10: Only the configured secret names are removed from the started process's environment**": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759605130
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760825390
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761072934
+      }
+    ],
+    "5.2.4 **Property 14: `stop()` is idempotent under any sequence of calls, including a natural exit**": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759605167
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761081606
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761210377
+      }
+    ],
+    "5.2.5 Extend Properties 2 and 3 in `packages/ce/src/runtime/target.readiness.property.test.ts` with the Start_Mode half": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759605202
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760822890
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761071803
+      }
+    ],
+    "5.3 Write unit tests for Start_Mode": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759605241
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760823567
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761071499
+      }
+    ],
+    "5.4 Write unit tests for signal handling and abort": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759605284
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760824445
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761073890
+      }
+    ],
+    "6. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759605330
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761215663
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761318216
+      }
+    ],
+    "7.1 Create the shared test support `packages/ce/src/runtime/demo-app.testsupport.ts`": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759605369
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761323523
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761522631
+      }
+    ],
+    "7.2 Write the integration tests for both modes": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759605474
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761528897
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761682944
+      }
+    ],
+    "7.3 Write the non-modification integration test": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759605534
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761529088
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761683228
+      }
+    ],
+    "8.1 Update `packages/ce/src/run/command.ts`": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759605670
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761324330
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761522316
+      }
+    ],
+    "8.2 Write the pipeline-level tests": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759605798
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761529789
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761682822
+      }
+    ],
+    "9.1 Update `packages/ce/src/outcome/architecture.test.ts`": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759605959
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761325152
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761522168
+      }
+    ],
+    "10.1 Create `.ce/pr-checklist-issue-9.md`": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759606071
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761688377
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761752859
+      }
+    ],
+    "11. Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795759606288
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761753377
+      },
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795762202628
+      }
+    ],
+    "1.2 Write property tests for the pure helpers": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760170722
+      }
+    ],
+    "1. Define types, errors and pure helpers": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760170788
+      }
+    ],
+    "2.2 Write property tests for the log capture": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760232508
+      }
+    ],
+    "2. Implement the log capture pipeline": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760232556
+      }
+    ],
+    "4.2 Write property tests for Attach_Mode and readiness": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760814259
+      }
+    ],
+    "4. Implement Attach_Mode and the readiness loop": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795760814299
+      }
+    ],
+    "5.2 Write property tests for Start_Mode and stop": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761210431
+      }
+    ],
+    "5. Implement Start_Mode and the stop state machine": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761210488
+      }
+    ],
+    "9. Extend the architecture test": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761522233
+      }
+    ],
+    "8. Add `RunCommandDeps.capabilities` and the pipeline-level error report": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761682875
+      }
+    ],
+    "7. Integration tests against `examples/demo-app`": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761683271
+      }
+    ],
+    "10. Verify the issue #9 checklist": [
+      {
+        "executionId": "383e409a-1a38-4e24-bc94-c1f2e999563a",
+        "chatSessionId": "sess_57958ed8-8e7f-4c9c-8948-c03f2d3abaa3",
+        "timestamp": 1795761752954
+      }
+    ]
+  }
+}
