@@ -90,7 +90,7 @@ export async function run(options: RunOptions = {}): Promise<RunResult> {
   const loaded = loadConfig({ cwd: o.cwd, flags: o.flags, env: o.env });
   if (!loaded.ok) {
     reportConfigFailure(loaded, collectSecretValues(o.env), o.stderr);
-    return configFailure(loaded);
+    return configFailure();
   }
   const config = loaded.config;
 
@@ -102,7 +102,7 @@ export async function run(options: RunOptions = {}): Promise<RunResult> {
     const credentials = requireJevCredentials(loaded, o.env);
     if (!credentials.ok) {
       reportConfigFailure(credentials, collectSecretValues(o.env), o.stderr);
-      return configFailure(credentials);
+      return configFailure();
     }
     runDir = path.resolve(o.cwd, config.output?.dir ?? '.ce/runs', runDirName(o.now()));
     const created = o.createGateway(loaded, o.env, {
@@ -110,7 +110,7 @@ export async function run(options: RunOptions = {}): Promise<RunResult> {
     });
     if (!created.ok) {
       reportConfigFailure({ ok: false, errors: created.errors }, collectSecretValues(o.env), o.stderr);
-      return configFailure(created);
+      return configFailure();
     }
     gateway = created.gateway;
   }
@@ -169,10 +169,11 @@ export async function run(options: RunOptions = {}): Promise<RunResult> {
  * A config failure is still a run (SPEC 7.1): it resolves to ERROR through
  * resolveOutcome with a Stage_Error for the 'config' stage. The failure report
  * has already gone to stderr; the config is unavailable, so the default
- * fail-on list applies.
+ * fail-on list applies. The cause is a value-free Error on purpose.
  */
-function configFailure(cause: unknown): ResolvedRun {
-  const error = new StageError('config', cause);
+function configFailure(): ResolvedRun {
+  // The cause carries no value: failure objects hold raw config values, which can be secrets (Req 7.5).
+  const error = new StageError('config', new Error('config failure'));
   const resolution = resolveAfterAssessment({ registry: EMPTY_REGISTRY, error });
   return { kind: 'resolved', ...resolution, exitCode: exitCodeFor(resolution, undefined), error };
 }

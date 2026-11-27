@@ -1,6 +1,7 @@
 import { existsSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { inspect } from 'node:util';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Surface } from '../assessment/index.js';
 import type { ResolveContextOptions } from '../context/resolve.js';
@@ -388,6 +389,7 @@ describe('run() config failures', () => {
     expect(result).toMatchObject({ kind: 'resolved', outcome: 'ERROR', reason: 'stage-error', errorStage: 'config', exitCode: 1 });
     expect(err.join('')).toContain('jev.model');
     expect(err.join('')).not.toContain(KEY);
+    expect(inspect(result, { depth: null, showHidden: true })).not.toContain(KEY);
     expectNoStages();
   });
 });

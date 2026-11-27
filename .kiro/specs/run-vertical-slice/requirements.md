@@ -149,7 +149,7 @@ The CLI output for `UNSUPPORTED` is specified once, in Requirement 10 criterion 
 1. IF `loadConfig` returns a failure, THEN THE Run_Pipeline SHALL report it through `reportConfigFailure` with the secrets of `collectSecretValues(env)` and the `stderr` option, and SHALL return a Resolved_Run for the `config` stage.
 2. IF `requireJevCredentials` returns a failure and no `gateway` was supplied, THEN THE Run_Pipeline SHALL report it through `reportConfigFailure` and return a Resolved_Run for the `config` stage.
 3. IF `createGateway` returns a failure, THEN THE Run_Pipeline SHALL report it through `reportConfigFailure` and return a Resolved_Run for the `config` stage.
-4. IF a configuration failure ends the run, THEN THE Run_Pipeline SHALL NOT call the Context_Resolver, the Assessor, the Outcome_Resolver or any Jev request.
+4. IF a configuration failure ends the run, THEN THE Run_Pipeline SHALL NOT call the Context_Resolver, the Assessor or any Jev request.
 5. THE Run_Pipeline SHALL NOT write an API key or any secret value to the Run_Result, to stdout or to stderr.
 6. WHEN a config failure occurs, THE Resolved_Run SHALL contain `outcome` `ERROR`, `reason` `stage-error`, `errorStage` `config` and `exitCode` `1`.
 
