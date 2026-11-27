@@ -252,7 +252,7 @@ context:
   base: origin/main
   include: ["src/**"]
   exclude: ["**/*.lock", "dist/**"]
-  redact: ["(?i)token\\s*[:=]\\s*\\S+"]
+  redact: ["/token\\s*[:=]\\s*\\S+/i"]
   checks: reports/junit.xml
 assessment:
   thresholds: { claim: 0.6, observable: 0.6, adequate: 0.7 }
@@ -272,6 +272,8 @@ output:
   dir: .ce/runs
   fail-on: [error]
 ```
+
+Items in `context.redact` are JavaScript RegExp sources or `/pattern/flags`; inline flags such as `(?i)` are rejected.
 
 The zod schema is the single source; `ce.schema.json` is generated from it so
 editors autocomplete `ce.yml`.
