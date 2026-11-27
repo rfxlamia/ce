@@ -76,6 +76,7 @@ function makeRecordingProcess(): { process: NodeJS.Process; signalCalls: unknown
   const fakeProcess = {
     pid: 4242,
     kill: (...args: unknown[]) => {
+      if (args[1] === 0) throw Object.assign(new Error('ESRCH'), { code: 'ESRCH' });
       signalCalls.push(['kill', ...args]);
       return true;
     },
@@ -329,6 +330,7 @@ function makeStartedFakes(childPid = 5151): {
   const fakeProcess = {
     pid: 4242,
     kill: (pid: number, sig?: string | number) => {
+      if (sig === 0) throw Object.assign(new Error('ESRCH'), { code: 'ESRCH' });
       killCalls.push([pid, sig]);
       if (pid === -childPid && exits.length === 0) {
         exits.push({ code: null, signal: String(sig) });

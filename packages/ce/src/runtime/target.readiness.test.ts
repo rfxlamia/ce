@@ -177,20 +177,25 @@ describe('TargetConfigError before any probe or spawn (8.3, 8.4, 3.10, 11.10)', 
 describe('error content (4.7, 5.7, 11.11)', () => {
   const userinfoUrl = 'http://alice:s3cret@127.0.0.1:4321';
 
-  it('TargetUnreachableError carries no userinfo and no log capture', async () => {
+  it('credentialed URL is rejected up front, without userinfo in the error and without probing', async () => {
     const h = harness([503]);
     const err = (await catchError(
       openTarget({ ...h.options, url: userinfoUrl, ready: { timeout: '1s' }, env: { OPENROUTER_API_KEY: 'sk-dummy' } }),
-    )) as TargetUnreachableError;
-    for (const text of [err.message, err.url]) {
-      expect(text).not.toContain('alice');
-      expect(text).not.toContain('s3cret');
-    }
-    expect(err.url).toContain('***');
-    expect(err.logTail).toBeUndefined();
+    )) as TargetConfigError;
+    expect(err).toBeInstanceOf(TargetConfigError);
+    expect(err.key).toBe('target.url');
+    expect(err.message).toContain('credentials is not supported');
+    expect(err.message).not.toContain('alice');
+    expect(err.message).not.toContain('s3cret');
     expect(err.message).not.toContain('sk-dummy');
+    expect(h.calls).toHaveLength(0);
   });
-
+  it('credentialed URL fails fast with the real fetch', async () => {
+    const started = Date.now();
+    const err = await catchError(openTarget({ url: 'http://alice:s3cret@127.0.0.1:9', ready: { timeout: '30s' } }));
+    expect(err).toBeInstanceOf(TargetConfigError);
+    expect(Date.now() - started).toBeLessThan(2000);
+  });
   it('TargetConfigError carries no userinfo', async () => {
     const h = harness([200]);
     const err = (await catchError(

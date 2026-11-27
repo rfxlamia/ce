@@ -50,6 +50,7 @@ describe('Property 14: stop() idempotence', () => {
           const proc = new EventEmitter() as EventEmitter & { pid: number; kill: (pid: number, sig: string) => boolean };
           proc.pid = 1000;
           proc.kill = (pid, sig) => {
+            if (sig === (0 as unknown)) throw Object.assign(new Error('ESRCH'), { code: 'ESRCH' });
             if (pid === -CHILD_PID) {
               groupSignals.push(sig);
               if (

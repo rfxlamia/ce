@@ -35,7 +35,8 @@ function harness(opts: { autoExit?: boolean; readyStatus?: number } = {}): Harne
 
   const proc = new EventEmitter() as Harness['proc'];
   proc.pid = SELF_PID;
-  proc.kill = vi.fn((pid: number, sig: string) => {
+  proc.kill = vi.fn((pid: number, sig: string | number) => {
+    if (sig === 0) throw Object.assign(new Error('ESRCH'), { code: 'ESRCH' });
     if (pid === -CHILD_PID) {
       events.push(`group:${sig}`);
       if (autoExit && (sig === 'SIGTERM' || sig === 'SIGKILL')) exitChild();

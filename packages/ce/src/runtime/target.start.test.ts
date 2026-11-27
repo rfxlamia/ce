@@ -48,6 +48,8 @@ interface RigInit {
   exitOn?: string[];
   child?: FakeChild;
   spawnThrows?: boolean;
+  /** Group members outlive the leader until the group gets SIGKILL. Default: false. */
+  groupAlive?: boolean;
   afterSpawn?: (child: FakeChild) => void;
   extra?: Partial<TargetOptions>;
 }
@@ -57,6 +59,7 @@ function rig(init: RigInit = {}): Rig {
   const child = init.child ?? new FakeChild();
   const exitOn = init.exitOn ?? ['SIGTERM', 'SIGKILL'];
   const kills: Rig['kills'] = [];
+  let groupAlive = init.groupAlive ?? false;
   const fetchCalls: Rig['fetchCalls'] = [];
   const abortTimes: number[] = [];
   let i = 0;
@@ -83,8 +86,13 @@ function rig(init: RigInit = {}): Rig {
   });
   const fakeProcess = {
     pid: 1,
-    kill: (pid: number, sig: string) => {
-      kills.push({ pid, sig });
+    kill: (pid: number, sig: string | number) => {
+      if (sig === 0) {
+        if (!groupAlive) throw Object.assign(new Error('ESRCH'), { code: 'ESRCH' });
+        return true;
+      }
+      if (sig === 'SIGKILL') groupAlive = false;
+      kills.push({ pid, sig: String(sig) });
       if (exitOn.includes(sig)) queueMicrotask(() => child.exit(null, sig));
       return true;
     },
@@ -253,6 +261,28 @@ describe('stop state machine', () => {
     await handle.stop();
     expect(r.kills).toEqual([]);
     expect(handle.exited).toEqual({ exitCode: 0, signal: null });
+  });
+  it('SIGKILLs group members that outlive the leader after SIGTERM', async () => {
+    const r = rig({ groupAlive: true });
+    const handle = await openTarget(r.options);
+    await handle.stop();
+    expect(r.kills).toEqual([
+      { pid: -4242, sig: 'SIGTERM' },
+      { pid: -4242, sig: 'SIGKILL' },
+    ]);
+    expect(handle.warnings).toEqual([]);
+  });
+  it('SIGKILLs the group when the leader exited before ready and members survive', async () => {
+    const r = rig({
+      groupAlive: true,
+      steps: [503, 503, 503],
+      afterSpawn: (c) => {
+        queueMicrotask(() => c.exit(1, null));
+      },
+    });
+    const err = await catchError(openTarget(r.options));
+    expect(err).toBeInstanceOf(TargetStartError);
+    expect(r.kills).toEqual([{ pid: -4242, sig: 'SIGKILL' }]);
   });
 });
 

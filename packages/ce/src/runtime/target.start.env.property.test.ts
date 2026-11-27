@@ -36,7 +36,10 @@ describe('Property 10: env passed to spawn', () => {
           setImmediate(() => child.emit('exit', 1, null));
           return child;
         }) as never;
-        const fakeProcess = { kill: () => true, on: () => {}, removeListener: () => {}, pid: 1 } as never;
+        const fakeProcess = { kill: (_pid: number, sig?: string | number) => {
+          if (sig === 0) throw new Error('ESRCH');
+          return true;
+        }, on: () => {}, removeListener: () => {}, pid: 1 } as never;
 
         try {
           await openTarget({

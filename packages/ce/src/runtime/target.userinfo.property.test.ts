@@ -3,7 +3,7 @@ import { EventEmitter } from 'node:events';
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 
-import { TargetStartError, TargetUnreachableError, openTarget } from './target.js';
+import { TargetConfigError, openTarget } from './target.js';
 import type { TargetOptions } from './target.js';
 
 // Marker-prefixed alphanumerics: cannot appear incidentally in messages or URLs, and
@@ -38,7 +38,10 @@ function fakes(opts: { response?: number } = {}) {
   }) as unknown as typeof fetch;
   const fakeProcess = Object.assign(new EventEmitter(), {
     pid: 1,
-    kill: () => true,
+    kill: (_pid: number, sig?: string | number) => {
+      if (sig === 0) throw new Error('ESRCH');
+      return true;
+    },
   }) as unknown as NodeJS.Process;
   const spawn = (() => {
     spawnCalls++;
@@ -86,7 +89,7 @@ const runs = { numRuns: 100 };
 describe('openTarget errors never contain the original userinfo', () => {
   // Feature: runtime-target, Property 7: redactUrl removes userinfo and is a no-op without it (errors)
   // **Validates: Requirements 4.7, 8.7**
-  it('Attach_Mode timeout: url field and message are redacted', async () => {
+  it('Attach_Mode: credentialed url is rejected and redacted', async () => {
     await fc.assert(
       fc.asyncProperty(userinfo, loopback, port, async (info, host, p) => {
         const f = fakes();
@@ -95,8 +98,7 @@ describe('openTarget errors never contain the original userinfo', () => {
           url: `http://${info.info}@${host}:${p}/`,
           ready: { timeout: '1s' },
         });
-        expect(error).toBeInstanceOf(TargetUnreachableError);
-        expect(typeof (error as TargetUnreachableError).url).toBe('string');
+        expect(error).toBeInstanceOf(TargetConfigError);
         expectNoLeak(error, info);
         expect(f.spawnCalls()).toBe(0);
       }),
@@ -106,7 +108,7 @@ describe('openTarget errors never contain the original userinfo', () => {
 
   // Feature: runtime-target, Property 7: redactUrl removes userinfo and is a no-op without it (errors)
   // **Validates: Requirements 4.7, 8.7**
-  it('Start_Mode timeout: url field and message are redacted', async () => {
+  it('Start_Mode: credentialed url is rejected and redacted', async () => {
     await fc.assert(
       fc.asyncProperty(userinfo, loopback, port, async (info, host, p) => {
         const f = fakes();
@@ -116,9 +118,9 @@ describe('openTarget errors never contain the original userinfo', () => {
           start: 'node server.js',
           ready: { timeout: '1s' },
         });
-        expect(error).toBeInstanceOf(TargetUnreachableError);
+        expect(error).toBeInstanceOf(TargetConfigError);
         expectNoLeak(error, info);
-        expect(f.spawnCalls()).toBe(1);
+        expect(f.spawnCalls()).toBe(0);
       }),
       runs,
     );
@@ -194,7 +196,7 @@ describe('openTarget errors never contain the original userinfo', () => {
 
   // Feature: runtime-target, Property 7: redactUrl removes userinfo and is a no-op without it (errors)
   // **Validates: Requirements 4.7, 8.7**
-  it('config errors: url already served before start', async () => {
+  it('config errors: credentialed url with a served port', async () => {
     await fc.assert(
       fc.asyncProperty(userinfo, loopback, port, fc.integer({ min: 200, max: 399 }), async (info, host, p, status) => {
         const f = fakes({ response: status });
@@ -204,7 +206,7 @@ describe('openTarget errors never contain the original userinfo', () => {
           start: 'node server.js',
         });
         expect(error).toBeInstanceOf(Error);
-        expect((error as Error).message).toContain('already served');
+        expect(error).toBeInstanceOf(TargetConfigError);
         expectNoLeak(error, info);
         expect(f.spawnCalls()).toBe(0);
       }),
@@ -214,7 +216,7 @@ describe('openTarget errors never contain the original userinfo', () => {
 
   // Feature: runtime-target, Property 7: redactUrl removes userinfo and is a no-op without it (errors)
   // **Validates: Requirements 4.7, 8.7**
-  it('Start_Mode spawn failure: TargetStartError carries no userinfo', async () => {
+  it('Start_Mode spawn failure: credentialed url is rejected before spawn', async () => {
     await fc.assert(
       fc.asyncProperty(userinfo, loopback, port, async (info, host, p) => {
         const f = fakes();
@@ -226,7 +228,7 @@ describe('openTarget errors never contain the original userinfo', () => {
           url: `http://${info.info}@${host}:${p}/`,
           start: 'node server.js',
         });
-        expect(error).toBeInstanceOf(TargetStartError);
+        expect(error).toBeInstanceOf(TargetConfigError);
         expectNoLeak(error, info);
       }),
       runs,

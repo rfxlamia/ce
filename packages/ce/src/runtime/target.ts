@@ -633,6 +633,9 @@ function validateOptions(options: TargetOptions): ValidatedTarget {
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
     throw new TargetConfigError(`target.url must be an http or https URL: ${redactUrl(url)}`, 'target.url');
   }
+  if (parsed.username !== '' || parsed.password !== '') {
+    throw new TargetConfigError(`target.url with credentials is not supported: ${redactUrl(url)}`, 'target.url');
+  }
   if (hasStart && !isLoopbackHost(parsed.hostname)) {
     throw new TargetConfigError(
       `target.start requires a loopback target.url (localhost, 127.0.0.0/8, ::1, 0.0.0.0): ${redactUrl(url)}`,
@@ -743,6 +746,15 @@ async function openStarted(
     }
   };
 
+  const groupAlive = (): boolean => {
+    if (pid === undefined) return false;
+    try {
+      proc.kill(-pid, 0);
+      return true;
+    } catch {
+      return false;
+    }
+  };
   // Delay for the grace periods: injected sleep when given, else a cancellable timer.
   const delay = (ms: number): { promise: Promise<void>; cancel: () => void } => {
     if (options.sleep !== undefined) return { promise: sleep(ms), cancel: () => {} };
@@ -781,6 +793,16 @@ async function openStarted(
               `target process did not exit after SIGKILL: command ${JSON.stringify(command)}, pid ${String(pid)}`,
             );
           }
+        }
+      }
+      // The leader is gone; kill any group members that outlived it.
+      if (state === 'exited' && groupAlive()) {
+        signalGroup('SIGKILL');
+        for (let waited = 0; waited < KILL_DEADLINE_MS && groupAlive(); waited += 50) await sleep(50);
+        if (groupAlive()) {
+          warnings.push(
+            `target process did not exit after SIGKILL: command ${JSON.stringify(command)}, pid ${String(pid)}`,
+          );
         }
       }
     } finally {
