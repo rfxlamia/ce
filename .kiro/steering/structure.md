@@ -49,11 +49,12 @@ packages/ce/src/
     bundle.ts           run.json writer + schema validation
     report/             report.html template (self-contained, offline)
     summary.ts          terminal + markdown (PR comment) summaries
-action/                 GitHub Action (action.yml + entry), repo root
+action.yml              GitHub Action metadata (node24), repo root
+action/                 Action entry source + committed bundle in action/dist/
 schemas/                run.schema.json, ce.schema.json (generated)
 ```
 
-Flag: `action/` is planned. The journal says `action.yml (node20)`, but the Action runtime is expected to move to `node24` when `action.yml` is written. This is not yet decided.
+Flag: the Action is planned. `action.yml` lives at the repo root so `uses: rfxlamia/ce@v0` works. The journal says `node20`, but the Action runtime is `node24` (issue #12). Spec: `.kiro/specs/github-action-pr-comment/`.
 
 ## Directories under `packages/ce/src/`
 

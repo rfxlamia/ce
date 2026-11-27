@@ -27,6 +27,8 @@ export type {
 } from './run/index.js';
 
 export { loadConfig } from './config/load.js';
+export { ENV_KEY_MAP, envNameForPath } from './config/env.js';
+export { collectSecretValues, redactSecretValues } from './config/secrets.js';
 export { requireJevCredentials } from './config/credentials.js';
 export type { ConfigMeta, LoadedConfig } from './config/load.js';
 export type { EffectiveConfig } from './config/schema.js';
@@ -39,6 +41,8 @@ export { StageError } from './errors.js';
 
 export { RunRecordSchema, SCHEMA_VERSION } from './evidence/schema.js';
 export type { RunRecord } from './evidence/schema.js';
+export { COMMENT_MARKER, renderPrComment, stripCommentMarker } from './evidence/comment.js';
+export type { CommentInput, UnavailableRecord } from './evidence/comment.js';
 export { buildSummary } from './evidence/summary.js';
 export type { SummaryInput } from './evidence/summary.js';
 export { writeBundle, writeMinimalBundle, RunRecordValidationError } from './evidence/bundle.js';
