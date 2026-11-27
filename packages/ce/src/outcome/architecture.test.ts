@@ -180,6 +180,46 @@ describe('architecture: index.ts and run/ import boundaries', () => {
   });
 });
 
+describe('architecture: evidence/ boundaries', () => {
+  // Requirements 9.2, 9.4, 9.6, 9.11. Rule (d) below also scans evidence/.
+  const evidenceScoped = sources.filter((s) => s.rel.startsWith('evidence/'));
+
+  it('scans the files of evidence/', () => {
+    expect(evidenceScoped.map((s) => s.rel)).toEqual(
+      expect.arrayContaining([
+        'evidence/build.ts',
+        'evidence/bundle.ts',
+        'evidence/schema.ts',
+        'evidence/summary.ts',
+      ]),
+    );
+    expect(evidenceScoped.some((s) => isTest(s.rel))).toBe(false);
+  });
+
+  it('do not import @typesafe-ai/sdk', () => {
+    const offenders = evidenceScoped
+      .filter((s) =>
+        importSpecifiers(s.code).some(
+          (spec) => spec === '@typesafe-ai/sdk' || spec.startsWith('@typesafe-ai/sdk/'),
+        ),
+      )
+      .map((s) => s.rel);
+    expect(offenders).toEqual([]);
+  });
+
+  it('do not call fetch', () => {
+    const offenders = evidenceScoped
+      .filter((s) => /(?<![\w$.])(?:globalThis\s*\.\s*)?fetch\s*\(/.test(s.code))
+      .map((s) => s.rel);
+    expect(offenders).toEqual([]);
+  });
+
+  it('never assign, return or cast an Outcome literal', () => {
+    const offenders = evidenceScoped.filter((s) => OUTCOME_LITERAL_USE.test(s.code)).map((s) => s.rel);
+    expect(offenders).toEqual([]);
+  });
+});
+
 describe('architecture: runtime/target.ts boundaries', () => {
   // Requirements 4.10, 7.6, 8.8, 10.1, 10.2, 10.3. Rule (d) already scans every
   // non-test file in src/, so it covers runtime/target.ts once it is in `sources`.

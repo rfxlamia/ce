@@ -12,7 +12,7 @@
  * registers a hook through `createCapabilityRegistry`.
  */
 
-export const VERSION = '0.1.0';
+export { VERSION } from './version.js';
 
 export { run } from './run/index.js';
 export { createCapabilityRegistry, EMPTY_REGISTRY, selectCapability } from './run/index.js';
@@ -36,6 +36,25 @@ export type { AskOptions, JevGateway } from './jev/gateway.js';
 export { FakeJevGateway, FakeRecordingMissingError } from './jev/fake.js';
 export { JevImageError, JevUsageError, RateLimitError } from './jev/errors.js';
 export { StageError } from './errors.js';
+
+export { RunRecordSchema, SCHEMA_VERSION } from './evidence/schema.js';
+export type { RunRecord } from './evidence/schema.js';
+export { buildSummary } from './evidence/summary.js';
+export type { SummaryInput } from './evidence/summary.js';
+export { writeBundle, writeMinimalBundle, RunRecordValidationError } from './evidence/bundle.js';
+export type {
+  BundleFs,
+  WriteBundleInput,
+  WriteBundleResult,
+  WriteMinimalBundleInput,
+  WriteTimings,
+} from './evidence/bundle.js';
+export type {
+  RuntimeTrace,
+  RuntimeTraceEvent,
+  RuntimeTraceStep,
+  StopReason,
+} from './evidence/trace.js';
 
 export { resolveOutcome, exitCodeFor, OUTCOMES } from './outcome/index.js';
 export type {

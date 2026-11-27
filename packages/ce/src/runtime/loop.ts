@@ -53,6 +53,8 @@ export interface LoopResult {
   finalImageModel?: string;
   finalImageError?: JevImageErrorReason | 'time-budget';
   stopReason: StopReason;
+  /** Distinct returned model ids of the decide calls and the final image call, in order of first appearance. */
+  modelIds: string[];
 }
 
 export interface LoopClock {
@@ -215,6 +217,10 @@ export async function runLoop(input: RunLoopInput): Promise<LoopResult> {
   const steps: StepLogEntry[] = [];
   const eventLog: EventLogEntry[] = [];
   const history: StepHistoryEntry[] = [];
+  const modelIds: string[] = [];
+  const noteModel = (model: unknown): void => {
+    if (typeof model === 'string' && model !== '' && !modelIds.includes(model)) modelIds.push(model);
+  };
   const filledFieldLocators = new Set<string>();
   const routeUrls = resolveRoutes(routes, targetOrigin);
   let currentStep = 0;
@@ -365,6 +371,7 @@ export async function runLoop(input: RunLoopInput): Promise<LoopResult> {
       pending.catch(() => undefined);
       const response = await Promise.race([pending, aborted]);
       if (response === STOPPED) return { ok: false, error: 'time-budget' };
+      noteModel(response.model);
       const out: { ok: true; stateReached?: number; box?: SubjectBox; model: string } = {
         ok: true,
         model: response.model,
@@ -396,6 +403,7 @@ export async function runLoop(input: RunLoopInput): Promise<LoopResult> {
       eventLog,
       finalSignals,
       stopReason,
+      modelIds,
     };
 
     const captured = await finalCapture();
@@ -460,6 +468,7 @@ export async function runLoop(input: RunLoopInput): Promise<LoopResult> {
         throw fail(cause);
       }
       if (response === STOPPED) return await finish(abortReason());
+      noteModel(response.model);
 
       const probabilities = readNextAction(response);
       const stateReachedDom = readStateReachedDom(response);

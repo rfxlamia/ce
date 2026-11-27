@@ -115,7 +115,7 @@ afterAll(async () => {
 
 describe('run() with the default capability registry on the demo-app', () => {
   it(
-    'resolves a required browser_ui Assessment to EVIDENCED with screenshots and no run.json or report.html',
+    'resolves a required browser_ui Assessment to EVIDENCED with screenshots, one run.json and no report.html',
     async () => {
       const text = new FakeJevGateway(JSON.parse(await readFile(FIXTURE_PATH, 'utf8')) as Recording[]);
       const gateway = new GatewayTestSupport({
@@ -156,7 +156,7 @@ describe('run() with the default capability registry on the demo-app', () => {
         const bytes = await readFile(join(runDir, png));
         expect([...bytes.subarray(0, 8)]).toEqual(PNG_SIGNATURE);
       }
-      expect(files.some((f) => /(^|\/)run\.json$/.test(f))).toBe(false);
+      expect(files.filter((f) => /(^|\/)run\.json$/.test(f))).toEqual(['run.json']);
       expect(files.some((f) => /(^|\/)report\.html$/.test(f))).toBe(false);
       expect(existsSync(join(cwd, '.ce', 'runs', 'run-2026-01-02T03-04-05-678Z', 'jev-calls.jsonl'))).toBe(false);
 

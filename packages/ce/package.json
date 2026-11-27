@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "generate:config-schema": "tsx src/scripts/generate-config-schema.ts",
+    "generate:run-schema": "tsx src/scripts/generate-run-schema.ts",
     "verify:jev-image": "tsx --env-file-if-exists=../../.env src/scripts/verify-jev-image.ts",
     "update:catalog-snapshot": "tsx src/scripts/update-catalog-snapshot.ts"
   },

@@ -14,7 +14,6 @@ import { run } from '../run/pipeline.js';
 import type { RuntimeHookInput } from '../run/types.js';
 import {
   createBrowserCapability,
-  RunDirMissingError,
   selectClaim,
   type BrowserLike,
 } from './capability.js';
@@ -247,13 +246,6 @@ describe('createBrowserCapability', () => {
     await expect(capability().run(input())).rejects.toThrow('no chromium');
     expect(target.stopped).toBe(1);
     expect(browser.closed).toBe(0);
-  });
-
-  it('throws RunDirMissingError before opening a target or launching a browser when runDir is absent', async () => {
-    const { runDir: _omit, ...withoutRunDir } = input();
-    await expect(capability().run(withoutRunDir)).rejects.toBeInstanceOf(RunDirMissingError);
-    expect(openTarget).not.toHaveBeenCalled();
-    expect(launchBrowser).not.toHaveBeenCalled();
   });
 
   it('invokes the Loop_Sink with the raw LoopResult, the Selected_Claim and the Run_Dir', async () => {

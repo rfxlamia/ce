@@ -399,12 +399,14 @@ describe('run() config failures', () => {
 });
 
 describe('run() artifacts', () => {
-  it('creates no run directory and no call log when a gateway is supplied', async () => {
-    await resolved(base({ gateway: scriptedGateway(NOT_REQUIRED) }));
-    expect(existsSync(join(cwd, '.ce'))).toBe(false);
+  it('writes run.json but no call log in the computed run directory when a gateway is supplied', async () => {
+    const result = await resolved(base({ gateway: scriptedGateway(NOT_REQUIRED) }));
+    const dir = join(cwd, '.ce', 'runs', RUN_DIR_NAME);
+    expect(readdirSync(dir)).toEqual(['run.json']);
+    expect(result).toMatchObject({ runDir: dir, reportPath: join(dir, 'run.json'), bundleWritten: true });
   });
 
-  it('writes only jev-calls.jsonl in the run directory when it creates the gateway', async () => {
+  it('writes jev-calls.jsonl and run.json in the run directory when it creates the gateway', async () => {
     const createGateway: CreateGateway = (_l, _e, { callLog }) => ({
       ok: true,
       gateway: scriptedGateway(NOT_REQUIRED, callLog),
@@ -412,7 +414,7 @@ describe('run() artifacts', () => {
     const result = await resolved(base({ createGateway }));
     expect(result.outcome).toBe('SKIPPED');
     expect(readdirSync(join(cwd, '.ce', 'runs'))).toEqual([RUN_DIR_NAME]);
-    expect(readdirSync(join(cwd, '.ce', 'runs', RUN_DIR_NAME))).toEqual(['jev-calls.jsonl']);
+    expect(readdirSync(join(cwd, '.ce', 'runs', RUN_DIR_NAME))).toEqual(['jev-calls.jsonl', 'run.json']);
   });
 });
 
