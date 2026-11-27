@@ -192,7 +192,7 @@ describe('error content (4.7, 5.7, 11.11)', () => {
   });
   it('credentialed URL fails fast with the real fetch', async () => {
     const started = Date.now();
-    const err = await catchError(openTarget({ url: 'http://alice:s3cret@127.0.0.1:9', ready: { timeout: '30s' } }));
+    const err = await catchError(openTarget({ url: 'http://alice:s3cret@127.0.0.1:9', ready: { timeout: '30s' }, cwd: process.cwd(), env: {} }));
     expect(err).toBeInstanceOf(TargetConfigError);
     expect(Date.now() - started).toBeLessThan(2000);
   });

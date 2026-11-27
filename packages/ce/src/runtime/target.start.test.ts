@@ -91,9 +91,10 @@ function rig(init: RigInit = {}): Rig {
         if (!groupAlive) throw Object.assign(new Error('ESRCH'), { code: 'ESRCH' });
         return true;
       }
-      if (sig === 'SIGKILL') groupAlive = false;
-      kills.push({ pid, sig: String(sig) });
-      if (exitOn.includes(sig)) queueMicrotask(() => child.exit(null, sig));
+      const name = String(sig);
+      if (name === 'SIGKILL') groupAlive = false;
+      kills.push({ pid, sig: name });
+      if (exitOn.includes(name)) queueMicrotask(() => child.exit(null, name));
       return true;
     },
     on: () => fakeProcess,
