@@ -137,7 +137,9 @@ describe('Property 14: stop() idempotence', () => {
           expect(groupSignals.filter((s) => s !== 'SIGTERM' && s !== 'SIGKILL')).toEqual([]);
           if (groupSignals.includes('SIGKILL')) expect(groupSignals[0]).toBe('SIGTERM');
           expect(handle.warnings.length).toBeLessThanOrEqual(1);
-          expect(sleeps.length).toBeLessThanOrEqual(2);
+          // Grace and kill deadline are polled in 50 ms steps: at most (5000 + 5000) / 50 sleeps.
+          expect(sleeps.length).toBeLessThanOrEqual(200);
+          expect(sleeps.every((ms) => ms <= 5000)).toBe(true);
 
           if (mode === 'attach') {
             expect(groupSignals).toEqual([]);

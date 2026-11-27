@@ -780,29 +780,36 @@ async function openStarted(
     for (const l of listeners.splice(0)) proc.removeListener(l.event, l.fn);
   };
 
+  // Poll until the leader has exited and no group member is left, or `ms` elapsed.
+  // Wakes at once on the leader's exit; polls groupAlive() every 50 ms after that.
+  const waitGroupGone = async (ms: number): Promise<boolean> => {
+    for (let waited = 0; ; ) {
+      if (state === 'exited' && !groupAlive()) return true;
+      if (waited >= ms) return false;
+      if (state === 'exited') {
+        await sleep(50);
+        waited += 50;
+      } else {
+        await waitExitOr(50);
+        if ((state as ProcState) !== 'exited') waited += 50;
+      }
+    }
+  };
   const stop = createStopHolder(async () => {
     try {
-      if (state !== 'exited') {
+      // Req 2.4-2.6: SIGTERM the group, wait the grace for leader and members, SIGKILL only if
+      // the group is still alive, then wait the kill deadline. A group that is already gone gets no signal.
+      if ((state as ProcState) !== 'exited' || groupAlive()) {
         signalGroup('SIGTERM');
         if (state === 'running') state = 'term-sent';
-        if (!(await waitExitOr(STOP_GRACE_MS))) {
-          state = 'kill-sent';
+        if (!(await waitGroupGone(STOP_GRACE_MS))) {
+          if ((state as ProcState) !== 'exited') state = 'kill-sent';
           signalGroup('SIGKILL');
-          if (!(await waitExitOr(KILL_DEADLINE_MS))) {
+          if (!(await waitGroupGone(KILL_DEADLINE_MS))) {
             warnings.push(
               `target process did not exit after SIGKILL: command ${JSON.stringify(command)}, pid ${String(pid)}`,
             );
           }
-        }
-      }
-      // The leader is gone; kill any group members that outlived it.
-      if (state === 'exited' && groupAlive()) {
-        signalGroup('SIGKILL');
-        for (let waited = 0; waited < KILL_DEADLINE_MS && groupAlive(); waited += 50) await sleep(50);
-        if (groupAlive()) {
-          warnings.push(
-            `target process did not exit after SIGKILL: command ${JSON.stringify(command)}, pid ${String(pid)}`,
-          );
         }
       }
     } finally {

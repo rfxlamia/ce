@@ -50,6 +50,8 @@ interface RigInit {
   spawnThrows?: boolean;
   /** Group members outlive the leader until the group gets SIGKILL. Default: false. */
   groupAlive?: boolean;
+  /** With groupAlive: the members exit this many ms after SIGTERM (Date.now based). */
+  membersExitAfterMs?: number;
   afterSpawn?: (child: FakeChild) => void;
   extra?: Partial<TargetOptions>;
 }
@@ -60,6 +62,7 @@ function rig(init: RigInit = {}): Rig {
   const exitOn = init.exitOn ?? ['SIGTERM', 'SIGKILL'];
   const kills: Rig['kills'] = [];
   let groupAlive = init.groupAlive ?? false;
+  let termAt: number | undefined;
   const fetchCalls: Rig['fetchCalls'] = [];
   const abortTimes: number[] = [];
   let i = 0;
@@ -88,11 +91,20 @@ function rig(init: RigInit = {}): Rig {
     pid: 1,
     kill: (pid: number, sig: string | number) => {
       if (sig === 0) {
+        if (
+          groupAlive &&
+          init.membersExitAfterMs !== undefined &&
+          termAt !== undefined &&
+          Date.now() - termAt >= init.membersExitAfterMs
+        ) {
+          groupAlive = false;
+        }
         if (!groupAlive) throw Object.assign(new Error('ESRCH'), { code: 'ESRCH' });
         return true;
       }
       const name = String(sig);
       if (name === 'SIGKILL') groupAlive = false;
+      if (name === 'SIGTERM') termAt ??= Date.now();
       kills.push({ pid, sig: name });
       if (exitOn.includes(name)) queueMicrotask(() => child.exit(null, name));
       return true;
@@ -263,17 +275,44 @@ describe('stop state machine', () => {
     expect(r.kills).toEqual([]);
     expect(handle.exited).toEqual({ exitCode: 0, signal: null });
   });
-  it('SIGKILLs group members that outlive the leader after SIGTERM', async () => {
+  it('SIGKILLs lingering group members only after the 5 s grace (2.4)', async () => {
     const r = rig({ groupAlive: true });
     const handle = await openTarget(r.options);
-    await handle.stop();
+    const p = handle.stop();
+    await vi.advanceTimersByTimeAsync(4999);
+    expect(r.kills).toEqual([{ pid: -4242, sig: 'SIGTERM' }]);
+    await vi.advanceTimersByTimeAsync(1);
+    await p;
     expect(r.kills).toEqual([
       { pid: -4242, sig: 'SIGTERM' },
       { pid: -4242, sig: 'SIGKILL' },
     ]);
     expect(handle.warnings).toEqual([]);
   });
-  it('SIGKILLs the group when the leader exited before ready and members survive', async () => {
+  it('sends no SIGKILL when group members exit 1 s after SIGTERM (2.4)', async () => {
+    const r = rig({ groupAlive: true, membersExitAfterMs: 1000 });
+    const handle = await openTarget(r.options);
+    const p = handle.stop();
+    await vi.advanceTimersByTimeAsync(1100);
+    await p;
+    expect(r.kills).toEqual([{ pid: -4242, sig: 'SIGTERM' }]);
+    expect(handle.warnings).toEqual([]);
+  });
+  it('leader already exited, group alive: SIGTERM, then SIGKILL after the grace (2.4)', async () => {
+    const r = rig({ groupAlive: true });
+    const handle = await openTarget(r.options);
+    r.child.exit(0, null);
+    const p = handle.stop();
+    await vi.advanceTimersByTimeAsync(4999);
+    expect(r.kills).toEqual([{ pid: -4242, sig: 'SIGTERM' }]);
+    await vi.advanceTimersByTimeAsync(1);
+    await p;
+    expect(r.kills).toEqual([
+      { pid: -4242, sig: 'SIGTERM' },
+      { pid: -4242, sig: 'SIGKILL' },
+    ]);
+  });
+  it('SIGTERMs, then SIGKILLs after the grace, when the leader exited before ready and members survive', async () => {
     const r = rig({
       groupAlive: true,
       steps: [503, 503, 503],
@@ -281,12 +320,15 @@ describe('stop state machine', () => {
         queueMicrotask(() => c.exit(1, null));
       },
     });
-    const err = await catchError(openTarget(r.options));
-    expect(err).toBeInstanceOf(TargetStartError);
-    expect(r.kills).toEqual([{ pid: -4242, sig: 'SIGKILL' }]);
+    const errP = catchError(openTarget(r.options));
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(await errP).toBeInstanceOf(TargetStartError);
+    expect(r.kills).toEqual([
+      { pid: -4242, sig: 'SIGTERM' },
+      { pid: -4242, sig: 'SIGKILL' },
+    ]);
   });
 });
-
 describe('Pre_Start_Probe', () => {
   it.each([200, 204, 301, 302, 399])(
     'status %i before spawn throws "already served" and never spawns (2.11)',
