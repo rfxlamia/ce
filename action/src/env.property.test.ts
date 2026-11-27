@@ -32,28 +32,30 @@ describe('Property 7: child-environment sanitizing', () => {
         fc.array(nameArb, { maxLength: 4 }),
         (base, runToken, mirrorEnv, collisionNames) => {
           // Repeat the Run_Token under unrelated names to force value collisions.
-          const env: Record<string, string> = { ...base };
+          const env: Record<string, string> = Object.fromEntries(Object.entries(base));
           if (runToken.length > 0) {
-            for (const name of collisionNames) env[name] = runToken;
+            for (const name of collisionNames) {
+              Object.defineProperty(env, name, { value: runToken, enumerable: true, configurable: true, writable: true });
+            }
           }
-          const snapshot = { ...env };
+          const snapshot = Object.fromEntries(Object.entries(env));
 
           const out = sanitizeChildEnv(env, runToken, mirrorEnv);
 
           expect(env).toEqual(snapshot);
           for (const [name, value] of Object.entries(out)) {
-            if (name in mirrorEnv) continue;
+            if (Object.hasOwn(mirrorEnv, name)) continue;
             expect(isForbiddenName(name)).toBe(false);
             if (runToken.length > 0) expect(value).not.toBe(runToken);
           }
           for (const [name, value] of Object.entries(env)) {
-            if (name in mirrorEnv) continue;
+            if (Object.hasOwn(mirrorEnv, name)) continue;
             const forbidden = isForbiddenName(name) || (runToken.length > 0 && value === runToken);
-            if (forbidden) expect(name in out).toBe(false);
-            else expect(out[name]).toBe(value);
+            if (forbidden) expect(Object.hasOwn(out, name)).toBe(false);
+            else expect(Object.getOwnPropertyDescriptor(out, name)?.value).toBe(value);
           }
           for (const [name, value] of Object.entries(mirrorEnv)) {
-            expect(out[name]).toBe(value);
+            expect(Object.getOwnPropertyDescriptor(out, name)?.value).toBe(value);
           }
         },
       ),

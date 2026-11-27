@@ -99446,15 +99446,10 @@ function readPlaywrightVersion(resolveFrom = import.meta.url) {
 var FORBIDDEN_PREFIXES = ["INPUT_", "ACTIONS_"];
 var FORBIDDEN_NAMES = ["GITHUB_TOKEN", "GH_TOKEN"];
 function sanitizeChildEnv(env, runToken, mirrorEnv) {
-  const result = {};
-  for (const [name, value] of Object.entries(env)) {
-    if (value === void 0) continue;
-    if (FORBIDDEN_PREFIXES.some((prefix3) => name.startsWith(prefix3))) continue;
-    if (FORBIDDEN_NAMES.includes(name)) continue;
-    if (runToken.length > 0 && value === runToken) continue;
-    result[name] = value;
-  }
-  return { ...result, ...mirrorEnv };
+  const kept = Object.entries(env).filter(
+    (entry3) => entry3[1] !== void 0 && !FORBIDDEN_PREFIXES.some((prefix3) => entry3[0].startsWith(prefix3)) && !FORBIDDEN_NAMES.includes(entry3[0]) && !(runToken.length > 0 && entry3[1] === runToken)
+  );
+  return Object.fromEntries([...kept, ...Object.entries(mirrorEnv)]);
 }
 
 // action/src/github.ts

@@ -15,13 +15,14 @@ export function sanitizeChildEnv(
   runToken: string,
   mirrorEnv: Readonly<Record<string, string>>,
 ): Record<string, string> {
-  const result: Record<string, string> = {};
-  for (const [name, value] of Object.entries(env)) {
-    if (value === undefined) continue;
-    if (FORBIDDEN_PREFIXES.some((prefix) => name.startsWith(prefix))) continue;
-    if (FORBIDDEN_NAMES.includes(name)) continue;
-    if (runToken.length > 0 && value === runToken) continue;
-    result[name] = value;
-  }
-  return { ...result, ...mirrorEnv };
+  // Object.fromEntries defines own data properties, so a name such as
+  // `__proto__` stays data and never mutates the prototype.
+  const kept = Object.entries(env).filter(
+    (entry): entry is [string, string] =>
+      entry[1] !== undefined &&
+      !FORBIDDEN_PREFIXES.some((prefix) => entry[0].startsWith(prefix)) &&
+      !FORBIDDEN_NAMES.includes(entry[0]) &&
+      !(runToken.length > 0 && entry[1] === runToken),
+  );
+  return Object.fromEntries([...kept, ...Object.entries(mirrorEnv)]);
 }
