@@ -239,6 +239,7 @@ async function assessUnsafe(
   };
   if (subjectSkipped !== undefined) record.subjectSkipped = subjectSkipped;
   if (combined.policyDecision !== undefined) record.policyDecision = combined.policyDecision;
+  if (combined.surfaceSuppressed !== undefined) record.surfaceSuppressed = combined.surfaceSuppressed;
 
   return {
     claims,

@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Surface } from '../assessment/types.js';
 import { ConfigDefaults } from '../config/defaults.js';
 import { StageError } from '../errors.js';
 import { SURFACE_LABELS } from '../jev/catalog.js';
@@ -71,18 +72,23 @@ function noClaimFixture(id: string): EvalFixtureFile {
 class StubGateway implements JevGateway {
   requests: Jev_Request[] = [];
   constructor(
-    private readonly p: { isBehavior: number; observable: number; adequate: number },
+    private readonly p: {
+      isBehavior: number;
+      observable: number;
+      adequate: number;
+      /** Choice answer for assess.surface. Defaults to browser_ui. */
+      surface?: Surface;
+    },
   ) {}
   async ask(request: Jev_Request): Promise<Jev_Response> {
     this.requests.push(request);
+    const surface = this.p.surface ?? 'browser_ui';
     const answers: Record<string, unknown> = {};
     for (const [name, q] of Object.entries(request.questions)) {
       if (q.type === 'choice') {
         answers[name] = {
           type: 'choice',
-          probabilities: Object.fromEntries(
-            SURFACE_LABELS.map((l) => [l, l === 'browser_ui' ? 1 : 0]),
-          ),
+          probabilities: Object.fromEntries(SURFACE_LABELS.map((l) => [l, l === surface ? 1 : 0])),
         };
       } else {
         const noul =
@@ -243,6 +249,23 @@ describe('runEval', () => {
     const lint = byId.get('tooling-near-miss-lint');
     expect(lint).toMatchObject({ claimStatus: 'not_identified', required: true });
     expect(lint!.perClaim.map((p) => p.claimId)).toEqual(['change']);
+  });
+
+  it('suppresses needed for backend_internal on the real fixtures (issue #31)', async () => {
+    const gateway = new StubGateway({
+      isBehavior: 0.99,
+      observable: 0.73,
+      adequate: 0.3,
+      surface: 'backend_internal',
+    });
+    const r = await runEval({ fixturesDir: REAL_FIXTURES, config: ConfigDefaults, gateway });
+    if (!r.ok) throw new Error('expected eval to complete');
+    const cache = r.result.assessments.find((a) => a.fixtureId === 'backend-cache-ttl');
+    expect(cache).toMatchObject({ required: false });
+    expect(cache!.surfaceSuppressed).toEqual(
+      cache!.perClaim.map((p) => ({ subjectId: p.claimId, surface: 'backend_internal' })),
+    );
+    expect(cache!.surfaceSuppressed!.length).toBeGreaterThan(0);
   });
 
   it('returns StageError(context) and asks nothing when a stand-in provider returns a headSha', async () => {

@@ -6,6 +6,7 @@
 import { argmaxSurface, readChoice, readNoul } from '../assessment/answers.js';
 import { assess, resolveAssessmentSettings } from '../assessment/assess.js';
 import type {
+  AssessmentRecord,
   AssessmentSettings,
   Cut,
   PerClaimAssessment,
@@ -46,6 +47,8 @@ export interface FixtureAssessmentSummary {
   surface: Surface;
   perClaim: PerClaimAssessment[];
   cuts: Cut[];
+  /** Present only when the combiner suppressed `needed` for a non-observable surface. */
+  surfaceSuppressed?: AssessmentRecord['surfaceSuppressed'];
 }
 
 export interface EvalResult {
@@ -210,7 +213,7 @@ export async function runEval(options: EvalRunOptions): Promise<EvalRunOutcome> 
         predicted: assessment.required,
         label: labels.required,
       });
-      assessments.push({
+      const summary: FixtureAssessmentSummary = {
         fixtureId: id,
         claimStatus: assessment.claimStatus,
         required: assessment.required,
@@ -218,7 +221,11 @@ export async function runEval(options: EvalRunOptions): Promise<EvalRunOutcome> 
         surface: assessment.surface,
         perClaim: assessment.perClaim.map((c) => ({ ...c })),
         cuts: assessment.record.cuts.map((c) => ({ ...c })),
-      });
+      };
+      if (assessment.record.surfaceSuppressed !== undefined) {
+        summary.surfaceSuppressed = assessment.record.surfaceSuppressed.map((s) => ({ ...s }));
+      }
+      assessments.push(summary);
       claimStatus.push({
         fixtureId: id,
         subject: 'change',
