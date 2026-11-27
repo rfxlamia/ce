@@ -14,7 +14,8 @@
 import { existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { runEvalCommand } from './eval/index.js';
-import { VERSION, createJevGateway, run } from './index.js';
+import { VERSION, createJevGateway } from './index.js';
+import { runRunCommand } from './run/index.js';
 
 const [, , command, ...rest] = process.argv;
 
@@ -24,6 +25,11 @@ function help(): void {
 Usage:
   ce run [options]    Run Continuous Evidence for the current change
   ce eval [options]   Measure Jev agreement against labelled fixtures
+
+Run options:
+  --config <path>     Path to the ce.yml configuration file
+  --base <ref>        Git base ref to compare the change against
+  --claim <text>      A claim to assess (may be repeated)
 
 Options are not finalized for v0; see SPEC.md at the repository root.`);
 }
@@ -76,15 +82,14 @@ async function main(): Promise<number> {
       });
     case 'run':
       if (!loadEnvFileIfPresent(process.cwd())) return 1;
-      try {
-        const result = await run();
-        console.log(`Outcome: ${result.outcome}`);
-        return 0;
-      } catch (error) {
-        console.error(`Outcome: ERROR`);
-        console.error(error instanceof Error ? error.message : error);
-        return 1;
-      }
+      return runRunCommand(rest, {
+        env: process.env,
+        cwd: process.cwd(),
+        stdout: process.stdout,
+        stderr: process.stderr,
+        createGateway: createJevGateway,
+        now: () => new Date(),
+      });
     default:
       console.error(`Unknown command: ${rest.length > 0 ? `${command} ${rest.join(' ')}` : command}`);
       help();

@@ -1,36 +1,31 @@
 /**
  * Continuous Evidence — core entry point.
  *
- * v0 implementation spike (Milestone 1: Prove the Concept).
- * The pipeline follows the four core responsibilities defined in SPEC.md §4.2:
+ * `run()` implements the vertical slice: Context Resolver → Assessment Engine
+ * → Capability Runtime → Evidence Output (SPEC.md §4.2). It resolves
+ * configuration and context, assesses claims through Jev, selects a registered
+ * capability by Surface, and resolves exactly one outcome
+ * (SKIPPED | EVIDENCED | UNSUPPORTED | ERROR) in `outcome/resolve.ts`.
  *
- *   Context Resolver → Assessment Engine → Capability Runtime → Evidence Output
- *
- * Internal structure is intentionally minimal until the first end-to-end
- * evidence run demonstrates which module boundaries are actually needed.
+ * Open part: the Runtime_Hook. The capability registry is empty by default, so
+ * a run that needs runtime evidence resolves to UNSUPPORTED until a capability
+ * registers a hook through `createCapabilityRegistry`.
  */
-
-import type { Outcome as ExecutionOutcome } from './outcome/index.js';
 
 export const VERSION = '0.1.0';
 
-/**
- * Runs the CE pipeline for the current change context.
- *
- * Outcome contract (SPEC.md §7.1): every run MUST resolve to exactly one of
- * SKIPPED | EVIDENCED | UNSUPPORTED | ERROR.
- */
-export interface RunResult {
-  outcome: ExecutionOutcome;
-}
-
-export async function run(): Promise<RunResult> {
-  // TODO(Milestone 1): implement the vertical slice.
-  // Hypothesis under test: Jev + generic browser capabilities can produce
-  // relevant runtime evidence for a software change, without a generative
-  // agent harness.
-  throw new Error('CE v0 implementation spike: not implemented yet');
-}
+export { run } from './run/index.js';
+export { createCapabilityRegistry, EMPTY_REGISTRY, selectCapability } from './run/index.js';
+export type {
+  CapabilityEntry,
+  CapabilityRegistry,
+  ConfigFailureRun,
+  ResolvedRun,
+  RunOptions,
+  RunResult,
+  RuntimeHook,
+  RuntimeHookInput,
+} from './run/index.js';
 
 export { loadConfig } from './config/load.js';
 export { requireJevCredentials } from './config/credentials.js';
