@@ -25,7 +25,7 @@ const ELLIPSIS = '…';
 const MAX_FIELDS_SHOWN = 10;
 
 /** Collapse whitespace so one value never spans more than one line. */
-function oneLine(text: string): string {
+export function oneLine(text: string): string {
   return text.replace(/\s+/g, ' ').trim();
 }
 
@@ -35,7 +35,7 @@ function cpLength(text: string): number {
 }
 
 /** Cut `text` so that `prefix + text + suffix` has at most MAX_LINE characters, ending the text in `…`. */
-function fit(prefix: string, text: string, suffix: string): string {
+export function fit(prefix: string, text: string, suffix: string): string {
   const full = `${prefix}${text}${suffix}`;
   if (cpLength(full) <= MAX_LINE) return full;
   const room = MAX_LINE - cpLength(prefix) - cpLength(suffix) - cpLength(ELLIPSIS);
@@ -44,7 +44,7 @@ function fit(prefix: string, text: string, suffix: string): string {
 }
 
 /** Truncate a whole line to MAX_LINE characters, ending in `…`. */
-function clamp(line: string): string {
+export function clamp(line: string): string {
   return fit('', line, '');
 }
 
@@ -55,7 +55,7 @@ function claimLine(texts: readonly string[]): string {
   return fit('Claim: ', oneLine(texts[0] ?? ''), suffix);
 }
 
-interface Facts {
+export interface Facts {
   outcome: Outcome;
   reason: ResolveReason;
   stage?: Stage;
@@ -65,7 +65,7 @@ interface Facts {
   stepCount?: number;
 }
 
-function rationaleLine(f: Facts): string {
+export function rationaleLine(f: Facts): string {
   let text: string;
   if (f.outcome === 'SKIPPED') {
     text = `evidence was not required (decided by ${f.decidedBy ?? 'unknown'})`;

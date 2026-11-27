@@ -1,0 +1,53 @@
+name: CE
+
+# Dogfooding: runs the Action from this checkout on pull requests and lets it
+# post one CE comment. Separate from ci.yml and not a required check.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+# One CE run per pull request; a newer push supersedes the running one so the
+# comment holds the newest result.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  evidence:
+    name: evidence
+    # A fork pull request has no access to the secret.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24.x'
+          cache: npm
+
+      # The Action does not install the repository's dependencies. The demo
+      # app needs vite, which `npm ci` installs through the workspaces.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run CE
+        uses: ./
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        with:
+          # Vite's dev server (`npm run dev` in examples/demo-app) defaults to
+          # port 5173 and serves `/`. Bind to 127.0.0.1 so the URL does not
+          # resolve to ::1.
+          target-start: npm run dev --workspace @ce/demo-app -- --host 127.0.0.1 --port 5173 --strictPort
+          target-url: http://127.0.0.1:5173
+          target-ready-path: /

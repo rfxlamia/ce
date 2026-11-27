@@ -1,5 +1,8 @@
 node_modules/
 dist/
+# The Action bundle is committed (F1). Negations must follow the dist/ rule.
+!action/dist/
+!action/dist/node_modules/
 *.tsbuildinfo
 
 # Continuous Evidence local evidence storage (v0: local filesystem)

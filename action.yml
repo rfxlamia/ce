@@ -1,0 +1,152 @@
+name: 'Continuous Evidence'
+description: 'Runs CE and posts an inspectable evidence comment on the pull request.'
+branding:
+  icon: 'eye'
+  color: 'blue'
+runs:
+  using: 'node24'
+  main: 'action/dist/index.js'
+inputs:
+  # Mirror inputs: one per ConfigSchema leaf with a CE_* variable (ENV_KEY_MAP),
+  # named as the dotted key with '.' replaced by '-'. No input for `version`
+  # or `runtime.fixtures`. Empty means the ce.yml value or the default applies.
+  target-url:
+    description: 'target.url: URL of the running Subject.'
+    required: false
+    default: ''
+  target-start:
+    description: 'target.start: command that starts the Subject.'
+    required: false
+    default: ''
+  target-ready-path:
+    description: 'target.ready.path: path polled until the Subject is ready.'
+    required: false
+    default: ''
+  target-ready-timeout:
+    description: 'target.ready.timeout: readiness timeout.'
+    required: false
+    default: ''
+  target-routes:
+    description: 'target.routes: comma-separated routes.'
+    required: false
+    default: ''
+  context-base:
+    description: 'context.base: Git base ref. The `base` input wins when both are set.'
+    required: false
+    default: ''
+  context-include:
+    description: 'context.include: comma-separated include globs.'
+    required: false
+    default: ''
+  context-exclude:
+    description: 'context.exclude: comma-separated exclude globs.'
+    required: false
+    default: ''
+  context-redact:
+    description: 'context.redact: comma-separated redaction patterns.'
+    required: false
+    default: ''
+  context-checks:
+    description: 'context.checks: comma-separated existing Check paths.'
+    required: false
+    default: ''
+  assessment-thresholds-claim:
+    description: 'assessment.thresholds.claim.'
+    required: false
+    default: ''
+  assessment-thresholds-observable:
+    description: 'assessment.thresholds.observable.'
+    required: false
+    default: ''
+  assessment-thresholds-adequate:
+    description: 'assessment.thresholds.adequate.'
+    required: false
+    default: ''
+  assessment-uncertainty-band:
+    description: 'assessment.uncertainty-band.'
+    required: false
+    default: ''
+  assessment-on-uncertain:
+    description: 'assessment.on-uncertain.'
+    required: false
+    default: ''
+  runtime-max-steps:
+    description: 'runtime.max-steps.'
+    required: false
+    default: ''
+  runtime-timeout:
+    description: 'runtime.timeout.'
+    required: false
+    default: ''
+  runtime-viewport-width:
+    description: 'runtime.viewport.width.'
+    required: false
+    default: ''
+  runtime-viewport-height:
+    description: 'runtime.viewport.height.'
+    required: false
+    default: ''
+  jev-provider:
+    description: 'jev.provider: openrouter or typesafe.'
+    required: false
+    default: ''
+  jev-model:
+    description: 'jev.model.'
+    required: false
+    default: ''
+  output-dir:
+    description: 'output.dir: parent directory of the run directory.'
+    required: false
+    default: ''
+  output-fail-on:
+    description: 'output.fail-on: comma-separated conditions that fail the step.'
+    required: false
+    default: ''
+  # Non-mirror inputs
+  config:
+    description: 'Path to a ce.yml config file (passed as --config).'
+    required: false
+    default: ''
+  base:
+    description: 'Git base ref (passed as --base).'
+    required: false
+    default: ''
+  claim:
+    description: 'Claims, one per line (each passed as --claim).'
+    required: false
+    default: ''
+  working-directory:
+    description: 'Working directory for the CE run. Defaults to the workspace root.'
+    required: false
+    default: ''
+  github-token:
+    description: 'Token used for GitHub API calls (comment upsert).'
+    required: false
+    default: '${{ github.token }}'
+  comment:
+    description: 'Post the pull request comment. Set to false to skip it.'
+    required: false
+    default: 'true'
+  comment-author:
+    description: 'Login of the account that owns the CE comment.'
+    required: false
+    default: 'github-actions[bot]'
+  artifact-name:
+    description: 'Artifact name. Empty builds a unique name per invocation.'
+    required: false
+    default: ''
+  publish:
+    description: 'Evidence publishing mode: none or branch. Only none is implemented.'
+    required: false
+    default: 'none'
+outputs:
+  outcome:
+    description: 'SKIPPED, EVIDENCED, UNSUPPORTED or ERROR, or empty when unknown.'
+  run-dir:
+    description: 'Absolute path of the run directory, or empty.'
+  artifact-url:
+    description: 'URL of the uploaded evidence artifact, or empty.'
+  comment-url:
+    description: 'URL of the pull request comment, or empty.'
+  exit-code:
+    description: 'Exit code of the CE CLI.'

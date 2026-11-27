@@ -189,6 +189,7 @@ describe('architecture: evidence/ boundaries', () => {
       expect.arrayContaining([
         'evidence/build.ts',
         'evidence/bundle.ts',
+        'evidence/comment.ts',
         'evidence/schema.ts',
         'evidence/summary.ts',
       ]),

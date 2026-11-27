@@ -5,9 +5,11 @@
   "description": "Continuous Evidence — automated verification that produces inspectable runtime evidence for software changes.",
   "workspaces": [
     "packages/*",
-    "examples/*"
+    "examples/*",
+    "action"
   ],
   "scripts": {
+    "build:action": "node scripts/build-action.mjs",
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present"
