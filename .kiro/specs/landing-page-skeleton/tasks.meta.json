@@ -1,0 +1,463 @@
+{
+  "pbtResults": {
+    "2.2 Write property test for the backdrop click rule": {
+      "status": "passed",
+      "lastRunTimestamp": 1795803591520
+    },
+    "3.2 Write property test for the copy round trip": {
+      "status": "passed",
+      "lastRunTimestamp": 1795803673480
+    },
+    "3.5 Write property test for the tab selection invariant": {
+      "status": "passed",
+      "lastRunTimestamp": 1795803681974
+    },
+    "3.3 Write property test for the copy status lifecycle": {
+      "status": "passed",
+      "lastRunTimestamp": 1795803769287
+    }
+  },
+  "executionHistory": {
+    "1.1 Create the package, configuration and lockfile entry": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803371339
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803383222
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803465983
+      }
+    ],
+    "2.1 Implement `src/lib/tabs.ts` and `src/lib/dialog.ts`": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803371390
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803471584
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803543909
+      }
+    ],
+    "2.2 Write property test for the backdrop click rule": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803371509
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803552059
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803616134
+      }
+    ],
+    "2.3 Implement `src/content/snippets.ts`, `sections.ts` and `outcomes.ts`": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803371557
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803471970
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803544692
+      }
+    ],
+    "3.1 Implement `CopyButton` and `SnippetBlock`": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803371607
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803552144
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803617010
+      }
+    ],
+    "3.2 Write property test for the copy round trip": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803371732
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803624819
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803695632
+      }
+    ],
+    "3.3 Write property test for the copy status lifecycle": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803371797
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803700992
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803782392
+      }
+    ],
+    "3.4 Implement `OutcomeTabs`": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803371875
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803552730
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803617502
+      }
+    ],
+    "3.5 Write property test for the tab selection invariant": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803372056
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803625456
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803694940
+      }
+    ],
+    "3.6 Implement `ConfigModal`": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803372146
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803625902
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803694220
+      }
+    ],
+    "3.7 Implement `SampleReport`": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803372257
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803553357
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803618279
+      }
+    ],
+    "4.1 Implement `App`, `main.tsx` and `styles.css`": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803372400
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803701391
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803781631
+      }
+    ],
+    "5. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803372460
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803787583
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803893565
+      }
+    ],
+    "6.1 Write page-structure and copy-rule tests": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803372556
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803898945
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795804015383
+      }
+    ],
+    "6.2 Write snippet validation tests": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803372675
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803899529
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795804015981
+      }
+    ],
+    "6.3 Write modal, tabs and copy-button example tests": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803372726
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803900163
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795804016953
+      }
+    ],
+    "6.4 Write source-scan and Style_Guard tests": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803372860
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803901014
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795804017729
+      }
+    ],
+    "6.5 Write workspace and workflow tests": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803372927
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803901508
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795804018664
+      }
+    ],
+    "7.1 Create `.github/workflows/pages.yml`": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803373058
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803472325
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803545406
+      }
+    ],
+    "8.1 Create `.ce/pr-checklist-issue-17.md`": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803373124
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803553942
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803619100
+      }
+    ],
+    "9. Checkpoint - Ensure all tests pass before the manual steps": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803373301
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795804024065
+      },
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795804171792
+      }
+    ],
+    "10.1 **[MANUAL, repository administrator]** Enable GitHub Pages with source \"GitHub Actions\"": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803373408
+      }
+    ],
+    "10.2 **[MANUAL, maintainer]** Confirm `pages: read` is enough for the `build` job on the first run": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803373538
+      }
+    ],
+    "10.3 **[MANUAL, maintainer]** Verify the live Site at `https://rfxlamia.github.io/ce/` in a real browser": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803373692
+      }
+    ],
+    "10.4 **[MANUAL, maintainer]** Post the Verification_Record on issue #17 and close it": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803373800
+      }
+    ],
+    "11. Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803373876
+      }
+    ],
+    "1. Scaffold the `@ce/site` workspace package": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803466099
+      }
+    ],
+    "7. Add the GitHub Pages workflow": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803545438
+      }
+    ],
+    "2. Implement pure helpers and static content": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803616192
+      }
+    ],
+    "8. Add the pull request checklist": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803619233
+      }
+    ],
+    "4. Wire the page together": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803781682
+      }
+    ],
+    "3. Implement the components": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795803782438
+      }
+    ],
+    "6. Add example and scan tests under `apps/site/tests/`": [
+      {
+        "executionId": "503f2337-9d49-4cbb-8e24-b089100f5be1",
+        "chatSessionId": "sess_7181f518-e15c-460a-bca9-e630bcc48b16",
+        "timestamp": 1795804018708
+      }
+    ]
+  }
+}
