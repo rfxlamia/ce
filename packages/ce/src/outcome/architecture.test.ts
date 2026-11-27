@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { CATALOG } from '../jev/catalog.js';
 
 // Architecture test for the outcome/ module boundaries.
 // Requirements 1.5, 1.6, 1.7, 10.3, 10.4, 11.3.
@@ -176,6 +177,67 @@ describe('architecture: index.ts and run/ import boundaries', () => {
       )
       .map((s) => s.rel);
     expect(offenders).toEqual([]);
+  });
+});
+
+describe('architecture: runtime/target.ts boundaries', () => {
+  // Requirements 4.10, 7.6, 8.8, 10.1, 10.2, 10.3. Rule (d) already scans every
+  // non-test file in src/, so it covers runtime/target.ts once it is in `sources`.
+  const target = sources.find((s) => s.rel === 'runtime/target.ts');
+
+  it('is part of the scanned set that rule (d) covers', () => {
+    expect(target).toBeDefined();
+    expect(sources.map((s) => s.rel)).toContain('runtime/target.ts');
+    expect(isTest('runtime/target.ts')).toBe(false);
+  });
+
+  it('imports none of playwright, @typesafe-ai/sdk, jev/ or outcome/', () => {
+    const forbidden = (spec: string): boolean =>
+      spec === 'playwright' ||
+      spec.startsWith('playwright/') ||
+      spec === '@typesafe-ai/sdk' ||
+      spec.startsWith('@typesafe-ai/sdk/') ||
+      /(^|\/)jev(\/|$)/.test(spec) ||
+      /(^|\/)outcome(\/|$)/.test(spec);
+    const all = importSpecifiers(target!.code);
+    expect(all.filter(forbidden)).toEqual([]);
+    expect(valueImportSpecifiers(target!.code).filter(forbidden)).toEqual([]);
+    // Same pattern as the run/ check: the shared forbidden list must not match either.
+    expect(
+      all.filter((spec) => FORBIDDEN_SPECIFIER(spec) && !/^(node:fs|fs|node:child_process|child_process)$/.test(spec)),
+    ).toEqual([]);
+  });
+
+  it('does not call fetch with a Jev-shaped request body', () => {
+    // target.ts may call fetch for readiness probes (GET, no body). A Jev request
+    // carries a body, questions, assets or a Jev/OpenRouter endpoint.
+    expect(target!.code).not.toMatch(
+      /\bbody\s*:|\bquestions\s*:|\bassets\s*:|data_base64|systemone|openrouter\.ai|typesafe\.(?:ai|com)|\bmethod\s*:\s*['"`]POST/i,
+    );
+  });
+
+  it('contains no Jev question text', () => {
+    const texts: string[] = [];
+    const collect = (value: unknown): void => {
+      if (typeof value === 'string') texts.push(value);
+      else if (Array.isArray(value)) value.forEach(collect);
+      else if (value && typeof value === 'object') Object.values(value).forEach(collect);
+    };
+    for (const e of [
+      CATALOG.claimIsBehavior,
+      CATALOG.assessRuntimeObservable,
+      CATALOG.assessChecksAdequate,
+      CATALOG.assessSurface,
+      CATALOG.runtimeStateReachedDom,
+      CATALOG.runtimeStateReached,
+      CATALOG.runtimeLocateSubject,
+    ]) {
+      collect(e.build());
+    }
+    collect(CATALOG.runtimeNextAction.build([]));
+    const long = texts.filter((t) => t.length >= 20);
+    expect(long.length).toBeGreaterThan(0);
+    expect(long.filter((t) => target!.code.includes(t))).toEqual([]);
   });
 });
 

@@ -3,8 +3,9 @@
 
 import type { ResolveContextOptions } from '../context/resolve.js';
 import { V0_SUPPORTED_SURFACES } from '../outcome/index.js';
+import { TargetUnreachableError } from '../runtime/target.js';
 import { run } from './pipeline.js';
-import type { CreateGateway, RunResult } from './types.js';
+import type { CapabilityRegistry, CreateGateway, RunResult } from './types.js';
 
 type Writable = { write(text: string): unknown };
 
@@ -17,6 +18,8 @@ export interface RunCommandDeps {
   now: () => Date;
   contextProviders?: ResolveContextOptions['providers'];
   exec?: ResolveContextOptions['exec'];
+  /** Capability_Registry passed to run(); run() applies the production default when absent. */
+  capabilities?: CapabilityRegistry;
 }
 
 export interface ParsedRunArgs {
@@ -94,6 +97,7 @@ export async function runRunCommand(argv: readonly string[], deps: RunCommandDep
       stderr,
       ...(deps.contextProviders !== undefined ? { contextProviders: deps.contextProviders } : {}),
       ...(deps.exec !== undefined ? { exec: deps.exec } : {}),
+      ...(deps.capabilities !== undefined ? { capabilities: deps.capabilities } : {}),
     });
   } catch (thrown) {
     const name =
@@ -118,6 +122,11 @@ export async function runRunCommand(argv: readonly string[], deps: RunCommandDep
 
   if (result.error !== undefined) {
     stderr.write(`${result.error.message}\n`);
+    const cause = result.error.cause;
+    if (cause instanceof TargetUnreachableError) {
+      stderr.write(`Target URL: ${cause.url}\n`);
+      stderr.write(`Last status: ${String(cause.lastStatus)}\n`);
+    }
   } else if (result.outcome === 'ERROR') {
     if (result.reason !== undefined) stderr.write(`Reason: ${result.reason}\n`);
     if (result.surface !== undefined) stderr.write(`Surface: ${result.surface}\n`);
