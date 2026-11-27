@@ -2,7 +2,7 @@
 // JSON-serializable value (no Date, Map, Set, or function).
 
 import type { Provenance } from '../context/types.js';
-import { NON_OBSERVABLE_SURFACES } from './combine.js';
+import type { NON_OBSERVABLE_SURFACES } from './combine.js';
 
 export type Surface =
   | 'browser_ui'
