@@ -87,6 +87,7 @@ export function mapLoopResultToRuntimeResult(input: MapLoopResultInput): Runtime
 
   const actions: RuntimeResult['evidence']['actions'] = [];
   for (const step of loopResult.steps) {
+    if (step.executed !== true) continue; // refused or timed-out Actions were not performed
     const action = step.action;
     if (action.kind === 'click' || action.kind === 'fill') {
       const element = step.observation.elements.find((e) => e.ref === action.ref);
@@ -135,8 +136,12 @@ export interface BrowserCapabilityDeps {
   openTarget: (options: TargetOptions) => Promise<TargetHandle>;
   launchBrowser?: (options: { viewport: { width: number; height: number } }) => Promise<BrowserLike>;
   clock?: LoopClock;
-  /** Loop_Sink: receives the raw LoopResult. Default no-op. */
-  onLoopResult?: (result: LoopResult) => void | Promise<void>;
+  /** Loop_Sink: receives the raw LoopResult, the Selected_Claim and the Run_Dir. Default no-op. */
+  onLoopResult?: (input: {
+    loopResult: LoopResult;
+    selectedClaim: SelectedClaim;
+    runDir: string;
+  }) => void | Promise<void>;
 }
 
 /** Default launcher. Playwright is imported lazily so no static path from `index.ts` reaches it. */
@@ -205,7 +210,7 @@ export function createBrowserCapability(deps: BrowserCapabilityDeps): Capability
         if (deps.clock !== undefined) loopInput.clock = deps.clock;
         const loopResult = await runLoop(loopInput);
 
-        await onLoopResult(loopResult);
+        await onLoopResult({ loopResult, selectedClaim: selected, runDir });
         return mapLoopResultToRuntimeResult({
           loopResult,
           selectedClaim: selected,

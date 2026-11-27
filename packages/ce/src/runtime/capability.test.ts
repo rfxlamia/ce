@@ -180,7 +180,7 @@ describe('createBrowserCapability', () => {
     await rm(runDir, { recursive: true, force: true });
   });
 
-  const capability = (onLoopResult?: (r: LoopResult) => void) =>
+  const capability = (onLoopResult?: (i: { loopResult: LoopResult; selectedClaim: unknown; runDir: string }) => void) =>
     createBrowserCapability({
       cwd: runDir,
       env: {},
@@ -256,11 +256,14 @@ describe('createBrowserCapability', () => {
     expect(launchBrowser).not.toHaveBeenCalled();
   });
 
-  it('invokes the Loop_Sink with the raw LoopResult', async () => {
+  it('invokes the Loop_Sink with the raw LoopResult, the Selected_Claim and the Run_Dir', async () => {
     const sink = vi.fn();
     await capability(sink).run(input());
     expect(sink).toHaveBeenCalledTimes(1);
-    const loopResult = sink.mock.calls[0]![0] as LoopResult;
+    const arg = sink.mock.calls[0]![0] as { loopResult: LoopResult; selectedClaim: { status: string }; runDir: string };
+    expect(arg.runDir).toBe(runDir);
+    expect(arg.selectedClaim.status).toBe('identified');
+    const loopResult = arg.loopResult;
     expect(loopResult.stopReason).toBe('done');
     expect(loopResult.observations.length).toBeGreaterThanOrEqual(1);
   });

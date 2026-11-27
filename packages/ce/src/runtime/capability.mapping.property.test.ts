@@ -138,6 +138,7 @@ describe('observe-decide-execute-loop Property 24: Loop_Result to RuntimeResult 
           observation,
           action: s.actions[i] as DecidedAction,
           probabilities: {},
+          executed: true,
         }));
         const loopResult: LoopResult = {
           finalState: s.finalState,
@@ -222,7 +223,7 @@ describe('observe-decide-execute-loop Property 24: Loop_Result to RuntimeResult 
       loopResult: {
         finalState: 'not_reached',
         observations: [observation],
-        steps: [{ observation, action: { kind: 'click', ref: 'e9' }, probabilities: {} }],
+        steps: [{ observation, action: { kind: 'click', ref: 'e9' }, probabilities: {}, executed: true }],
         eventLog: [],
         finalSignals: {},
         stopReason: 'max-steps',
@@ -233,5 +234,36 @@ describe('observe-decide-execute-loop Property 24: Loop_Result to RuntimeResult 
       runDir: '/tmp/run',
     });
     expect(result.evidence.actions).toEqual([{ kind: 'click', description: 'e9' }]);
+  });
+
+  it('omits Actions that were refused or timed out (not executed)', () => {
+    const observation = {
+      step: 0,
+      url: 'http://localhost:4000/',
+      title: 'T',
+      domDigest: 'd',
+      elements: [],
+      navigation: [],
+      screenshot: 'screenshots/0.png',
+    };
+    const result = mapLoopResultToRuntimeResult({
+      loopResult: {
+        finalState: 'not_reached',
+        observations: [observation],
+        steps: [
+          { observation, action: { kind: 'click', ref: 'e9' }, probabilities: {} },
+          { observation, action: { kind: 'click', ref: 'e8' }, probabilities: {}, executed: false },
+          { observation, action: { kind: 'goto', url: 'http://localhost:4000/a' }, probabilities: {}, executed: true },
+        ],
+        eventLog: [],
+        finalSignals: {},
+        stopReason: 'max-steps',
+      },
+      selectedClaim: { status: 'not_identified', text: 'x' },
+      change: { title: 'x', files: [], commits: [], claims: [], provenance: [] },
+      baseUrl: 'http://localhost:4000',
+      runDir: '/tmp/run',
+    });
+    expect(result.evidence.actions).toEqual([{ kind: 'goto', description: 'http://localhost:4000/a' }]);
   });
 });

@@ -38,6 +38,8 @@ export interface StepLogEntry {
   action: DecidedAction;
   /** Probabilities of the Options considered, keyed by Option index, `done` and `give_up`. */
   probabilities: Record<string, number>;
+  /** True only when the Executor ran the Action (status `ok`). Refused and timed-out Actions are not executed. */
+  executed?: boolean;
 }
 
 export interface LoopResult {
@@ -504,6 +506,7 @@ export async function runLoop(input: RunLoopInput): Promise<LoopResult> {
         history.push({ step: observation.step, kind: action.kind, description, result: 'refused' });
         return await finish('give_up');
       } else {
+        steps[steps.length - 1]!.executed = true;
         if (action.kind === 'fill') {
           const filled = observation.elements.find((e) => e.ref === action.ref);
           if (filled !== undefined) filledFieldLocators.add(filled.locator);
