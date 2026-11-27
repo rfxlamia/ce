@@ -7,6 +7,7 @@
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,
+    "paths": { "continuous-evidence": ["../packages/ce/src/index.ts"] },
     "sourceMap": false,
     "esModuleInterop": true,
     "skipLibCheck": true,

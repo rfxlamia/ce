@@ -107,6 +107,8 @@ if (form === 'bundle') {
     // `npm run build` (cwd action/) and `npm run build:action` (cwd root) emit identical bytes.
     absWorkingDir: root,
     bundle: true,
+    // Build from packages/ce source so a clean checkout needs no packages/ce/dist.
+    alias: { 'continuous-evidence': join(root, 'packages', 'ce', 'src', 'index.ts') },
     platform: 'node',
     target: 'node22',
     format: 'esm',

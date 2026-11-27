@@ -73066,7 +73066,7 @@ function info(message2) {
   process.stdout.write(message2 + os5.EOL);
 }
 
-// packages/ce/dist/config/defaults.js
+// packages/ce/src/config/defaults.ts
 var ConfigDefaults = {
   version: 0,
   assessment: {
@@ -73089,7 +73089,7 @@ var ConfigDefaults = {
   }
 };
 
-// packages/ce/dist/context/budget.js
+// packages/ce/src/context/budget.ts
 var STATE_BUDGET_TOKENS = 32e3;
 var CONTEXT_BUDGET_TOKENS = 24e3;
 var REQUEST_HEADROOM_TOKENS = STATE_BUDGET_TOKENS - CONTEXT_BUDGET_TOKENS;
@@ -73242,7 +73242,7 @@ var describeRuntime = () => {
 };
 var RUNTIME = describeRuntime();
 
-// packages/ce/dist/jev/catalog.js
+// packages/ce/src/jev/catalog.ts
 function entry(meta3, build) {
   const idVersion = `${meta3.id}@${meta3.version}`;
   return {
@@ -73262,35 +73262,68 @@ function entry(meta3, build) {
 }
 var MAX_NEXT_ACTION_OPTIONS = 240;
 var CATALOG = {
-  claimIsBehavior: entry({ id: "claim.is_behavior", version: 1, type: "noul", requiresImage: false, labelsFixed: false }, () => noul("Does `candidate` describe behaviour that the changed software should exhibit when it is run? Answer no if it describes only internal structure, tooling, documentation or process.")),
-  assessRuntimeObservable: entry({ id: "assess.runtime_observable", version: 1, type: "noul", requiresImage: false, labelsFixed: false }, () => noul("Would the behaviour described in `claim` be observable by running the application?")),
-  assessChecksAdequate: entry({ id: "assess.checks_adequate", version: 1, type: "noul", requiresImage: false, labelsFixed: false }, () => noul("Do the passing `checks` already exercise the behaviour in `claim` as it actually renders or executes?")),
-  assessSurface: entry({ id: "assess.surface", version: 1, type: "choice", requiresImage: false, labelsFixed: true }, () => choice("Where would the behaviour described in `claim` be observed?", {
-    browser_ui: "In a web browser, through the rendered user interface",
-    http_api: "Through an HTTP API, by sending requests and reading responses",
-    cli: "Through a command-line program, by its arguments, output or exit code",
-    backend_internal: "Only inside backend code, with no direct external interface",
-    native_app: "In a native mobile or desktop application",
-    non_runtime: "Not at run time, for example documentation, comments or build metadata"
-  })),
-  runtimeNextAction: entry({ id: "runtime.next_action", version: 1, type: "choice", requiresImage: false, labelsFixed: false }, (options) => {
-    if (options.length > MAX_NEXT_ACTION_OPTIONS) {
-      throw new RangeError(`runtime.next_action: option list exceeds ${MAX_NEXT_ACTION_OPTIONS} items (got ${options.length})`);
+  claimIsBehavior: entry(
+    { id: "claim.is_behavior", version: 1, type: "noul", requiresImage: false, labelsFixed: false },
+    () => noul(
+      "Does `candidate` describe behaviour that the changed software should exhibit when it is run? Answer no if it describes only internal structure, tooling, documentation or process."
+    )
+  ),
+  assessRuntimeObservable: entry(
+    { id: "assess.runtime_observable", version: 1, type: "noul", requiresImage: false, labelsFixed: false },
+    () => noul("Would the behaviour described in `claim` be observable by running the application?")
+  ),
+  assessChecksAdequate: entry(
+    { id: "assess.checks_adequate", version: 1, type: "noul", requiresImage: false, labelsFixed: false },
+    () => noul(
+      "Do the passing `checks` already exercise the behaviour in `claim` as it actually renders or executes?"
+    )
+  ),
+  assessSurface: entry(
+    { id: "assess.surface", version: 1, type: "choice", requiresImage: false, labelsFixed: true },
+    () => choice("Where would the behaviour described in `claim` be observed?", {
+      browser_ui: "In a web browser, through the rendered user interface",
+      http_api: "Through an HTTP API, by sending requests and reading responses",
+      cli: "Through a command-line program, by its arguments, output or exit code",
+      backend_internal: "Only inside backend code, with no direct external interface",
+      native_app: "In a native mobile or desktop application",
+      non_runtime: "Not at run time, for example documentation, comments or build metadata"
+    })
+  ),
+  runtimeNextAction: entry(
+    { id: "runtime.next_action", version: 1, type: "choice", requiresImage: false, labelsFixed: false },
+    (options) => {
+      if (options.length > MAX_NEXT_ACTION_OPTIONS) {
+        throw new RangeError(
+          `runtime.next_action: option list exceeds ${MAX_NEXT_ACTION_OPTIONS} items (got ${options.length})`
+        );
+      }
+      const criteria = {};
+      options.forEach((description, index) => {
+        criteria[String(index)] = description;
+      });
+      criteria["done"] = "The page already shows the state described in `claim`; no further action is needed";
+      criteria["give_up"] = "No available action moves the page toward the state described in `claim`";
+      return choice(
+        "Which action moves the page toward the state described in `claim`?",
+        criteria
+      );
     }
-    const criteria = {};
-    options.forEach((description, index) => {
-      criteria[String(index)] = description;
-    });
-    criteria["done"] = "The page already shows the state described in `claim`; no further action is needed";
-    criteria["give_up"] = "No available action moves the page toward the state described in `claim`";
-    return choice("Which action moves the page toward the state described in `claim`?", criteria);
-  }),
-  runtimeStateReachedDom: entry({ id: "runtime.state_reached_dom", version: 1, type: "noul", requiresImage: false, labelsFixed: false }, () => noul("Does the observed page state match the state described in `claim`?")),
-  runtimeStateReached: entry({ id: "runtime.state_reached", version: 1, type: "noul", requiresImage: true, labelsFixed: false }, () => noul("Does the screenshot show the state described in `claim`?")),
-  runtimeLocateSubject: entry({ id: "runtime.locate_subject", version: 1, type: "box", requiresImage: true, labelsFixed: false }, () => box("Where is the subject of `claim` in the screenshot?"))
+  ),
+  runtimeStateReachedDom: entry(
+    { id: "runtime.state_reached_dom", version: 1, type: "noul", requiresImage: false, labelsFixed: false },
+    () => noul("Does the observed page state match the state described in `claim`?")
+  ),
+  runtimeStateReached: entry(
+    { id: "runtime.state_reached", version: 1, type: "noul", requiresImage: true, labelsFixed: false },
+    () => noul("Does the screenshot show the state described in `claim`?")
+  ),
+  runtimeLocateSubject: entry(
+    { id: "runtime.locate_subject", version: 1, type: "box", requiresImage: true, labelsFixed: false },
+    () => box("Where is the subject of `claim` in the screenshot?")
+  )
 };
 
-// packages/ce/dist/assessment/combine.js
+// packages/ce/src/assessment/combine.ts
 var NON_OBSERVABLE_SURFACES = ["backend_internal", "non_runtime"];
 var NON_OBSERVABLE_SET = new Set(NON_OBSERVABLE_SURFACES);
 
@@ -93011,10 +93044,10 @@ function date4(params) {
   return _coercedDate(ZodDate, params);
 }
 
-// packages/ce/dist/config/duration.js
+// packages/ce/src/config/duration.ts
 var DURATION_PATTERN = /^[1-9]\d*(ms|s|m)$/;
 
-// packages/ce/dist/config/redact-pattern.js
+// packages/ce/src/config/redact-pattern.ts
 var INLINE_FLAG_EXPECTED = "inline flags such as (?i) are not supported in JavaScript; use the form /pattern/i, for example /token\\s*[:=]\\s*\\S+/i";
 var REGEX_COMPILE_EXPECTED = "JavaScript RegExp source or the form /pattern/flags";
 var DELIMITED = /^\/(.*)\/([a-z]*)$/s;
@@ -93056,12 +93089,11 @@ function compileRedactPattern(item) {
   }
 }
 
-// packages/ce/dist/config/schema.js
+// packages/ce/src/config/schema.ts
 var CREDENTIAL_KEY_NAME_PATTERN = /api-?key|secret|token|password/i;
 var SECRETS_IN_ENV_MESSAGE = "secrets belong in environment variables, not in ce.yml";
 function unknownKeyError(issue3) {
-  if (issue3.code !== "unrecognized_keys")
-    return void 0;
+  if (issue3.code !== "unrecognized_keys") return void 0;
   const keys = issue3.keys ?? [];
   const credentialKeys = keys.filter((key) => CREDENTIAL_KEY_NAME_PATTERN.test(key));
   if (credentialKeys.length > 0) {
@@ -93137,7 +93169,7 @@ var ConfigSchema = strict({
   }).optional()
 });
 
-// packages/ce/dist/config/errors.js
+// packages/ce/src/config/errors.ts
 var TYPE_NAMES = {
   object: "mapping",
   record: "mapping",
@@ -93151,8 +93183,7 @@ var TYPE_NAMES = {
 function lookup(input2, path16) {
   let current = input2;
   for (const key of path16) {
-    if (current === null || typeof current !== "object")
-      return void 0;
+    if (current === null || typeof current !== "object") return void 0;
     current = current[key];
   }
   return current;
@@ -93191,14 +93222,16 @@ function fromZodError(error63, source, input2) {
   const out = [];
   const make = (path16, expected) => {
     const entry3 = { path: joinPath(path16), value: lookup(input2, path16), expected };
-    if (source !== void 0)
-      entry3.source = source;
+    if (source !== void 0) entry3.source = source;
     out.push(entry3);
   };
   for (const issue3 of error63.issues) {
     if (issue3.code === "unrecognized_keys") {
       for (const key of issue3.keys) {
-        make([...issue3.path, key], CREDENTIAL_KEY_NAME_PATTERN.test(key) ? SECRETS_IN_ENV_MESSAGE : "a known configuration key");
+        make(
+          [...issue3.path, key],
+          CREDENTIAL_KEY_NAME_PATTERN.test(key) ? SECRETS_IN_ENV_MESSAGE : "a known configuration key"
+        );
       }
       continue;
     }
@@ -93210,7 +93243,7 @@ function sortByPath(errors) {
   return [...errors].sort((a, b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0);
 }
 
-// packages/ce/dist/config/env.js
+// packages/ce/src/config/env.ts
 var FIXTURES_PATH = "runtime.fixtures";
 var FIXTURES_ENV_PREFIX = "CE_RUNTIME_FIXTURES";
 function defOf(node2) {
@@ -93229,14 +93262,11 @@ function unwrap(node2) {
 }
 function leafKind(node2) {
   const def = defOf(node2);
-  if (def.type === "number")
-    return "number";
-  if (def.type === "array")
-    return "list";
+  if (def.type === "number") return "number";
+  if (def.type === "array") return "list";
   if (def.type === "literal") {
     const values = def.values ?? [];
-    if (values.length > 0 && values.every((v) => typeof v === "number"))
-      return "number";
+    if (values.length > 0 && values.every((v) => typeof v === "number")) return "number";
   }
   return "string";
 }
@@ -93247,8 +93277,7 @@ function collect(shape, prefix3, out) {
   for (const [key, child2] of Object.entries(shape)) {
     const segments = [...prefix3, key];
     const path16 = segments.join(".");
-    if (path16 === FIXTURES_PATH)
-      continue;
+    if (path16 === FIXTURES_PATH) continue;
     const inner = unwrap(child2);
     const def = defOf(inner);
     if (def.type === "object") {
@@ -93264,14 +93293,14 @@ function buildEnvKeyEntries(schema) {
   return out;
 }
 var ENTRIES = buildEnvKeyEntries(ConfigSchema);
-var ENV_KEY_MAP = new Map([...ENTRIES].map(([name, entry3]) => [name, entry3.path]));
+var ENV_KEY_MAP = new Map(
+  [...ENTRIES].map(([name, entry3]) => [name, entry3.path])
+);
 function coerce(kind, text) {
-  if (kind === "list")
-    return text.split(",").map((item) => item.trim());
+  if (kind === "list") return text.split(",").map((item) => item.trim());
   if (kind === "number") {
     const trimmed = text.trim();
-    if (trimmed === "")
-      return text;
+    if (trimmed === "") return text;
     const n = Number(trimmed);
     return Number.isFinite(n) ? n : text;
   }
@@ -93295,11 +93324,9 @@ function readEnvSource(env) {
   const values = {};
   const ignoredNames = [];
   for (const name of Object.keys(env).sort()) {
-    if (!name.startsWith("CE_"))
-      continue;
+    if (!name.startsWith("CE_")) continue;
     const text = env[name];
-    if (text === void 0)
-      continue;
+    if (text === void 0) continue;
     if (name.startsWith(FIXTURES_ENV_PREFIX)) {
       ignoredNames.push(name);
       continue;
@@ -93314,7 +93341,7 @@ function readEnvSource(env) {
   return { values, ignoredNames };
 }
 
-// packages/ce/dist/config/file.js
+// packages/ce/src/config/file.ts
 var import_yaml = __toESM(require_dist(), 1);
 import * as fs3 from "node:fs";
 import * as path4 from "node:path";
@@ -93327,8 +93354,7 @@ function isFile(p) {
 }
 function isReadableFile(p) {
   try {
-    if (!fs3.statSync(p).isFile())
-      return false;
+    if (!fs3.statSync(p).isFile()) return false;
     fs3.accessSync(p, fs3.constants.R_OK);
     return true;
   } catch {
@@ -93366,15 +93392,12 @@ function discoverConfigFile(options) {
   const hidden = path4.join(cwd, ".ce.yml");
   const hasPrimary = isFile(primary);
   const hasHidden = isFile(hidden);
-  if (hasPrimary)
-    return { path: primary, ignoredPath: hasHidden ? hidden : null };
-  if (hasHidden)
-    return { path: hidden, ignoredPath: null };
+  if (hasPrimary) return { path: primary, ignoredPath: hasHidden ? hidden : null };
+  if (hasHidden) return { path: hidden, ignoredPath: null };
   return { path: null, ignoredPath: null };
 }
 function readAndParseConfigFile(filePath) {
-  if (filePath === null)
-    return { ok: true, value: {} };
+  if (filePath === null) return { ok: true, value: {} };
   let text;
   try {
     text = fs3.readFileSync(filePath, "utf8");
@@ -93419,8 +93442,7 @@ function readAndParseConfigFile(filePath) {
       }
     };
   }
-  if (parsed === null || parsed === void 0)
-    return { ok: true, value: {} };
+  if (parsed === null || parsed === void 0) return { ok: true, value: {} };
   if (typeof parsed !== "object" || Array.isArray(parsed)) {
     return {
       ok: false,
@@ -93430,7 +93452,7 @@ function readAndParseConfigFile(filePath) {
   return { ok: true, value: parsed };
 }
 
-// packages/ce/dist/config/merge.js
+// packages/ce/src/config/merge.ts
 var WHOLE_LEAF_PATHS = /* @__PURE__ */ new Set([
   "target.routes",
   "context.include",
@@ -93444,8 +93466,7 @@ function isPlainObject2(value) {
 }
 function collectLeaves(node2, prefix3, out) {
   for (const [key, value] of Object.entries(node2)) {
-    if (value === void 0)
-      continue;
+    if (value === void 0) continue;
     const path16 = prefix3 === "" ? key : `${prefix3}.${key}`;
     if (isPlainObject2(value) && !WHOLE_LEAF_PATHS.has(path16)) {
       collectLeaves(value, path16, out);
@@ -93482,8 +93503,7 @@ function mergeSources(input2) {
     const leaves = /* @__PURE__ */ new Map();
     collectLeaves(values, "", leaves);
     for (const [path16, value] of leaves) {
-      if (Object.hasOwn(sources, path16))
-        continue;
+      if (Object.hasOwn(sources, path16)) continue;
       sources[path16] = source;
       setAtPath(merged, path16, structuredClone(value));
     }
@@ -93491,7 +93511,7 @@ function mergeSources(input2) {
   return { merged, sources };
 }
 
-// packages/ce/dist/config/secrets.js
+// packages/ce/src/config/secrets.ts
 var REDACTED = "[REDACTED]";
 var ALWAYS_SECRET = ["OPENROUTER_API_KEY", "TYPESAFE_API_KEY"];
 var API_KEY_NAME_PATTERN = /api[-_]key/i;
@@ -93511,21 +93531,15 @@ function collectSecretValues(env) {
   const found = /* @__PURE__ */ new Set();
   for (const name of ALWAYS_SECRET) {
     const value = env[name]?.trim();
-    if (value)
-      found.add(value);
+    if (value) found.add(value);
   }
   for (const [name, raw] of Object.entries(env)) {
-    if (raw === void 0)
-      continue;
-    if (!CREDENTIAL_KEY_NAME_PATTERN.test(name) && !API_KEY_NAME_PATTERN.test(name))
-      continue;
+    if (raw === void 0) continue;
+    if (!CREDENTIAL_KEY_NAME_PATTERN.test(name) && !API_KEY_NAME_PATTERN.test(name)) continue;
     const value = raw.trim();
-    if (value.length < MIN_PATTERN_VALUE_LENGTH)
-      continue;
-    if (/^\d+$/.test(value))
-      continue;
-    if (DENY_LIST.has(value.toLowerCase()))
-      continue;
+    if (value.length < MIN_PATTERN_VALUE_LENGTH) continue;
+    if (/^\d+$/.test(value)) continue;
+    if (DENY_LIST.has(value.toLowerCase())) continue;
     found.add(value);
   }
   return [...found].sort((a, b) => b.length - a.length);
@@ -93535,21 +93549,24 @@ function escapeRegExp(value) {
 }
 var MAX_PASSES = 32;
 function redactSecretValues(text, secrets) {
-  const ordered = [...new Set(secrets.filter((s) => s.length > 0))].sort((a, b) => b.length - a.length);
-  if (ordered.length === 0)
-    return text;
-  const pattern = new RegExp([escapeRegExp(REDACTED), ...ordered.map(escapeRegExp)].join("|"), "g");
+  const ordered = [...new Set(secrets.filter((s) => s.length > 0))].sort(
+    (a, b) => b.length - a.length
+  );
+  if (ordered.length === 0) return text;
+  const pattern = new RegExp(
+    [escapeRegExp(REDACTED), ...ordered.map(escapeRegExp)].join("|"),
+    "g"
+  );
   let current = text;
   for (let pass = 0; pass < MAX_PASSES; pass++) {
     const next = current.replace(pattern, (match3) => match3 === REDACTED ? match3 : REDACTED);
-    if (next === current)
-      return current;
+    if (next === current) return current;
     current = next;
   }
   return current;
 }
 
-// packages/ce/dist/config/redact.js
+// packages/ce/src/config/redact.ts
 var CREDENTIAL_ENV_BY_PROVIDER = {
   openrouter: "OPENROUTER_API_KEY",
   typesafe: "TYPESAFE_API_KEY"
@@ -93558,11 +93575,9 @@ function collectStringLeaves(value, out) {
   if (typeof value === "string") {
     out.push(value);
   } else if (Array.isArray(value)) {
-    for (const item of value)
-      collectStringLeaves(item, out);
+    for (const item of value) collectStringLeaves(item, out);
   } else if (value !== null && typeof value === "object") {
-    for (const item of Object.values(value))
-      collectStringLeaves(item, out);
+    for (const item of Object.values(value)) collectStringLeaves(item, out);
   }
 }
 function compilePatterns(config2) {
@@ -93587,8 +93602,7 @@ function collectSecrets(config2, env) {
     for (const leaf of leaves) {
       for (const re of patterns) {
         for (const match3 of leaf.matchAll(re)) {
-          if (match3[0] !== "")
-            secrets.add(match3[0]);
+          if (match3[0] !== "") secrets.add(match3[0]);
         }
       }
     }
@@ -93596,10 +93610,8 @@ function collectSecrets(config2, env) {
   return [...secrets].sort((a, b) => b.length - a.length);
 }
 function redactDeep(value, secrets) {
-  if (typeof value === "string")
-    return redactSecretValues(value, secrets);
-  if (Array.isArray(value))
-    return value.map((item) => redactDeep(item, secrets));
+  if (typeof value === "string") return redactSecretValues(value, secrets);
+  if (Array.isArray(value)) return value.map((item) => redactDeep(item, secrets));
   if (value !== null && typeof value === "object") {
     const out = {};
     for (const [key, item] of Object.entries(value)) {
@@ -93619,7 +93631,7 @@ function buildRedactedConfig(config2, meta3, env) {
   };
 }
 
-// packages/ce/dist/config/load.js
+// packages/ce/src/config/load.ts
 function isPlainObject3(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -93639,8 +93651,7 @@ function assignExpanded(target, path16, value) {
   const last = keys[keys.length - 1];
   const existing = cursor[last];
   if (isPlainObject3(existing) && isPlainObject3(value)) {
-    for (const [k, v] of Object.entries(value))
-      assignExpanded(existing, k, v);
+    for (const [k, v] of Object.entries(value)) assignExpanded(existing, k, v);
   } else {
     cursor[last] = value;
   }
@@ -93648,18 +93659,15 @@ function assignExpanded(target, path16, value) {
 function expandFlags(flags) {
   const out = {};
   for (const [key, value] of Object.entries(flags)) {
-    if (value === void 0)
-      continue;
+    if (value === void 0) continue;
     assignExpanded(out, key, isPlainObject3(value) ? structuredClone(value) : value);
   }
   return out;
 }
 function findFixturesFlag(flags) {
   for (const [key, value] of Object.entries(flags)) {
-    if (value === void 0)
-      continue;
-    if (key === "runtime.fixtures" || key.startsWith("runtime.fixtures."))
-      return { value };
+    if (value === void 0) continue;
+    if (key === "runtime.fixtures" || key.startsWith("runtime.fixtures.")) return { value };
     if (key === "runtime" && isPlainObject3(value) && value.fixtures !== void 0) {
       return { value: value.fixtures };
     }
@@ -93670,11 +93678,9 @@ function sourceForPath(path16, sources) {
   let current = path16;
   for (; ; ) {
     const hit = sources[current];
-    if (hit !== void 0)
-      return hit;
+    if (hit !== void 0) return hit;
     const dot = current.lastIndexOf(".");
-    if (dot < 0)
-      return void 0;
+    if (dot < 0) return void 0;
     current = current.slice(0, dot);
   }
 }
@@ -93690,12 +93696,10 @@ function loadConfig(options) {
     };
   }
   const discovered = discoverConfigFile({ cwd, configFlag: configFlagRaw });
-  if ("flagError" in discovered)
-    return { ok: false, errors: [discovered.flagError] };
+  if ("flagError" in discovered) return { ok: false, errors: [discovered.flagError] };
   const read = readAndParseConfigFile(discovered.path);
   if (!read.ok) {
-    if ("fileError" in read)
-      return { ok: false, fileError: read.fileError };
+    if ("fileError" in read) return { ok: false, fileError: read.fileError };
     return { ok: false, errors: sortByPath(read.errors) };
   }
   const fileValues = read.value;
@@ -93723,11 +93727,9 @@ function loadConfig(options) {
   ];
   for (const [source, fragment] of fragments) {
     const result = ConfigSchema.safeParse(fragment);
-    if (!result.success)
-      fragmentErrors.push(...fromZodError(result.error, source, fragment));
+    if (!result.success) fragmentErrors.push(...fromZodError(result.error, source, fragment));
   }
-  if (fragmentErrors.length > 0)
-    return { ok: false, errors: sortByPath(fragmentErrors) };
+  if (fragmentErrors.length > 0) return { ok: false, errors: sortByPath(fragmentErrors) };
   const { merged, sources } = mergeSources({
     flags: schemaFlags,
     envValues,
@@ -93753,7 +93755,7 @@ function loadConfig(options) {
   return { ok: true, config: config2, meta: meta3, redacted };
 }
 
-// packages/ce/dist/context/redact.js
+// packages/ce/src/context/redact.ts
 var BOUNDARY = "(?<![A-Za-z0-9_-])";
 var BUILT_IN_PATTERNS = [
   // Authorization bearer / basic header value.
@@ -93771,7 +93773,7 @@ var BUILT_IN_PATTERNS = [
   /[A-Za-z][A-Za-z0-9+.-]*:\/\/[^\s:/@]+:(?<secret>[^\s@/]+)@/gd
 ];
 
-// packages/ce/dist/context/providers/git.js
+// packages/ce/src/context/providers/git.ts
 var MAX_BUFFER = 16 * 1024 * 1024;
 var RAW_PATCH_LIMIT = 1024 * 1024;
 
@@ -98720,7 +98722,7 @@ var XMLValidator = {
   validate: validate2
 };
 
-// packages/ce/dist/context/providers/junit.js
+// packages/ce/src/context/providers/junit.ts
 var parser = new XMLParser({
   processEntities: false,
   ignoreAttributes: false,
@@ -98728,14 +98730,14 @@ var parser = new XMLParser({
   preserveOrder: true
 });
 
-// packages/ce/dist/context/resolve.js
+// packages/ce/src/context/resolve.ts
 var ZERO_SHA = "0".repeat(40);
 
-// packages/ce/dist/outcome/types.js
+// packages/ce/src/outcome/types.ts
 var OUTCOMES = ["SKIPPED", "EVIDENCED", "UNSUPPORTED", "ERROR"];
 var V0_SUPPORTED_SURFACES = ["browser_ui"];
 
-// packages/ce/dist/evidence/schema.js
+// packages/ce/src/evidence/schema.ts
 var SCHEMA_VERSION = "1";
 var [SKIPPED_OUTCOME, EVIDENCED_OUTCOME, UNSUPPORTED_OUTCOME, ERROR_OUTCOME] = OUTCOMES;
 var BundleRelativePath = external_exports.string().regex(/^(?!\/)(?!(?:.*\/)?\.\.(?:\/|$))[^\n]+$/);
@@ -98794,17 +98796,21 @@ var AssessmentReportRecord = external_exports.strictObject({
   decidedBy: external_exports.enum(["classifier", "policy"]),
   surface: SurfaceSchema,
   claimStatus: external_exports.enum(["identified", "not_identified"]),
-  perClaimProbabilities: external_exports.array(external_exports.strictObject({
-    claimId: external_exports.string(),
-    runtimeObservable: external_exports.number(),
-    checksAdequate: external_exports.number()
-  })),
-  questions: external_exports.array(external_exports.strictObject({
-    idVersion: external_exports.string(),
-    subjectId: external_exports.string(),
-    probability: external_exports.number().nullable(),
-    probabilities: external_exports.record(external_exports.string(), external_exports.number()).nullable()
-  })),
+  perClaimProbabilities: external_exports.array(
+    external_exports.strictObject({
+      claimId: external_exports.string(),
+      runtimeObservable: external_exports.number(),
+      checksAdequate: external_exports.number()
+    })
+  ),
+  questions: external_exports.array(
+    external_exports.strictObject({
+      idVersion: external_exports.string(),
+      subjectId: external_exports.string(),
+      probability: external_exports.number().nullable(),
+      probabilities: external_exports.record(external_exports.string(), external_exports.number()).nullable()
+    })
+  ),
   settings: external_exports.strictObject({
     claimThreshold: external_exports.number(),
     observableThreshold: external_exports.number(),
@@ -98839,51 +98845,61 @@ var ContextRecord = external_exports.strictObject({
     description: external_exports.string().optional(),
     base: external_exports.string().optional(),
     head: external_exports.string().optional(),
-    files: external_exports.array(external_exports.strictObject({
-      path: external_exports.string(),
-      oldPath: external_exports.string().optional(),
-      status: external_exports.enum(["added", "modified", "deleted", "renamed"]),
-      provenance: ProvenanceRecord
-    })),
+    files: external_exports.array(
+      external_exports.strictObject({
+        path: external_exports.string(),
+        oldPath: external_exports.string().optional(),
+        status: external_exports.enum(["added", "modified", "deleted", "renamed"]),
+        provenance: ProvenanceRecord
+      })
+    ),
     commits: external_exports.number().int().nonnegative(),
     claims: external_exports.array(external_exports.strictObject({ text: external_exports.string(), provenance: ProvenanceRecord })),
     provenance: external_exports.array(ProvenanceRecord)
   }),
-  candidates: external_exports.array(external_exports.strictObject({ id: external_exports.string(), text: external_exports.string(), provenance: ProvenanceRecord })),
-  checks: external_exports.array(external_exports.strictObject({
-    name: external_exports.string(),
-    status: external_exports.enum(["passed", "failed", "skipped"]),
-    covers: external_exports.array(external_exports.string()).optional(),
-    provenance: ProvenanceRecord
-  })),
-  providers: external_exports.array(external_exports.strictObject({
-    name: external_exports.enum(["git", "github", "cli", "junit"]),
-    status: external_exports.enum(["used", "unavailable"]),
-    reason: external_exports.enum([
-      "not-a-repository",
-      "base-unresolved",
-      "merge-base-missing",
-      "git-failed",
-      "head-missing",
-      "source-absent",
-      "source-unreadable",
-      "source-malformed",
-      "no-input",
-      "not-configured"
-    ]).optional()
-  })),
-  truncated: external_exports.array(external_exports.strictObject({
-    file: external_exports.string(),
-    reason: external_exports.enum([
-      "dropped",
-      "truncated",
-      "env-file",
-      "sensitive-file",
-      "binary",
-      "candidate-cap",
-      "check-cap"
-    ])
-  })),
+  candidates: external_exports.array(
+    external_exports.strictObject({ id: external_exports.string(), text: external_exports.string(), provenance: ProvenanceRecord })
+  ),
+  checks: external_exports.array(
+    external_exports.strictObject({
+      name: external_exports.string(),
+      status: external_exports.enum(["passed", "failed", "skipped"]),
+      covers: external_exports.array(external_exports.string()).optional(),
+      provenance: ProvenanceRecord
+    })
+  ),
+  providers: external_exports.array(
+    external_exports.strictObject({
+      name: external_exports.enum(["git", "github", "cli", "junit"]),
+      status: external_exports.enum(["used", "unavailable"]),
+      reason: external_exports.enum([
+        "not-a-repository",
+        "base-unresolved",
+        "merge-base-missing",
+        "git-failed",
+        "head-missing",
+        "source-absent",
+        "source-unreadable",
+        "source-malformed",
+        "no-input",
+        "not-configured"
+      ]).optional()
+    })
+  ),
+  truncated: external_exports.array(
+    external_exports.strictObject({
+      file: external_exports.string(),
+      reason: external_exports.enum([
+        "dropped",
+        "truncated",
+        "env-file",
+        "sensitive-file",
+        "binary",
+        "candidate-cap",
+        "check-cap"
+      ])
+    })
+  ),
   redactions: external_exports.array(external_exports.strictObject({ file: external_exports.string(), count: external_exports.number().int().nonnegative() }))
 });
 var ErrorField = external_exports.strictObject({
@@ -98970,7 +98986,7 @@ var RunRecordSchema = external_exports.discriminatedUnion("outcome", [
   ErrorVariant
 ]);
 
-// packages/ce/dist/jev/log.js
+// packages/ce/src/jev/log.ts
 var Stage = external_exports.enum(["config", "context", "assessment", "runtime", "evidence"]);
 var Probability2 = external_exports.number().min(0).max(1);
 var TokenCount = external_exports.number().int().nonnegative().nullable();
@@ -99047,7 +99063,7 @@ var CallLogEntrySchema = external_exports.strictObject({
   httpStatus: external_exports.number().int().optional()
 });
 
-// packages/ce/dist/runtime/observe.js
+// packages/ce/src/runtime/observe.ts
 var SNAPSHOT_SCRIPT = String.raw`(() => {
   const doc = document;
   const ROLES = new Set(['button','link','menuitem','option','tab','combobox','checkbox','radio','switch','textbox']);
@@ -99168,10 +99184,10 @@ var SNAPSHOT_SCRIPT = String.raw`(() => {
   return out;
 })()`;
 
-// packages/ce/dist/runtime/loop.js
+// packages/ce/src/runtime/loop.ts
 var STOPPED = Symbol("loop-stopped");
 
-// packages/ce/dist/run/capabilities.js
+// packages/ce/src/run/capabilities.ts
 function createCapabilityRegistry(entries) {
   const names = /* @__PURE__ */ new Set();
   const supported = V0_SUPPORTED_SURFACES;
@@ -99191,7 +99207,7 @@ function createCapabilityRegistry(entries) {
 }
 var EMPTY_REGISTRY = createCapabilityRegistry([]);
 
-// packages/ce/dist/evidence/summary.js
+// packages/ce/src/evidence/summary.ts
 var MAX_LINE = 200;
 var ELLIPSIS = "\u2026";
 function oneLine(text) {
@@ -99202,8 +99218,7 @@ function cpLength(text) {
 }
 function fit(prefix3, text, suffix) {
   const full = `${prefix3}${text}${suffix}`;
-  if (cpLength(full) <= MAX_LINE)
-    return full;
+  if (cpLength(full) <= MAX_LINE) return full;
   const room = MAX_LINE - cpLength(prefix3) - cpLength(suffix) - cpLength(ELLIPSIS);
   const kept = Array.from(text).slice(0, Math.max(0, room)).join("");
   return `${prefix3}${kept}${ELLIPSIS}${suffix}`;
@@ -99226,7 +99241,7 @@ function rationaleLine(f) {
   return clamp(`Why: ${text}`);
 }
 
-// packages/ce/dist/evidence/comment.js
+// packages/ce/src/evidence/comment.ts
 var [SKIPPED_O, EVIDENCED_O, UNSUPPORTED_O, ERROR_O] = OUTCOMES;
 var COMMENT_MARKER = "<!-- ce:report -->";
 var MAX_BODY = 6e4;
@@ -99241,16 +99256,14 @@ function cpLength2(text) {
 }
 function cutCodePoints(text, max) {
   const cps = Array.from(text);
-  if (cps.length <= max)
-    return text;
+  if (cps.length <= max) return text;
   return `${cps.slice(0, Math.max(0, max - 1)).join("")}${ELLIPSIS2}`;
 }
 function stripComments(text) {
   let current = text;
   for (; ; ) {
     const next = current.split(COMMENT_MARKER).join("").split("<!--").join("");
-    if (next === current)
-      return current;
+    if (next === current) return current;
     current = next;
   }
 }
@@ -99287,8 +99300,7 @@ function isRunRecord(record2) {
 }
 function claimLines(record2, secrets) {
   const total = record2.claims.length;
-  if (total === 0)
-    return ["No claim was identified."];
+  if (total === 0) return ["No claim was identified."];
   const lines = ["Claims:"];
   for (const c of record2.claims.slice(0, MAX_CLAIMS)) {
     const label = c.probability === null ? "" : ` (signal: ${c.probability.toFixed(2)})`;
@@ -99325,10 +99337,8 @@ function rationale(record2, secrets) {
 }
 function artifactLine(link, secrets) {
   const url4 = link.trim();
-  if (url4 === "" || cpLength2(url4) > MAX_LINK_CP)
-    return "Artifact: the evidence artifact is unavailable.";
-  if (SAFE_URL.test(url4) && redactSecretValues(url4, secrets) === url4)
-    return `Artifact: ${url4}`;
+  if (url4 === "" || cpLength2(url4) > MAX_LINK_CP) return "Artifact: the evidence artifact is unavailable.";
+  if (SAFE_URL.test(url4) && redactSecretValues(url4, secrets) === url4) return `Artifact: ${url4}`;
   return `Artifact: ${inert(url4, secrets)}`;
 }
 function assemble(head, claims, more, tail) {
@@ -99367,8 +99377,7 @@ ${rest}`;
 }
 function stripCommentMarker(body3) {
   const lines = body3.split("\n");
-  if (lines[0] === COMMENT_MARKER)
-    lines.shift();
+  if (lines[0] === COMMENT_MARKER) lines.shift();
   return lines.join("\n");
 }
 
