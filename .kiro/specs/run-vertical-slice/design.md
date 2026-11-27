@@ -11,7 +11,7 @@ Behavior of the slice:
 - No claim needs runtime evidence: `SKIPPED`.
 - Evidence is required and no capability is registered for the dominant Surface: `UNSUPPORTED` with reason `surface-unsupported`. The registry is empty in this slice, so this includes `browser_ui`. The slice never produces `EVIDENCED` by itself.
 - A stage throws: `ERROR` with the stage named.
-- Configuration or credentials are invalid: a separate `config-failure` result. No Outcome exists for a run that never started a stage.
+- Configuration or credentials are invalid: `ERROR` with `errorStage` `config`, resolved through `resolveOutcome` (SPEC 7.1, amended after review of PR #43).
 
 ### Design decisions
 
@@ -19,7 +19,7 @@ Behavior of the slice:
 | --- | --- | --- |
 | Where the Outcome is decided | Only `resolveOutcome` in `outcome/resolve.ts`, called exactly once per resolved run through `resolveAfterAssessment` | Steering rule; architecture rule (d) forbids Outcome literals elsewhere |
 | How an empty capability set yields `UNSUPPORTED` | Pass `supportedSurfaces` = union of registered capability Surfaces (empty now) | `resolveOutcome` defaults to `['browser_ui']` and would return `ERROR/no-observation` for a required browser run with no runtime result (I1) |
-| Config failure representation | Second `RunResult` variant `config-failure` | `Stage` has no value for config, and `resolveOutcome({})` reports the misleading `assessment-missing` (I3). `errors.ts` and `outcome/` stay unchanged |
+| Config failure representation | Resolved_Run through `resolveOutcome` with `StageError('config', cause)`; `Stage` gains `'config'` | SPEC 7.1: every run resolves to one outcome. Replaces the earlier `config-failure` variant (I3, amended). The call log schema in `jev/log.ts` accepts `config` too |
 | Async hook vs pure resolver | Pipeline calls `selectCapability`, awaits the hook, then calls pure `resolveAfterAssessment` once | The resolver stays pure and testable by fast-check (I6) |
 | Capability registry | Branded type returned only by `createCapabilityRegistry` | A raw array cannot bypass duplicate-name and Surface validation |
 | Command extraction | `runRunCommand(argv, deps)` in `run/command.ts`, modeled on `runEvalCommand` | `main` in `cli.ts` is not exported and runs at module load (I4) |
@@ -48,7 +48,7 @@ flowchart TD
     CMD -->|parseRunArgs| ARGS["flags.config, cliOptions.base, cliOptions.claim"]
     CMD --> RUN["run/pipeline.ts: run(options)"]
     RUN --> CFG["loadConfig"]
-    CFG -->|failure| RPT["reportConfigFailure"] --> CF["ConfigFailureRun (exitCode 1)"]
+    CFG -->|failure| RPT["reportConfigFailure"] --> CF["Resolved_Run ERROR, errorStage config (exitCode 1)"]
     CFG -->|ok| GW{"gateway supplied?"}
     GW -->|no| CRED["requireJevCredentials, createGateway + createJsonlCallLog(run-iso/jev-calls.jsonl)"]
     CRED -->|failure| RPT
@@ -81,7 +81,7 @@ sequenceDiagram
     C->>P: run({cwd, env, flags, cliOptions, createGateway, ...})
     P->>S: loadConfig
     alt config failure
-        P-->>C: {kind:'config-failure', exitCode:1}
+        P-->>C: {kind:'resolved', outcome:'ERROR', errorStage:'config', exitCode:1}
     end
     P->>S: requireJevCredentials + createGateway (only if no gateway)
     P->>S: resolveContext (sync)
@@ -106,7 +106,7 @@ packages/ce/src/
   cli.ts                'run' case calls runRunCommand
   run/
     index.ts            public surface of run/
-    types.ts            RunOptions, RunResult, ResolvedRun, ConfigFailureRun, RuntimeHook, RuntimeHookInput
+    types.ts            RunOptions, RunResult, ResolvedRun, RuntimeHook, RuntimeHookInput
     capabilities.ts     createCapabilityRegistry, selectCapability, supportedSurfaces, EMPTY_REGISTRY
     resolve.ts          resolveAfterAssessment, wrapStage
     pipeline.ts         run(), withDefaults, runDirName
@@ -181,12 +181,7 @@ export interface ResolvedRun extends Resolution {
   capability?: string;
 }
 
-export interface ConfigFailureRun {
-  kind: 'config-failure';
-  exitCode: 1;
-}
-
-export type RunResult = ResolvedRun | ConfigFailureRun;
+export type RunResult = ResolvedRun;
 ```
 
 `ResolvedRun extends Resolution`, so it is assignable to `{ outcome: ExecutionOutcome }` after narrowing on `kind` (Requirement 9.5). `RunResult` replaces the old `{ outcome }` interface in `index.ts` (Requirement 9.7). `CreateGateway` has the same shape as `CreateEvalGateway` in `eval/command.ts`, which `createJevGateway` satisfies.
@@ -238,10 +233,10 @@ export function runDirName(date: Date): string;       // `run-<iso with ':' and 
 Algorithm of `run(options)`:
 
 1. `const o = withDefaults(options)`.
-2. `loaded = loadConfig({ cwd: o.cwd, flags: o.flags, env: o.env })`. On failure: `return { kind: 'config-failure', exitCode: reportConfigFailure(loaded, collectSecretValues(o.env), o.stderr) }`.
+2. `loaded = loadConfig({ cwd: o.cwd, flags: o.flags, env: o.env })`. On failure: report through `reportConfigFailure`, then return the Resolved_Run for `StageError('config', loaded)` (amended).
 3. Gateway:
    - If `o.gateway` is set, use it, set no `runDir`, create no call log (Requirement 11.3).
-   - Otherwise `credentials = requireJevCredentials(loaded, o.env)`. On failure, report and return the config-failure result. Then `runDir = path.resolve(o.cwd, loaded.config.output?.dir ?? '.ce/runs', runDirName(o.now()))`, and `created = o.createGateway(loaded, o.env, { callLog: createJsonlCallLog(path.join(runDir, 'jev-calls.jsonl')) })`. On failure, report `{ ok: false, errors: created.errors }` and return the config-failure result.
+   - Otherwise `credentials = requireJevCredentials(loaded, o.env)`. On failure, report and return the `config` Resolved_Run. Then `runDir = path.resolve(o.cwd, loaded.config.output?.dir ?? '.ce/runs', runDirName(o.now()))`, and `created = o.createGateway(loaded, o.env, { callLog: createJsonlCallLog(path.join(runDir, 'jev-calls.jsonl')) })`. On failure, report `{ ok: false, errors: created.errors }` and return the config-failure result.
 4. Context: `try { context = resolveContext({ config, cliOptions, env, cwd, providers: o.contextProviders, exec: o.exec }) } catch (e) { return finish({ error: wrapStage('context', e) }) }`. Optional fields are spread only when defined, because the repository uses exact optional property types.
 5. Assessment: `try { ({ claims, assessment } = await assess(context, config, gateway)) } catch (e) { return finish({ error: wrapStage('assessment', e) }) }`.
 6. `entry = selectCapability(assessment, o.capabilities)`.
@@ -277,7 +272,7 @@ export async function runRunCommand(argv: readonly string[], deps: RunCommandDep
 1. `parseRunArgs(argv)`; on `null`, write `USAGE` to `deps.stderr`, return 1, never call `run()`.
 2. Build `flags` (`config`) and `cliOptions` (`base`, `claim`) only from present values.
 3. `try { result = await run({ cwd, env, flags, cliOptions, createGateway, now, stderr, contextProviders, exec }) }`. On a thrown error, write `Outcome: ERROR` to stdout and the constructor name of the error to stderr, return 1 (Requirement 10.10). The constructor name only, because the message could carry a secret.
-4. `config-failure`: print nothing more, return `result.exitCode`.
+4. Config failure: handled like any `ERROR` (`Outcome: ERROR`, then the Stage_Error message on stderr).
 5. `resolved`: write `Outcome: ${result.outcome}\n` to stdout, then:
    - reason `surface-unsupported`: `Reason: surface-unsupported (surface: <surface>)`. If the Surface is in `V0_SUPPORTED_SURFACES`, add `No capability is registered for <surface> yet.` (Requirement 10.4, 10.5).
    - `error` present: write `error.message` to stderr (Requirement 10.6).
@@ -314,7 +309,7 @@ The module comment describes the implemented slice and names the Runtime_Hook as
 | Hook threw | `ERROR` | `stage-error` | `errorStage: 'runtime'`, `error`, `surface`, `capability`, `exitCode: 1` |
 | Fake capability, no observation | `ERROR` | `no-observation` | `surface`, `capability`, `exitCode: 1` |
 | Fake capability, valid evidence | `EVIDENCED` | `evidence-collected` | `finalState`, `surface`, `capability`, `exitCode: 0` |
-| Config or credential failure | none | none | `kind: 'config-failure'`, `exitCode: 1` |
+| Config or credential failure | none | none | `ERROR`, `errorStage` `config`, `exitCode: 1` |
 
 Run directory: `<cwd>/<output.dir ?? '.ce/runs'>/run-<iso>/jev-calls.jsonl`, where `<iso>` is `now().toISOString()` with every `:` and `.` replaced by `-`. The slice writes this one file through `createJsonlCallLog` and writes no `run.json` or `report.html` (Requirement 11.4).
 
@@ -382,7 +377,7 @@ For any valid `Date`, `runDirName(date)` starts with `run-`, contains no `:` and
 
 | Failure | Where caught | Result |
 | --- | --- | --- |
-| Invalid config, unreadable config file | `loadConfig` returns `{ ok: false }` | `reportConfigFailure` writes to `stderr`, `ConfigFailureRun`, exit 1. No context, Jev or outcome call |
+| Invalid config, unreadable config file | `loadConfig` returns `{ ok: false }` | `reportConfigFailure` writes to `stderr`, then `ERROR` with `errorStage` `config`, exit 1. No context or Jev call |
 | Missing API key for the selected provider | `requireJevCredentials` (skipped when `gateway` is supplied) | Same as above |
 | Invalid model for the provider | `createGateway` returns `{ ok: false, errors }` | Same as above |
 | `resolveContext` throws | `try/catch` in `run()` | `wrapStage('context', e)`, `ResolvedRun` `ERROR`, exit 1 (default `fail-on`) |
@@ -393,7 +388,7 @@ For any valid `Date`, `runDirName(date)` starts with `run-`, contains no `:` and
 | Bad CLI arguments | `parseRunArgs` returns `null` | Usage on stderr, exit 1, `run()` not called |
 | Invalid capability registry | `createCapabilityRegistry` throws before any stage runs | Developer error, thrown from the caller's setup code |
 
-Secrets: `StageError.message` holds the stage and the cause's constructor name only. `run()` and `runRunCommand` print `error.message`, never `error.cause`. The `config-failure` report goes through the existing redacting `reportConfigFailure`.
+Secrets: `StageError.message` holds the stage and the cause's constructor name only. `run()` and `runRunCommand` print `error.message`, never `error.cause`. The config failure report goes through the existing redacting `reportConfigFailure`.
 
 ## Testing Strategy
 

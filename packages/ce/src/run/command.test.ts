@@ -214,12 +214,12 @@ describe('runRunCommand arguments', () => {
 });
 
 describe('runRunCommand failures', () => {
-  it('reports a config failure on stderr, exits 1 and does not resolve a context', async () => {
+  it('reports a config failure on stderr, prints Outcome: ERROR, exits 1 and does not resolve a context', async () => {
     const d = deps({ env: {} });
     const code = await runRunCommand([], d);
     expect(code).toBe(1);
     expect(stderrText()).toContain('OPENROUTER_API_KEY');
-    expect(stdoutText()).not.toContain('Outcome:');
+    expect(stdoutText()).toContain('Outcome: ERROR');
     expect(contextCalls).toBe(0);
     expect(exec).not.toHaveBeenCalled();
     expect(d.createGateway).not.toHaveBeenCalled();

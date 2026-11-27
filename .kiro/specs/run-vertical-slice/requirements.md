@@ -29,7 +29,7 @@ This slice stops before any runtime. After the Assessment, a run resolves to `SK
 - I1. Because `resolveOutcome` returns `ERROR` for a required, supported surface with no runtime result (F6), the slice cannot pass the default `supportedSurfaces` while no capability exists. The slice passes the set of surfaces for which a capability is registered, which is empty until #9 and #10 land. A required Assessment then resolves to `UNSUPPORTED` for every surface, including `browser_ui`, and the outcome is never faked as `EVIDENCED`. This keeps the outcome decision inside `outcome/resolve.ts`.
 - I2. The registry of available capabilities is the hook point that #9 and #10 will fill in. Registering a browser capability changes which surfaces `resolveOutcome` treats as supported and enables the runtime stage, without editing the callers of `loadConfig`, `resolveContext`, `assess` or `resolveOutcome`. The Runtime_Hook takes one input object (`RuntimeHookInput`), so that #10 can add fields without a breaking signature change.
 - I6. The Runtime_Hook is asynchronous, so the pure Post_Assessment_Resolver cannot call it. The pipeline therefore selects the capability with the pure `selectCapability`, awaits the Runtime_Hook, and then calls the Post_Assessment_Resolver once with the `RuntimeResult` or with the runtime error. This keeps exactly one `resolveOutcome` call per run.
-- I3. A config failure has no `Stage` (F8) and no Assessment, and `resolveOutcome({})` would report the misleading reason `assessment-missing` (F6). The slice therefore does not route a config failure through `resolveOutcome`. `run()` returns a second result variant for it. `errors.ts` and `outcome/resolve.ts` stay unchanged.
+- I3. (Amended after review of PR #43.) SPEC 7.1 requires every run to resolve to exactly one outcome, so a config failure is an `ERROR`. `Stage` gains the value `'config'`, and `run()` resolves a config, credential or gateway-creation failure through `resolveOutcome` with a `StageError('config', cause)`. The result is a Resolved_Run with `outcome` `ERROR`, `reason` `stage-error`, `errorStage` `config` and `exitCode` from `exitCodeFor` with the default `fail-on` (the config is not available), which is `1`. The failure report still goes to `stderr` through `reportConfigFailure`. There is no separate `config-failure` variant.
 - I4. Because `main` cannot be called by a test (F2) and a live git diff defeats recorded answers (F11), the `run` command is extracted as `runRunCommand(argv, deps)` after the pattern of `runEvalCommand` (F12). Tests call it with a fixed context through `contextProviders` and with recorded answers for that context. The real `ce run` on `examples/demo-app` needs an API key and stays a manual verification step.
 - I5. The "Run_Pipeline" is limited to `packages/ce/src/index.ts` and `packages/ce/src/run/`. The git process and the `process.env` merge of F4 belong to the Context_Resolver, not to the Run_Pipeline.
 
@@ -49,8 +49,8 @@ This slice stops before any runtime. After the Assessment, a run resolves to `SK
 - **Capability_Registry**: The Run_Pipeline's validated list of runtime capabilities that are available, each declaring the Surfaces it can observe. It is a branded type that only `createCapabilityRegistry(entries)` returns, so that a raw array cannot bypass validation. It is empty in this feature.
 - **Runtime_Hook**: The single, named place in the Run_Pipeline between the Assessment and the Outcome_Resolver where the capability runtime of #9 and #10 plugs in.
 - **Resolved_Run**: The variant of Run_Result that carries a `Resolution`. Its `kind` is `resolved`.
-- **Config_Failure_Run**: The variant of Run_Result for a failure of the Config_Loader or of Jev_Gateway creation. Its `kind` is `config-failure`.
-- **Run_Result**: The value `run()` returns. It is the union of Resolved_Run and Config_Failure_Run.
+- **Config_Failure_Run**: Removed. A config failure is a Resolved_Run with `errorStage` `config` (I3).
+- **Run_Result**: The value `run()` returns. It is the Resolved_Run.
 - **CLI**: The `ce` command in `packages/ce/src/cli.ts`.
 - **Outcome**: One of `SKIPPED`, `EVIDENCED`, `UNSUPPORTED`, `ERROR` (SPEC section 7.1).
 - **Surface**: The `Surface` type of `assessment/types.ts`.
@@ -124,7 +124,7 @@ The CLI output for `UNSUPPORTED` is specified once, in Requirement 10 criterion 
 2. THE Run_Pipeline SHALL NOT assign the literals `SKIPPED`, `EVIDENCED`, `UNSUPPORTED` or `ERROR` to an Outcome outside `outcome/resolve.ts`.
 3. THE Run_Pipeline SHALL NOT use a model answer, a probability or a Jev response to choose the Outcome, other than through the `Assessment` fields that `resolveOutcome` reads.
 4. WHEN the Run_Pipeline returns a Resolved_Run, THE Run_Pipeline SHALL have called `resolveOutcome` exactly once.
-5. WHEN the Run_Pipeline returns a Config_Failure_Run, THE Run_Pipeline SHALL NOT have called `resolveOutcome`, because no Outcome exists for a run that never started a stage.
+5. WHEN a config, credential or gateway-creation failure occurs, THE Run_Pipeline SHALL resolve the run through `resolveOutcome` exactly once with a `StageError` whose stage is `config`, and SHALL NOT call the Context_Resolver, the Assessor or a capability.
 
 ### Requirement 6: Stage failures resolve to ERROR
 
@@ -146,12 +146,12 @@ The CLI output for `UNSUPPORTED` is specified once, in Requirement 10 criterion 
 
 #### Acceptance Criteria
 
-1. IF `loadConfig` returns a failure, THEN THE Run_Pipeline SHALL report it through `reportConfigFailure` with the secrets of `collectSecretValues(env)` and the `stderr` option, and SHALL return a Config_Failure_Run.
-2. IF `requireJevCredentials` returns a failure and no `gateway` was supplied, THEN THE Run_Pipeline SHALL report it through `reportConfigFailure` and return a Config_Failure_Run.
-3. IF `createGateway` returns a failure, THEN THE Run_Pipeline SHALL report it through `reportConfigFailure` and return a Config_Failure_Run.
+1. IF `loadConfig` returns a failure, THEN THE Run_Pipeline SHALL report it through `reportConfigFailure` with the secrets of `collectSecretValues(env)` and the `stderr` option, and SHALL return a Resolved_Run for the `config` stage.
+2. IF `requireJevCredentials` returns a failure and no `gateway` was supplied, THEN THE Run_Pipeline SHALL report it through `reportConfigFailure` and return a Resolved_Run for the `config` stage.
+3. IF `createGateway` returns a failure, THEN THE Run_Pipeline SHALL report it through `reportConfigFailure` and return a Resolved_Run for the `config` stage.
 4. IF a configuration failure ends the run, THEN THE Run_Pipeline SHALL NOT call the Context_Resolver, the Assessor, the Outcome_Resolver or any Jev request.
 5. THE Run_Pipeline SHALL NOT write an API key or any secret value to the Run_Result, to stdout or to stderr.
-6. THE Config_Failure_Run SHALL contain `kind` equal to `config-failure` and `exitCode` equal to the value that `reportConfigFailure` returned (the literal `1`), and SHALL contain no `outcome` field.
+6. WHEN a config failure occurs, THE Resolved_Run SHALL contain `outcome` `ERROR`, `reason` `stage-error`, `errorStage` `config` and `exitCode` `1`.
 
 ### Requirement 8: Runtime hook point and Capability_Registry
 
@@ -198,7 +198,7 @@ The CLI output for `UNSUPPORTED` is specified once, in Requirement 10 criterion 
 5. WHEN the reason is `surface-unsupported` and the Surface is a member of `V0_SUPPORTED_SURFACES`, THE Run_Command SHALL print a further line that states that no capability is registered for the Surface yet.
 6. WHEN the Resolved_Run has `outcome` `ERROR` and carries a Stage_Error, THE Run_Command SHALL print the Stage_Error message to stderr.
 7. WHEN the Resolved_Run has `outcome` `ERROR` and carries no Stage_Error, THE Run_Command SHALL print the Resolution `reason` (for example `no-observation` or `evidence-incomplete`) and the Surface, where present, to stderr.
-8. WHEN the Run_Result is a Config_Failure_Run, THE Run_Command SHALL print nothing further to stdout, because `reportConfigFailure` already wrote to stderr, and SHALL return `1`.
+8. WHEN the Run_Result has `errorStage` `config`, THE Run_Command SHALL print `Outcome: ERROR` on stdout, write the Stage_Error message after the report that `reportConfigFailure` already wrote to stderr, and SHALL return `1`.
 9. THE Run_Command SHALL return the `exitCode` of the Run_Result and SHALL NOT decide an Outcome or an exit code itself.
 10. IF `run()` throws an unexpected error, THEN THE Run_Command SHALL print `Outcome: ERROR` to stdout, as in criterion 4, print the constructor name of the error to stderr, and return `1`.
 11. THE Run_Command SHALL parse `--config <path>`, `--base <ref>` and `--claim <text>`, in the forms `--name value` and `--name=value`, with the rules of `parseArgs` in `eval/command.ts`, except that `--claim` MAY be repeated.
@@ -243,7 +243,7 @@ The CLI output for `UNSUPPORTED` is specified once, in Requirement 10 criterion 
 5. THE test suite SHALL include a test that asserts the Runtime_Hook is not called for `SKIPPED` and for `UNSUPPORTED`.
 6. THE test suite SHALL include Run_Command tests that call `runRunCommand` with a temporary `cwd`, an `env` that holds a dummy non-empty API key for the selected provider (because `requireJevCredentials` runs before `createGateway`), a `contextProviders` value whose `cli`, `github`, `git` and `junit` providers return fixed provider results, an `exec` stub that answers the `commitExists` probe without running git, a `createGateway` that returns a `FakeJevGateway` holding recorded answers for the context that results, and a fixed `now`, and assert that the printed outcome is `SKIPPED` in one test and `UNSUPPORTED` in another, with the returned exit code and the hint line of Requirement 10 criterion 5 for `UNSUPPORTED`.
 7. THE test suite SHALL include Run_Command tests for each argument rule of Requirement 10 criteria 11 to 15, including the `--claim=x` form, a repeated `--claim`, an unknown flag and an empty value.
-8. THE test suite SHALL include a Run_Command test for a Config_Failure_Run that asserts exit code `1`, a report on stderr and no call to the Context_Resolver.
+8. THE test suite SHALL include a Run_Command test for a config failure that asserts `Outcome: ERROR`, exit code `1`, a report on stderr and no call to the Context_Resolver.
 9. THE test suite SHALL run without a real `OPENROUTER_API_KEY` or `TYPESAFE_API_KEY` in `process.env`, without a network connection, without a browser, without a live git repository and without starting the git binary.
 10. THE test suite SHALL include a test that asserts the `TODO(Milestone 1)` text is absent from `packages/ce/src/index.ts`.
 11. THE test suite SHALL extend the existing `outcome/architecture.test.ts` with an import rule only: assertions that the scanned set contains `index.ts` and the files of `run/`, that these files do not import `@typesafe-ai/sdk`, do not call `fetch`, and do not import `jev/catalog`. Rules (a), (b) and (c) of that file SHALL stay scoped to `outcome/`, and in particular rule (b) SHALL NOT be applied to `index.ts` or `run/`, because the defaults of Requirement 2 criterion 2 legitimately use `process.env` and `Date`. The test suite SHALL rely on the existing rule (d) for the Outcome literals, without a duplicate rule.

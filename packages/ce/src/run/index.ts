@@ -14,7 +14,6 @@ export type { ResolveAfterAssessmentInput } from './resolve.js';
 export type {
   CapabilityEntry,
   CapabilityRegistry,
-  ConfigFailureRun,
   CreateGateway,
   ResolvedRun,
   RunOptions,

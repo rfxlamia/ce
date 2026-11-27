@@ -355,37 +355,37 @@ describe('run() stage order and resolveOutcome', () => {
 
 describe('run() config failures', () => {
   function expectNoStages(): void {
-    expect(order).toEqual([]);
+    expect(order).toEqual(['resolve']);
     expect(asks).toBe(0);
     expect(exec).not.toHaveBeenCalled();
-    expect(resolveOutcome).not.toHaveBeenCalled();
+    expect(resolveOutcome).toHaveBeenCalledTimes(1);
     expect(selectCapability).not.toHaveBeenCalled();
   }
 
-  it('returns config-failure with exit 1 for an invalid config value', async () => {
+  it('resolves to ERROR with errorStage config and exit 1 for an invalid config value', async () => {
     const result = await run(base({ gateway: scriptedGateway(NOT_REQUIRED), flags: { 'jev.provider': 'bogus' } }));
-    expect(result).toEqual({ kind: 'config-failure', exitCode: 1 });
+    expect(result).toMatchObject({ kind: 'resolved', outcome: 'ERROR', reason: 'stage-error', errorStage: 'config', exitCode: 1 });
     expect(err.join('')).toContain('jev.provider');
     expect(err.join('')).not.toContain(KEY);
     expectNoStages();
   });
 
-  it('returns config-failure with exit 1 for a missing API key', async () => {
+  it('resolves to ERROR with errorStage config and exit 1 for a missing API key', async () => {
     const createGateway = vi.fn<CreateGateway>();
     const result = await run(base({ env: {}, createGateway }));
-    expect(result).toEqual({ kind: 'config-failure', exitCode: 1 });
+    expect(result).toMatchObject({ kind: 'resolved', outcome: 'ERROR', reason: 'stage-error', errorStage: 'config', exitCode: 1 });
     expect(err.join('')).toContain('OPENROUTER_API_KEY');
     expect(createGateway).not.toHaveBeenCalled();
     expectNoStages();
   });
 
-  it('returns config-failure with exit 1 when createGateway fails, without leaking the key', async () => {
+  it('resolves to ERROR with errorStage config and exit 1 when createGateway fails, without leaking the key', async () => {
     const createGateway: CreateGateway = () => ({
       ok: false,
       errors: [{ path: 'jev.model', value: KEY, expected: 'a valid model', source: 'env' }],
     });
     const result = await run(base({ createGateway }));
-    expect(result).toEqual({ kind: 'config-failure', exitCode: 1 });
+    expect(result).toMatchObject({ kind: 'resolved', outcome: 'ERROR', reason: 'stage-error', errorStage: 'config', exitCode: 1 });
     expect(err.join('')).toContain('jev.model');
     expect(err.join('')).not.toContain(KEY);
     expectNoStages();

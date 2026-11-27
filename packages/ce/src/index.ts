@@ -19,7 +19,6 @@ export { createCapabilityRegistry, EMPTY_REGISTRY, selectCapability } from './ru
 export type {
   CapabilityEntry,
   CapabilityRegistry,
-  ConfigFailureRun,
   ResolvedRun,
   RunOptions,
   RunResult,

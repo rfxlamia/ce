@@ -63,9 +63,4 @@ export interface ResolvedRun extends Resolution {
   capability?: string;
 }
 
-export interface ConfigFailureRun {
-  kind: 'config-failure';
-  exitCode: 1;
-}
-
-export type RunResult = ResolvedRun | ConfigFailureRun;
+export type RunResult = ResolvedRun;

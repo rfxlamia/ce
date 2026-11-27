@@ -10,7 +10,7 @@ import { collectSecretValues } from '../config/secrets.js';
 import type { EffectiveConfig } from '../config/schema.js';
 import { resolveContext } from '../context/index.js';
 import type { ChangeContext } from '../context/types.js';
-import type { StageError } from '../errors.js';
+import { StageError } from '../errors.js';
 import { createJevGateway } from '../jev/gateway.js';
 import type { JevGateway } from '../jev/gateway.js';
 import { createJsonlCallLog } from '../jev/log.js';
@@ -20,7 +20,6 @@ import { EMPTY_REGISTRY, selectCapability } from './capabilities.js';
 import { resolveAfterAssessment, wrapStage } from './resolve.js';
 import type {
   CapabilityRegistry,
-  ConfigFailureRun,
   CreateGateway,
   ResolvedRun,
   RunOptions,
@@ -90,8 +89,8 @@ export async function run(options: RunOptions = {}): Promise<RunResult> {
 
   const loaded = loadConfig({ cwd: o.cwd, flags: o.flags, env: o.env });
   if (!loaded.ok) {
-    const exitCode = reportConfigFailure(loaded, collectSecretValues(o.env), o.stderr);
-    return configFailure(exitCode);
+    reportConfigFailure(loaded, collectSecretValues(o.env), o.stderr);
+    return configFailure(loaded);
   }
   const config = loaded.config;
 
@@ -102,16 +101,16 @@ export async function run(options: RunOptions = {}): Promise<RunResult> {
   } else {
     const credentials = requireJevCredentials(loaded, o.env);
     if (!credentials.ok) {
-      return configFailure(reportConfigFailure(credentials, collectSecretValues(o.env), o.stderr));
+      reportConfigFailure(credentials, collectSecretValues(o.env), o.stderr);
+      return configFailure(credentials);
     }
     runDir = path.resolve(o.cwd, config.output?.dir ?? '.ce/runs', runDirName(o.now()));
     const created = o.createGateway(loaded, o.env, {
       callLog: createJsonlCallLog(path.join(runDir, 'jev-calls.jsonl')),
     });
     if (!created.ok) {
-      return configFailure(
-        reportConfigFailure({ ok: false, errors: created.errors }, collectSecretValues(o.env), o.stderr),
-      );
+      reportConfigFailure({ ok: false, errors: created.errors }, collectSecretValues(o.env), o.stderr);
+      return configFailure(created);
     }
     gateway = created.gateway;
   }
@@ -166,6 +165,14 @@ export async function run(options: RunOptions = {}): Promise<RunResult> {
   }
 }
 
-function configFailure(exitCode: number): ConfigFailureRun {
-  return { kind: 'config-failure', exitCode: exitCode as 1 };
+/**
+ * A config failure is still a run (SPEC 7.1): it resolves to ERROR through
+ * resolveOutcome with a Stage_Error for the 'config' stage. The failure report
+ * has already gone to stderr; the config is unavailable, so the default
+ * fail-on list applies.
+ */
+function configFailure(cause: unknown): ResolvedRun {
+  const error = new StageError('config', cause);
+  const resolution = resolveAfterAssessment({ registry: EMPTY_REGISTRY, error });
+  return { kind: 'resolved', ...resolution, exitCode: exitCodeFor(resolution, undefined), error };
 }

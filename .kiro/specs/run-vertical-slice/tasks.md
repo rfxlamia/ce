@@ -19,7 +19,7 @@ Issue #41 coverage:
 
 - [x] 1. Define run types and the Capability_Registry
   - [x] 1.1 Create `packages/ce/src/run/types.ts`
-    - Define `RuntimeHookInput`, `RuntimeHook`, `CapabilityEntry`, the branded `CapabilityRegistry`, `CreateGateway`, `RunOptions`, `ResolvedRun`, `ConfigFailureRun` and the `RunResult` union exactly as in `design.md`
+    - Define `RuntimeHookInput`, `RuntimeHook`, `CapabilityEntry`, the branded `CapabilityRegistry`, `CreateGateway`, `RunOptions`, `ResolvedRun` and `RunResult` exactly as in `design.md`
     - `ResolvedRun` extends `Resolution` and adds `kind: 'resolved'`, `exitCode`, and optional `claims`, `assessment`, `error`, `capability`
     - Use type-only imports from the stage modules, and do not import `jev/catalog` or the Jev SDK
     - _Requirements: 2.1, 8.1, 8.2, 8.10, 9.1, 9.4, 9.5, 9.7_
@@ -83,7 +83,7 @@ Issue #41 coverage:
     - Implement `run(options = {})` following the algorithm in `design.md`: `loadConfig`, report config failure through `reportConfigFailure` with `collectSecretValues(env)`, gateway selection (`requireJevCredentials` and `createGateway` with `createJsonlCallLog` for `<output.dir>/run-<iso>/jev-calls.jsonl` only when no `gateway` is supplied), `resolveContext` with `providers` and `exec`, `assess`, `selectCapability`, the awaited Runtime_Hook, then one call to `resolveAfterAssessment` and `exitCodeFor`
     - Wrap thrown values with `wrapStage` for `context`, `assessment` and `runtime`, and never throw for a stage failure
     - Mark the Runtime_Hook call site with a comment naming issues #9 and #10; pass `runDir` only when one was computed
-    - Return `ConfigFailureRun` with the value `reportConfigFailure` returned; do not call `resolveOutcome` for it; write no `run.json`, `report.html` or other evidence file
+    - Resolve a config failure through `resolveOutcome` with `StageError('config', cause)` (ERROR, exit 1); write no `run.json`, `report.html` or other evidence file
     - Export the public surface from `run/index.ts`
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 5.4, 5.5, 6.1, 6.2, 6.3, 6.5, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 8.5, 8.6, 8.7, 8.8, 8.10, 9.2, 9.3, 9.4, 9.6, 11.1, 11.2, 11.3, 11.4_
 
@@ -106,14 +106,14 @@ Issue #41 coverage:
     - Fake `browser_ui` capability: hook called once with a `RuntimeHookInput` holding the gateway in use; one case resolves to `EVIDENCED`, one to `ERROR` with reason `no-observation`; a throwing hook resolves to `ERROR` with `errorStage: 'runtime'`; the result carries the capability name
     - Two capabilities on one Surface: only the first is called
     - Call order of stages; `resolveOutcome` called once per resolved run and not for a config failure
-    - Config failures (invalid config, missing key, `createGateway` failure) return `config-failure` with exit code 1, call neither the Context_Resolver nor the Assessor, and leak no key
+    - Config failures (invalid config, missing key, `createGateway` failure) resolve to `ERROR` with `errorStage` `config` and exit code 1, call neither the Context_Resolver nor the Assessor, and leak no key
     - No run directory or call log when `gateway` is supplied; only `jev-calls.jsonl` is written otherwise
     - _Requirements: 1.1, 3.1, 3.2, 3.3, 4.1, 4.3, 4.4, 5.4, 5.5, 6.1, 6.2, 6.3, 6.4, 6.5, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 8.5, 8.6, 8.9, 8.10, 11.3, 11.4, 13.1, 13.2, 13.3, 13.4, 13.5, 13.9, 13.13_
 
 - [x] 5. Replace the stub in `index.ts`
   - [x] 5.1 Update `packages/ce/src/index.ts`
     - Remove the stub, the `TODO(Milestone 1)` text, the placeholder error and the old `RunResult` interface
-    - Re-export `run` from `./run/index.js`, and export `RunResult`, `ResolvedRun`, `ConfigFailureRun`, `RunOptions`, `createCapabilityRegistry`, `EMPTY_REGISTRY`, `selectCapability` and the hook types
+    - Re-export `run` from `./run/index.js`, and export `RunResult`, `ResolvedRun`, `RunOptions`, `createCapabilityRegistry`, `EMPTY_REGISTRY`, `selectCapability` and the hook types
     - Rewrite the module comment to describe the implemented slice and name the Runtime_Hook as the open part of the pipeline
     - Keep every existing export under the same name
     - _Requirements: 9.7, 12.1, 12.2, 12.3, 12.4_
@@ -128,7 +128,7 @@ Issue #41 coverage:
     - Implement `parseRunArgs(argv)` after `parseArgs` of `eval/command.ts`: `--config`, `--base` and `--claim` in the forms `--name value` and `--name=value`; `--claim` repeatable and ordered; `null` for an unknown flag, a positional argument, a missing value, an empty value, a value starting with `--`, and a repeated `--config` or `--base`
     - Implement `runRunCommand(argv, deps)`: usage on stderr and exit 1 for `null` without calling `run()`; map `--config` to `flags.config`, `--base` to `cliOptions.base`, `--claim` to `cliOptions.claim`; pass `contextProviders` and `exec` through
     - Print `Outcome: <outcome>`, the `surface-unsupported` reason and Surface line, and the "no capability is registered for <surface> yet" hint for a v0 Surface; print the Stage_Error message, or the reason and Surface for an `ERROR` without a Stage_Error, to stderr
-    - Print nothing further for a `config-failure` and return 1; for an unexpected throw print `Outcome: ERROR` and the constructor name only, and return 1
+    - A config failure prints `Outcome: ERROR` like any ERROR; for an unexpected throw print `Outcome: ERROR` and the constructor name only, and return 1
     - Return the `exitCode` of the Run_Result without deciding an Outcome or exit code; do not call `process.exit`, read `process.env` or `process.cwd()`, or load `.env`
     - _Requirements: 2.8, 9.2, 10.1, 10.2, 10.4, 10.5, 10.6, 10.7, 10.8, 10.9, 10.10, 10.11, 10.12, 10.13, 10.14, 10.15, 10.16_
 

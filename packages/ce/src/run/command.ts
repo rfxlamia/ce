@@ -103,7 +103,6 @@ export async function runRunCommand(argv: readonly string[], deps: RunCommandDep
     return 1;
   }
 
-  if (result.kind === 'config-failure') return result.exitCode;
 
   stdout.write(`Outcome: ${result.outcome}\n`);
 
