@@ -6,9 +6,9 @@
 // Authorization header to the host named by GITHUB_API_URL and is never logged,
 // written, or placed in an error message.
 import { spawn } from 'node:child_process';
-import { appendFileSync, readdirSync, statSync } from 'node:fs';
+import { appendFileSync, readdirSync, realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { dirname, join } from 'node:path';
+import { dirname, join, sep } from 'node:path';
 import * as artifact from '@actions/artifact';
 import * as cache from '@actions/cache';
 import * as core from '@actions/core';
@@ -118,33 +118,49 @@ export interface ArtifactUploader {
   upload(name: string, runDir: string): Promise<{ id?: number }>;
 }
 
-/** All regular files under `dir`, absolute paths. Symlinks are skipped. Empty when absent. */
+/**
+ * All regular files under `dir`, absolute paths. Empty when absent.
+ * Never followed or returned: symbolic links (file or directory), anything named
+ * `.env` or `.env.*` (a directory named `.env` is skipped whole), and any path
+ * that does not resolve inside the real path of `dir` (Requirement 7.7).
+ */
 export function listFilesRecursive(dir: string): string[] {
   const out: string[] = [];
+  let root: string;
+  try {
+    root = realpathSync(dir);
+  } catch {
+    return out;
+  }
   const walk = (current: string): void => {
-    let names: string[];
+    let entries;
     try {
-      names = readdirSync(current);
+      entries = readdirSync(current, { withFileTypes: true });
     } catch {
       return;
     }
-    for (const name of names.sort()) {
+    entries.sort((x, y) => (x.name < y.name ? -1 : x.name > y.name ? 1 : 0));
+    for (const entry of entries) {
+      const name = entry.name;
+      if (name === '.env' || name.startsWith('.env.')) continue;
+      // Dirent from withFileTypes does not follow links: a symlink is neither isFile nor isDirectory.
+      if (entry.isSymbolicLink()) continue;
       const full = join(current, name);
-      let st;
-      try {
-        st = statSync(full, { throwIfNoEntry: false });
-      } catch {
-        continue;
+      if (entry.isDirectory()) walk(full);
+      else if (entry.isFile()) {
+        let real: string;
+        try {
+          real = realpathSync(full);
+        } catch {
+          continue;
+        }
+        if (real === root || real.startsWith(root + sep)) out.push(full);
       }
-      if (st === undefined) continue;
-      if (st.isDirectory()) walk(full);
-      else if (st.isFile()) out.push(full);
     }
   };
   walk(dir);
   return out;
 }
-
 export function createArtifactUploader(): ArtifactUploader {
   const client = new artifact.DefaultArtifactClient();
   return {

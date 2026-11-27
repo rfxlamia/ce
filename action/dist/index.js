@@ -23112,10 +23112,10 @@ var require_resolve_block_map = __commonJS({
       let offset = bm.offset;
       let commentEnd = null;
       for (const collItem of bm.items) {
-        const { start, key, sep: sep10, value } = collItem;
+        const { start, key, sep: sep11, value } = collItem;
         const keyProps = resolveProps.resolveProps(start, {
           indicator: "explicit-key-ind",
-          next: key ?? sep10?.[0],
+          next: key ?? sep11?.[0],
           offset,
           onError,
           parentIndent: bm.indent,
@@ -23129,7 +23129,7 @@ var require_resolve_block_map = __commonJS({
             else if ("indent" in key && key.indent !== bm.indent)
               onError(offset, "BAD_INDENT", startColMsg);
           }
-          if (!keyProps.anchor && !keyProps.tag && !sep10) {
+          if (!keyProps.anchor && !keyProps.tag && !sep11) {
             commentEnd = keyProps.end;
             if (keyProps.comment) {
               if (map2.comment)
@@ -23153,7 +23153,7 @@ var require_resolve_block_map = __commonJS({
         ctx.atKey = false;
         if (utilMapIncludes.mapIncludes(ctx, map2.items, keyNode))
           onError(keyStart, "DUPLICATE_KEY", "Map keys must be unique");
-        const valueProps = resolveProps.resolveProps(sep10 ?? [], {
+        const valueProps = resolveProps.resolveProps(sep11 ?? [], {
           indicator: "map-value-ind",
           next: value,
           offset: keyNode.range[2],
@@ -23169,7 +23169,7 @@ var require_resolve_block_map = __commonJS({
             if (ctx.options.strict && keyProps.start < valueProps.found.offset - 1024)
               onError(keyNode.range, "KEY_OVER_1024_CHARS", "The : indicator must be at most 1024 chars after the start of an implicit block mapping key");
           }
-          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : composeEmptyNode(ctx, offset, sep10, null, valueProps, onError);
+          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : composeEmptyNode(ctx, offset, sep11, null, valueProps, onError);
           if (ctx.schema.compat)
             utilFlowIndentCheck.flowIndentCheck(bm.indent, value, onError);
           offset = valueNode.range[2];
@@ -23260,7 +23260,7 @@ var require_resolve_end = __commonJS({
       let comment = "";
       if (end) {
         let hasSpace = false;
-        let sep10 = "";
+        let sep11 = "";
         for (const token of end) {
           const { source, type } = token;
           switch (type) {
@@ -23274,13 +23274,13 @@ var require_resolve_end = __commonJS({
               if (!comment)
                 comment = cb;
               else
-                comment += sep10 + cb;
-              sep10 = "";
+                comment += sep11 + cb;
+              sep11 = "";
               break;
             }
             case "newline":
               if (comment)
-                sep10 += source;
+                sep11 += source;
               hasSpace = true;
               break;
             default:
@@ -23323,18 +23323,18 @@ var require_resolve_flow_collection = __commonJS({
       let offset = fc.offset + fc.start.source.length;
       for (let i = 0; i < fc.items.length; ++i) {
         const collItem = fc.items[i];
-        const { start, key, sep: sep10, value } = collItem;
+        const { start, key, sep: sep11, value } = collItem;
         const props = resolveProps.resolveProps(start, {
           flow: fcName,
           indicator: "explicit-key-ind",
-          next: key ?? sep10?.[0],
+          next: key ?? sep11?.[0],
           offset,
           onError,
           parentIndent: fc.indent,
           startOnNewline: false
         });
         if (!props.found) {
-          if (!props.anchor && !props.tag && !sep10 && !value) {
+          if (!props.anchor && !props.tag && !sep11 && !value) {
             if (i === 0 && props.comma)
               onError(props.comma, "UNEXPECTED_TOKEN", `Unexpected , in ${fcName}`);
             else if (i < fc.items.length - 1)
@@ -23388,8 +23388,8 @@ var require_resolve_flow_collection = __commonJS({
             }
           }
         }
-        if (!isMap && !sep10 && !props.found) {
-          const valueNode = value ? composeNode(ctx, value, props, onError) : composeEmptyNode(ctx, props.end, sep10, null, props, onError);
+        if (!isMap && !sep11 && !props.found) {
+          const valueNode = value ? composeNode(ctx, value, props, onError) : composeEmptyNode(ctx, props.end, sep11, null, props, onError);
           coll.items.push(valueNode);
           offset = valueNode.range[2];
           if (isBlock(value))
@@ -23401,7 +23401,7 @@ var require_resolve_flow_collection = __commonJS({
           if (isBlock(key))
             onError(keyNode.range, "BLOCK_IN_FLOW", blockMsg);
           ctx.atKey = false;
-          const valueProps = resolveProps.resolveProps(sep10 ?? [], {
+          const valueProps = resolveProps.resolveProps(sep11 ?? [], {
             flow: fcName,
             indicator: "map-value-ind",
             next: value,
@@ -23412,8 +23412,8 @@ var require_resolve_flow_collection = __commonJS({
           });
           if (valueProps.found) {
             if (!isMap && !props.found && ctx.options.strict) {
-              if (sep10)
-                for (const st of sep10) {
+              if (sep11)
+                for (const st of sep11) {
                   if (st === valueProps.found)
                     break;
                   if (st.type === "newline") {
@@ -23430,7 +23430,7 @@ var require_resolve_flow_collection = __commonJS({
             else
               onError(valueProps.start, "MISSING_CHAR", `Missing , or : between ${fcName} items`);
           }
-          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : valueProps.found ? composeEmptyNode(ctx, valueProps.end, sep10, null, valueProps, onError) : null;
+          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : valueProps.found ? composeEmptyNode(ctx, valueProps.end, sep11, null, valueProps, onError) : null;
           if (valueNode) {
             if (isBlock(value))
               onError(valueNode.range, "BLOCK_IN_FLOW", blockMsg);
@@ -23610,7 +23610,7 @@ var require_resolve_block_scalar = __commonJS({
           chompStart = i + 1;
       }
       let value = "";
-      let sep10 = "";
+      let sep11 = "";
       let prevMoreIndented = false;
       for (let i = 0; i < contentStart; ++i)
         value += lines[i][0].slice(trimIndent) + "\n";
@@ -23627,24 +23627,24 @@ var require_resolve_block_scalar = __commonJS({
           indent = "";
         }
         if (type === Scalar.Scalar.BLOCK_LITERAL) {
-          value += sep10 + indent.slice(trimIndent) + content;
-          sep10 = "\n";
+          value += sep11 + indent.slice(trimIndent) + content;
+          sep11 = "\n";
         } else if (indent.length > trimIndent || content[0] === "	") {
-          if (sep10 === " ")
-            sep10 = "\n";
-          else if (!prevMoreIndented && sep10 === "\n")
-            sep10 = "\n\n";
-          value += sep10 + indent.slice(trimIndent) + content;
-          sep10 = "\n";
+          if (sep11 === " ")
+            sep11 = "\n";
+          else if (!prevMoreIndented && sep11 === "\n")
+            sep11 = "\n\n";
+          value += sep11 + indent.slice(trimIndent) + content;
+          sep11 = "\n";
           prevMoreIndented = true;
         } else if (content === "") {
-          if (sep10 === "\n")
+          if (sep11 === "\n")
             value += "\n";
           else
-            sep10 = "\n";
+            sep11 = "\n";
         } else {
-          value += sep10 + content;
-          sep10 = " ";
+          value += sep11 + content;
+          sep11 = " ";
           prevMoreIndented = false;
         }
       }
@@ -23827,25 +23827,25 @@ var require_resolve_flow_scalar = __commonJS({
         trimBoth = /^[ \t]+|[ \t]+$/g;
       }
       let res = match3[1].replace(trimEnd2, "");
-      let sep10 = " ";
+      let sep11 = " ";
       let pos = line.lastIndex;
       while (match3 = line.exec(source)) {
         const lm = match3[1].replace(trimBoth, "");
         if (lm === "") {
-          if (sep10 === "\n")
-            res += sep10;
+          if (sep11 === "\n")
+            res += sep11;
           else
-            sep10 = "\n";
+            sep11 = "\n";
         } else {
-          res += sep10 + lm;
-          sep10 = " ";
+          res += sep11 + lm;
+          sep11 = " ";
         }
         pos = line.lastIndex;
       }
       const last = /[ \t]*(.*)/sy;
       last.lastIndex = pos;
       match3 = last.exec(source);
-      return res + sep10 + (match3?.[1] ?? "");
+      return res + sep11 + (match3?.[1] ?? "");
     }
     function doubleQuotedValue(source, onError) {
       let res = "";
@@ -24655,14 +24655,14 @@ var require_cst_stringify = __commonJS({
         }
       }
     }
-    function stringifyItem({ start, key, sep: sep10, value }) {
+    function stringifyItem({ start, key, sep: sep11, value }) {
       let res = "";
       for (const st of start)
         res += st.source;
       if (key)
         res += stringifyToken(key);
-      if (sep10)
-        for (const st of sep10)
+      if (sep11)
+        for (const st of sep11)
           res += st.source;
       if (value)
         res += stringifyToken(value);
@@ -25829,18 +25829,18 @@ var require_parser = __commonJS({
         if (this.type === "map-value-ind") {
           const prev = getPrevProps(this.peek(2));
           const start = getFirstKeyStartProps(prev);
-          let sep10;
+          let sep11;
           if (scalar.end) {
-            sep10 = scalar.end;
-            sep10.push(this.sourceToken);
+            sep11 = scalar.end;
+            sep11.push(this.sourceToken);
             delete scalar.end;
           } else
-            sep10 = [this.sourceToken];
+            sep11 = [this.sourceToken];
           const map2 = {
             type: "block-map",
             offset: scalar.offset,
             indent: scalar.indent,
-            items: [{ start, key: scalar, sep: sep10 }]
+            items: [{ start, key: scalar, sep: sep11 }]
           };
           this.onKeyLine = true;
           this.stack[this.stack.length - 1] = map2;
@@ -25993,15 +25993,15 @@ var require_parser = __commonJS({
                 } else if (isFlowToken(it.key) && !includesToken(it.sep, "newline")) {
                   const start2 = getFirstKeyStartProps(it.start);
                   const key = it.key;
-                  const sep10 = it.sep;
-                  sep10.push(this.sourceToken);
+                  const sep11 = it.sep;
+                  sep11.push(this.sourceToken);
                   delete it.key;
                   delete it.sep;
                   this.stack.push({
                     type: "block-map",
                     offset: this.offset,
                     indent: this.indent,
-                    items: [{ start: start2, key, sep: sep10 }]
+                    items: [{ start: start2, key, sep: sep11 }]
                   });
                 } else if (start.length > 0) {
                   it.sep = it.sep.concat(start, this.sourceToken);
@@ -26195,13 +26195,13 @@ var require_parser = __commonJS({
             const prev = getPrevProps(parent);
             const start = getFirstKeyStartProps(prev);
             fixFlowSeqItems(fc);
-            const sep10 = fc.end.splice(1, fc.end.length);
-            sep10.push(this.sourceToken);
+            const sep11 = fc.end.splice(1, fc.end.length);
+            sep11.push(this.sourceToken);
             const map2 = {
               type: "block-map",
               offset: fc.offset,
               indent: fc.indent,
-              items: [{ start, key: fc, sep: sep10 }]
+              items: [{ start, key: fc, sep: sep11 }]
             };
             this.onKeyLine = true;
             this.stack[this.stack.length - 1] = map2;
@@ -38872,8 +38872,8 @@ var require_primordials = __commonJS({
       ArrayPrototypeIndexOf(self2, el) {
         return self2.indexOf(el);
       },
-      ArrayPrototypeJoin(self2, sep10) {
-        return self2.join(sep10);
+      ArrayPrototypeJoin(self2, sep11) {
+        return self2.join(sep11);
       },
       ArrayPrototypeMap(self2, fn) {
         return self2.map(fn);
@@ -50471,7 +50471,7 @@ var require_commonjs6 = __commonJS({
     var node_url_1 = __require("node:url");
     var fs_1 = __require("fs");
     var actualFS = __importStar(__require("node:fs"));
-    var realpathSync = fs_1.realpathSync.native;
+    var realpathSync2 = fs_1.realpathSync.native;
     var promises_1 = __require("node:fs/promises");
     var minipass_1 = require_commonjs5();
     var defaultFS = {
@@ -50479,7 +50479,7 @@ var require_commonjs6 = __commonJS({
       readdir: fs_1.readdir,
       readdirSync: fs_1.readdirSync,
       readlinkSync: fs_1.readlinkSync,
-      realpathSync,
+      realpathSync: realpathSync2,
       promises: {
         lstat: promises_1.lstat,
         readdir: promises_1.readdir,
@@ -51594,7 +51594,7 @@ var require_commonjs6 = __commonJS({
        *
        * @internal
        */
-      constructor(cwd = process.cwd(), pathImpl, sep10, { nocase, childrenCacheSize = 16 * 1024, fs: fs14 = defaultFS } = {}) {
+      constructor(cwd = process.cwd(), pathImpl, sep11, { nocase, childrenCacheSize = 16 * 1024, fs: fs14 = defaultFS } = {}) {
         this.#fs = fsFromOption(fs14);
         if (cwd instanceof URL || cwd.startsWith("file://")) {
           cwd = (0, node_url_1.fileURLToPath)(cwd);
@@ -51605,7 +51605,7 @@ var require_commonjs6 = __commonJS({
         this.#resolveCache = new ResolveCache();
         this.#resolvePosixCache = new ResolveCache();
         this.#children = new ChildrenCache(childrenCacheSize);
-        const split = cwdPath.substring(this.rootPath.length).split(sep10);
+        const split = cwdPath.substring(this.rootPath.length).split(sep11);
         if (split.length === 1 && !split[0]) {
           split.pop();
         }
@@ -96227,21 +96227,21 @@ var Matcher = class {
    * @returns {string}
    */
   toString(separator, includeNamespace = true) {
-    const sep10 = separator || this.separator;
-    const isDefault = sep10 === this.separator && includeNamespace === true;
+    const sep11 = separator || this.separator;
+    const isDefault = sep11 === this.separator && includeNamespace === true;
     if (isDefault) {
       if (this._pathStringCache !== null) {
         return this._pathStringCache;
       }
       const result = this.path.map(
         (n) => n.namespace ? `${n.namespace}:${n.tag}` : n.tag
-      ).join(sep10);
+      ).join(sep11);
       this._pathStringCache = result;
       return result;
     }
     return this.path.map(
       (n) => includeNamespace && n.namespace ? `${n.namespace}:${n.tag}` : n.tag
-    ).join(sep10);
+    ).join(sep11);
   }
   /**
    * Get path as array of tag names.
@@ -97760,8 +97760,8 @@ function readStopNodeData(xmlData, tagName, i) {
           const nextLt = xmlData.indexOf("<", i + 1);
           if (nextLt === -1 || nextLt > nextGt) {
             const exp = xmlData.substring(i + 1, nextGt);
-            const sep10 = exp.search(/\s/);
-            const name = sep10 === -1 ? exp : exp.substring(0, sep10);
+            const sep11 = exp.search(/\s/);
+            const name = sep11 === -1 ? exp : exp.substring(0, sep11);
             if (name === tagName && exp[exp.length - 1] !== "/") openTagCount++;
             i = nextGt;
           }
@@ -99459,9 +99459,9 @@ function sanitizeChildEnv(env, runToken, mirrorEnv) {
 
 // action/src/github.ts
 import { spawn as spawn2 } from "node:child_process";
-import { appendFileSync as appendFileSync2, readdirSync, statSync as statSync4 } from "node:fs";
+import { appendFileSync as appendFileSync2, readdirSync, realpathSync } from "node:fs";
 import { createRequire as createRequire2 } from "node:module";
-import { dirname as dirname5, join as join9 } from "node:path";
+import { dirname as dirname5, join as join9, sep as sep10 } from "node:path";
 
 // node_modules/@actions/artifact/lib/internal/shared/config.js
 import os6 from "os";
@@ -164089,24 +164089,35 @@ function createChromiumInstaller(baseEnv = process.env) {
 }
 function listFilesRecursive(dir) {
   const out = [];
+  let root;
+  try {
+    root = realpathSync(dir);
+  } catch {
+    return out;
+  }
   const walk = (current) => {
-    let names;
+    let entries;
     try {
-      names = readdirSync(current);
+      entries = readdirSync(current, { withFileTypes: true });
     } catch {
       return;
     }
-    for (const name of names.sort()) {
+    entries.sort((x, y) => x.name < y.name ? -1 : x.name > y.name ? 1 : 0);
+    for (const entry3 of entries) {
+      const name = entry3.name;
+      if (name === ".env" || name.startsWith(".env.")) continue;
+      if (entry3.isSymbolicLink()) continue;
       const full = join9(current, name);
-      let st;
-      try {
-        st = statSync4(full, { throwIfNoEntry: false });
-      } catch {
-        continue;
+      if (entry3.isDirectory()) walk(full);
+      else if (entry3.isFile()) {
+        let real;
+        try {
+          real = realpathSync(full);
+        } catch {
+          continue;
+        }
+        if (real === root || real.startsWith(root + sep10)) out.push(full);
       }
-      if (st === void 0) continue;
-      if (st.isDirectory()) walk(full);
-      else if (st.isFile()) out.push(full);
     }
   };
   walk(dir);
@@ -164285,7 +164296,7 @@ function validatePublishMode(raw) {
 }
 
 // action/src/run-dir.ts
-import { readdirSync as readdirSync2, statSync as statSync5 } from "node:fs";
+import { readdirSync as readdirSync2, statSync as statSync4 } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { isAbsolute as isAbsolute2, join as join10, resolve as resolve5 } from "node:path";
 function resolveEffectiveOutputDir(options) {
@@ -164307,7 +164318,7 @@ function listEntries(dir) {
 }
 function mtimeMs(path16) {
   try {
-    return statSync5(path16).mtimeMs;
+    return statSync4(path16).mtimeMs;
   } catch {
     return Number.NEGATIVE_INFINITY;
   }
