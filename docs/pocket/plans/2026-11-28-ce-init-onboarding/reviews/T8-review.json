@@ -1,0 +1,62 @@
+{
+  "task_id": "T8",
+  "task_name": "README Quick start and Releasing runbook",
+  "cycle": 2,
+  "timestamp": "2026-11-28T01:17:15Z",
+  "reviewer_mode": "read-only",
+  "reviewer_config": "standard",
+  "stage_1": {
+    "status": "PASS",
+    "issues": [],
+    "concerns_addressed": [
+      "Prior T8 verdict (cycle 1, REVIEW_PASS at 19a54ea) preserved: its Stage 1 concerns (step 4 version bump, stub line replacement, 'may expire' wording) are untouched by a1dc69d.",
+      "P2-F2: runbook now has step 5 moving v0 (git tag -f v0 vX.Y.Z; git push -f origin v0) after step 4 pushes the semver tag. Correct position and correct mechanism: release.yml only triggers on exact semver tags (v[0-9]+.[0-9]+.[0-9]+*) and publishes npm only, so the floating v0 tag is not moved by any automation.",
+      "Intro: the exact legacy sentence is kept (asserted by readme.test.ts:179) and a second sentence clarifies that the v0 major tag must also move (step 5). Combined text is accurate enough for maintainers but slightly tension-laden: 'one tag releases ... together' is literally true only for npm, and the clarifier corrects it.",
+      "Scope: diff touches only README.md (inside ## Releasing) and action/readme.test.ts; no yaml block with rfxlamia/ce@ added before ## GitHub Action. Step numbering 1-6 consistent, step reference '(step 5)' is correct, former step 5 renumbered to 6.",
+      "readme.test.ts: 20/20 pass on re-run."
+    ]
+  },
+  "stage_2": {
+    "status": "PASS",
+    "strengths": [
+      "Fix is minimal and targeted: two prose edits, one sh-fenced command block, one test.",
+      "Test guards the two load-bearing commands, so removing the v0 move step fails the suite while the legacy intro assertion still passes.",
+      "sh fence (not yaml) preserves the existing no-rfxlamia/ce@-before-Action-section invariant."
+    ],
+    "issues": [
+      {
+        "severity": "Minor",
+        "description": "Step 5 does not say to move v0 only after the release workflow (release.yml) succeeds. If the npm publish fails (tag/version mismatch, expired trusted publisher), v0 would already point at an unpublished release for Action users. Advisory: add 'after the Release workflow run for the tag succeeds'. Not blocking: the Action does not depend on the npm publish at the tag, and the runbook already stresses the workflow can fail.",
+        "location": "README.md:253"
+      },
+      {
+        "severity": "Minor",
+        "description": "Step 5 uses vX.Y.Z without noting that prerelease tags (e.g. v0.2.0-rc.1, which the following paragraph says are supported) must not move v0. A maintainer following the steps for an rc could move the stable major tag to a prerelease.",
+        "location": "README.md:253"
+      },
+      {
+        "severity": "Minor",
+        "description": "Intro still opens with 'Pushing one tag releases the GitHub Action and the npm package together', immediately qualified by the next sentence; the test pins the legacy wording, so rewording is deferred. New test is substring-only and does not assert ordering after the semver-tag step.",
+        "location": "README.md:235"
+      }
+    ],
+    "assessment": "Approved"
+  },
+  "overall": "REVIEW_PASS",
+  "fix_instructions": "",
+  "loop_info": {
+    "recovery_window": 1,
+    "current_cycle": 2,
+    "max_cycles": 2,
+    "cycles_remaining": 1,
+    "strategies": [
+      "Added v0 major-tag move step to the Releasing runbook (P2-F2)"
+    ],
+    "prior_windows": []
+  },
+  "reviewed_sha": "a1dc69d2f9b3e8a236a0afa5a6c11541558fc262",
+  "correction": {
+    "sha": "a1dc69d2f9b3e8a236a0afa5a6c11541558fc262",
+    "finding": "P2-F2"
+  }
+}

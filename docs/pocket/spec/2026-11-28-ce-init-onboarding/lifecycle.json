@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "plan": {
+    "plan_id": "2026-11-28-ce-init-onboarding",
+    "spec_dir": "docs/pocket/spec/2026-11-28-ce-init-onboarding",
+    "plan_dir": "docs/pocket/plans/2026-11-28-ce-init-onboarding",
+    "branch": "feat/issue-13-ce-init",
+    "state": {
+      "approval": "APPROVED",
+      "phase_status": {
+        "phase-1": "COMPLETE",
+        "phase-2": "COMPLETE"
+      },
+      "status": "DONE"
+    },
+    "revision": 4
+  },
+  "events": [
+    {
+      "event_id": "2026-11-28-ce-init-onboarding:spec-approved:r1",
+      "plan_id": "2026-11-28-ce-init-onboarding",
+      "type": "spec-approved",
+      "revision": 1,
+      "occurred_at": "2026-11-27T23:50:11.253Z",
+      "artifact_refs": [
+        {
+          "root": "spec",
+          "kind": "spec",
+          "path": "ce-init-and-npm-distribution.md",
+          "sha256": "b3212317e3952e917110260583a46ec4ccda700366aa6ed7d0a98924b5d30975",
+          "revision": 1
+        }
+      ],
+      "payload_hash": "9f17de55e651c4f31699623243bd2ac19f8301b83749ad38f98a3c695585dace",
+      "proof_ref": null,
+      "proof_hash": null,
+      "delivery": {
+        "status": "pending",
+        "attempts": 0
+      }
+    },
+    {
+      "event_id": "2026-11-28-ce-init-onboarding:phase-complete:r2",
+      "plan_id": "2026-11-28-ce-init-onboarding",
+      "type": "phase-complete",
+      "revision": 2,
+      "occurred_at": "2026-11-28T00:35:34.321Z",
+      "artifact_refs": [
+        {
+          "root": "plan",
+          "kind": "phase-evidence",
+          "path": "execution-plan/phase-1.md",
+          "sha256": "a8fb74d697a4fdd9c36dd8de667ca0ca1e92058eaa466d7f8026be5383a04884",
+          "revision": 1
+        }
+      ],
+      "payload_hash": "00bf3ac7cd2e8d80fd8ecd6f5b07b14c3b14261229688ccb6240ab286ddbfb55",
+      "proof_ref": null,
+      "proof_hash": null,
+      "delivery": {
+        "status": "pending",
+        "attempts": 0
+      }
+    },
+    {
+      "event_id": "2026-11-28-ce-init-onboarding:phase-complete:r3",
+      "plan_id": "2026-11-28-ce-init-onboarding",
+      "type": "phase-complete",
+      "revision": 3,
+      "occurred_at": "2026-11-28T01:20:21.657Z",
+      "artifact_refs": [
+        {
+          "root": "plan",
+          "kind": "phase-evidence",
+          "path": "execution-plan/phase-2.md",
+          "sha256": "9221b10b04862633b69fe996a0f085dae4bf08d0490a520051f1d02dccb91d35",
+          "revision": 1
+        }
+      ],
+      "payload_hash": "9885c157eebfead88122fd0cf29ecfac0fd9bfc4e91da3712a6a8c1bc7334739",
+      "proof_ref": null,
+      "proof_hash": null,
+      "delivery": {
+        "status": "pending",
+        "attempts": 0
+      }
+    },
+    {
+      "event_id": "2026-11-28-ce-init-onboarding:plan-closed:r4",
+      "plan_id": "2026-11-28-ce-init-onboarding",
+      "type": "plan-closed",
+      "revision": 4,
+      "occurred_at": "2026-11-28T01:20:56.964Z",
+      "artifact_refs": [
+        {
+          "root": "plan",
+          "kind": "phase-evidence",
+          "path": "execution-plan/phase-1.md",
+          "sha256": "a8fb74d697a4fdd9c36dd8de667ca0ca1e92058eaa466d7f8026be5383a04884",
+          "revision": 1
+        },
+        {
+          "root": "plan",
+          "kind": "phase-evidence",
+          "path": "execution-plan/phase-2.md",
+          "sha256": "9221b10b04862633b69fe996a0f085dae4bf08d0490a520051f1d02dccb91d35",
+          "revision": 1
+        }
+      ],
+      "payload_hash": "2cb0d6737030e7c6215963e343994cfa677ee558018b23dba29b627b31135c77",
+      "proof_ref": null,
+      "proof_hash": null,
+      "delivery": {
+        "status": "pending",
+        "attempts": 0
+      }
+    }
+  ]
+}

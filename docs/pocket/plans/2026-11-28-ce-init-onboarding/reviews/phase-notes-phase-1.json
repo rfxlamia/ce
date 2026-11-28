@@ -1,0 +1,102 @@
+{
+  "contract": 1,
+  "phase_key": "phase-1",
+  "phase_file": "execution-plan/phase-1.md",
+  "recorded_at": "2026-11-28T00:35:32.476724Z",
+  "phase_verdict": "PHASE_PASS_RESOLVED",
+  "tasks": [
+    {
+      "task_id": "T1",
+      "name": "Lean, publishable package manifest",
+      "done_sha": "6b7fc3ffd61c9a953f9f8ad8cbccf2b64ba1e08d",
+      "verdict": "REVIEW_PASS"
+    },
+    {
+      "task_id": "T2",
+      "name": "Project detection (package manager, script, port, framework)",
+      "done_sha": "ce8213fa9bc1a0269b02f96ada1eda46c0921c7d",
+      "verdict": "REVIEW_PASS"
+    },
+    {
+      "task_id": "T3",
+      "name": "Commented ce.yml template",
+      "done_sha": "24b1ef6eecaea7f9b16d997774d1260ed6aca4a8",
+      "verdict": "REVIEW_PASS"
+    },
+    {
+      "task_id": "T4",
+      "name": "Next-steps text and workflow snippet",
+      "done_sha": "4c33a4720d4376c383c979c3aa8d69864132870a",
+      "verdict": "REVIEW_PASS"
+    }
+  ],
+  "verification": [
+    {
+      "check": "root npm run typecheck",
+      "result": "PASS",
+      "evidence": "exit 0 after T4"
+    },
+    {
+      "check": "root npm test",
+      "result": "PASS",
+      "evidence": "238 files/1459 tests (packages/ce), 10/63, 18/113 after T4"
+    },
+    {
+      "check": "cd packages/ce && npx vitest run src/init/ + tsc --noEmit",
+      "result": "PASS",
+      "evidence": "91 tests after correction 60ccbaf"
+    },
+    {
+      "check": "npm pack --workspace continuous-evidence --dry-run",
+      "result": "PASS",
+      "evidence": "246 files (was 970), zero test artifacts, dist/cli.js with shebang (T1 report + T1 audit)"
+    },
+    {
+      "check": "phase-level pass",
+      "result": "PASS",
+      "evidence": "reviews/phase-pass-phase-1.json PHASE_PASS_RESOLVED"
+    }
+  ],
+  "obstacles": [
+    {
+      "summary": "T4 workflow snippet emitted bare pnpm/action-setup@v4, which fails without a packageManager field",
+      "resolution": "In-loop fix 4c33a47 adds with.version 10 when pmMajor is null; spec C2 pnpm row amended in 754e837",
+      "evidence": [
+        "reviews/T4-review.json",
+        "4c33a4720d4376c383c979c3aa8d69864132870a"
+      ]
+    },
+    {
+      "summary": "Phase pass found unreadable package.json reported as 'missing' (spec A8)",
+      "resolution": "Correction 60ccbaf adds packageJsonUnreadable input and 'unreadable' reason; next steps name configPath; DEFAULT_PORT deduplicated",
+      "evidence": [
+        "reviews/phase-pass-phase-1.json",
+        "60ccbaf023b4c33db8a3ecca5a4dd14fc261c520"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "kind": "user",
+      "decision": "Use haiku subagents for easy tasks (T1), sonnet otherwise, opus for phase passes",
+      "rationale": "cost",
+      "source": "user instruction 2026-11-28"
+    },
+    {
+      "kind": "implementation",
+      "decision": "pnpm snippet pins version 10 with a 'match your pnpm version' comment when packageManager is absent",
+      "rationale": "pnpm/action-setup@v4 requires version input then",
+      "source": "T4 audit cycle 1"
+    }
+  ],
+  "recommendations": [
+    {
+      "suggestion": "T5 must pass packageJsonUnreadable for non-ENOENT read errors",
+      "evidence": "T2 correction audit Minor, phase-pass-phase-1.json"
+    },
+    {
+      "suggestion": "Consider stripping quotes/parens from explicit port captures and requiring 'serve' for ng",
+      "evidence": "T2 review Minors"
+    }
+  ]
+}

@@ -92,3 +92,103 @@ describe('README credentials', () => {
     expect(example).toContain('${{ secrets.OPENROUTER_API_KEY }}');
   });
 });
+
+// Section helpers. A missing heading yields -1 or '', so each new test fails on
+// its own with "expected '' to contain ..." instead of breaking the whole file.
+function headingOffset(heading: string): number {
+  return readme.search(new RegExp(`^${heading}$`, 'm'));
+}
+
+function sectionText(heading: string): string {
+  const at = headingOffset(heading);
+  if (at === -1) return '';
+  const rest = readme.slice(readme.indexOf('\n', at) + 1);
+  const next = rest.search(/^## /m);
+  return next === -1 ? rest : rest.slice(0, next);
+}
+
+describe('README Development', () => {
+  it('no longer describes the CLI as a stub', () => {
+    expect(readme).not.toContain('stub for now');
+  });
+});
+
+describe('README Quick start', () => {
+  const quick = () => sectionText('## Quick start');
+
+  it('has a Quick start section before GitHub Action', () => {
+    const quickAt = headingOffset('## Quick start');
+    expect(quickAt, 'missing ## Quick start section').toBeGreaterThanOrEqual(0);
+    expect(headingOffset('## GitHub Action')).toBeGreaterThan(quickAt);
+  });
+
+  it('shows the local install and init commands', () => {
+    expect(quick()).toContain('npm i -D continuous-evidence');
+    expect(quick()).toContain('npx ce init');
+  });
+
+  it('shows the global install and npx continuous-evidence alternatives', () => {
+    expect(quick()).toContain('npm i -g continuous-evidence && ce init');
+    expect(quick()).toContain('npx continuous-evidence init');
+  });
+
+  it('shows the API key, browser install and run steps', () => {
+    expect(quick()).toContain('OPENROUTER_API_KEY');
+    expect(quick()).toContain('npx playwright install chromium');
+    expect(quick()).toContain('npx ce run');
+  });
+
+  it('warns that bare npx ce resolves to the unrelated ce package', () => {
+    expect(quick()).toContain('bare `npx ce`');
+    expect(quick()).toContain('unrelated `ce` package');
+  });
+
+  it('uses sh code blocks and no yaml block', () => {
+    expect(quick()).toContain('```sh');
+    expect(quick()).not.toContain('```yaml');
+    expect(quick()).not.toContain('```bash');
+  });
+});
+
+describe('README Releasing runbook', () => {
+  const releasing = () => sectionText('## Releasing');
+
+  it('has a Releasing section before License', () => {
+    const releasingAt = headingOffset('## Releasing');
+    expect(releasingAt, 'missing ## Releasing section').toBeGreaterThanOrEqual(0);
+    expect(headingOffset('## License')).toBeGreaterThan(releasingAt);
+  });
+
+  it('documents the manual first publish', () => {
+    expect(releasing()).toContain('npm login');
+    expect(releasing()).toContain('npm publish --workspace continuous-evidence --access public');
+  });
+
+  it('documents the trusted publisher for rfxlamia/ce and release.yml', () => {
+    expect(releasing()).toMatch(/trusted publisher/i);
+    expect(releasing()).toContain('rfxlamia/ce');
+    expect(releasing()).toContain('release.yml');
+  });
+
+  it('documents the vX.Y.Z tag matching packages/ce/package.json', () => {
+    expect(releasing()).toContain('vX.Y.Z');
+    expect(releasing()).toContain('packages/ce/package.json');
+  });
+
+  it('states that one tag releases the Action and npm together', () => {
+    expect(releasing()).toContain('Pushing one tag releases the GitHub Action and the npm package together.');
+  });
+
+  it('documents moving the v0 major tag to the release', () => {
+    expect(releasing()).toContain('git tag -f v0');
+    expect(releasing()).toContain('git push -f origin v0');
+  });
+
+  it('documents prerelease versions on the next dist-tag', () => {
+    expect(releasing()).toMatch(/prerelease[^\n]*`next`/i);
+  });
+
+  it('mentions the optional 2FA and no-token setting', () => {
+    expect(releasing()).toContain('Require 2FA and disallow tokens');
+  });
+});

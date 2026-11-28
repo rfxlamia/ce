@@ -1,0 +1,58 @@
+{
+  "task_id": "T4",
+  "task_name": "Next-steps text and workflow snippet",
+  "cycle": 3,
+  "timestamp": "2026-11-28T00:34:17Z",
+  "reviewer_mode": "read-only",
+  "reviewer_config": "batch-parallel",
+  "stage_1": {
+    "status": "PASS",
+    "issues": [],
+    "concerns_addressed": [
+      "Fix 4c33a47 deviates from spec C2 (pnpm row lists bare pnpm/action-setup@v4) by adding with.version 10 when pmMajor is null; controller-approved, justified by action README (version required unless packageManager present) and does not break any other C1/C2/C3 requirement.",
+      "pnpm/action-setup@v4 action.yml lists input 'version' (required: false in metadata, enforced at runtime when packageManager is absent), so 'version: 10' is a valid input; YAML number is stringified by the runner. Known-pmMajor case stays bare, which avoids the v4 version-conflict error.",
+      "Action-setup still precedes setup-node; frozen-lockfile logic, ordering, key handling and not-installed guard unchanged. vitest src/init/: 5 files, 88 tests pass; tsc --noEmit clean.",
+      "Correction 60ccbaf resolves P1-F2: the fallback next step now uses basename(input.configPath), so --force on .ce.yml names .ce.yml; the default ce.yml still renders \"edit target in ce.yml\" (C1 text preserved, asserted in the same test). renderNextSteps stays a pure renderer (only node:path basename, no fs). Unreadable reason falls into the existing fallback/not-installed path, consistent with C1 (unreadable package.json counts as not installed).",
+      "npx vitest run src/init/: 5 files, 91 tests pass; tsc --noEmit clean (re-run by auditor on 60ccbaf)."
+    ]
+  },
+  "stage_2": {
+    "status": "PASS",
+    "strengths": [
+      "Default \"edit target in ce.yml\" text preserved and asserted; .ce.yml case asserted via configPath /work/.ce.yml",
+      "Test is meaningful: pre-fix text \"edit target in ce.yml\" does not contain \"edit target in .ce.yml\", so the new assertion would have failed before the change",
+      "Change is one-line and does not touch ordering, key handling or workflow snippet logic",
+      "Previous Important resolved: pmMajor null yields with.version 10 with an inline '# match your pnpm version' comment; known pmMajor yields a bare step with an explanatory code comment.",
+      "New tests parse the printed YAML and assert with equals {version: 10} for pmMajor null with and without lockfile, assert the comment is printed, and assert with is undefined when pmMajor is 9.",
+      "Change is minimal (one conditional in table-driven installPlan), no regressions in existing install-table, ordering or key tests."
+    ],
+    "issues": [
+      {
+        "severity": "Minor",
+        "description": "Carried forward: workflow snippet is printed as an unnumbered 'Optional:' section rather than numbered step 7 as in C1. Presentation only.",
+        "location": "packages/ce/src/init/next-steps.ts:117"
+      },
+      {
+        "severity": "Minor",
+        "description": "Process note: the commit was amended to add the missing basename import, so the .ce.yml next-steps assertion has no separately recorded RED run on the final commit. Auditor reasoned it would fail on the pre-fix text; tests and tsc are green now. Not blocking.",
+        "location": "packages/ce/src/init/next-steps.test.ts:232"
+      }
+    ],
+    "assessment": "Approved"
+  },
+  "overall": "REVIEW_PASS",
+  "fix_instructions": "",
+  "loop_info": {
+    "recovery_window": 1,
+    "current_cycle": 2,
+    "max_cycles": 2,
+    "cycles_remaining": 1,
+    "strategies": [
+      "round 1: add with.version 10 to pnpm/action-setup when pmMajor is null; bare step otherwise",
+      "phase-1 correction 60ccbaf audited"
+    ],
+    "prior_windows": []
+  },
+  "reviewed_sha": "60ccbaf023b4c33db8a3ecca5a4dd14fc261c520",
+  "correction_sha": "60ccbaf023b4c33db8a3ecca5a4dd14fc261c520"
+}

@@ -1,0 +1,135 @@
+{
+  "contract": 1,
+  "phase_key": "phase-2",
+  "phase_file": "execution-plan/phase-2.md",
+  "recorded_at": "2026-11-28T01:20:19.717891Z",
+  "phase_verdict": "PHASE_PASS_RESOLVED",
+  "tasks": [
+    {
+      "task_id": "T5",
+      "name": "`ce init` command, overwrite guard and CLI wiring",
+      "done_sha": "9d430dca6357faf179c05e37ce0a4dab7c189e4c",
+      "verdict": "REVIEW_PASS"
+    },
+    {
+      "task_id": "T6",
+      "name": "Tarball smoke test script and CI job",
+      "done_sha": "09617ddc034999922033658c34d5939f5d1c1fd0",
+      "verdict": "REVIEW_PASS"
+    },
+    {
+      "task_id": "T7",
+      "name": "OIDC release workflow",
+      "done_sha": "818bc0b20cdcaa3e0b100eede097eaaf0e3c5fbf",
+      "verdict": "REVIEW_PASS"
+    },
+    {
+      "task_id": "T8",
+      "name": "README Quick start and Releasing runbook",
+      "done_sha": "19a54ea693eeec5a7b8623c785217d6998ed5823",
+      "verdict": "REVIEW_PASS"
+    },
+    {
+      "task_id": "T9",
+      "name": "Done-when verification (keyed live run and timing)",
+      "done_sha": "4b02781743f84d3b5b14b30f40f3b5dce6b863d8",
+      "verdict": "REVIEW_PASS"
+    }
+  ],
+  "verification": [
+    {
+      "check": "root npm run typecheck",
+      "result": "PASS",
+      "evidence": "exit 0 in confirming phase pass after corrections"
+    },
+    {
+      "check": "root npm test",
+      "result": "PASS",
+      "evidence": "exit 0 after b3f63fb: packages/ce 1489 tests, apps 63, action 163 (incl. bundle.test fresh rebuild)"
+    },
+    {
+      "check": "node scripts/smoke-pack.mjs",
+      "result": "PASS",
+      "evidence": "SMOKE OK: lean tarball, shebang, version, init + loadConfig, second init exits 1, keyless run exits 1"
+    },
+    {
+      "check": "keyed live run in fresh vite app (T9)",
+      "result": "PASS",
+      "evidence": "verification.md: npm i -D tgz -> chromium -> ce init -> ce run = 15 s (Chromium cached; cold download estimated 30-90 s), Outcome EVIDENCED, localhost:5173 readiness OK"
+    },
+    {
+      "check": "phase-level pass",
+      "result": "PASS",
+      "evidence": "reviews/phase-pass-phase-2.json PHASE_PASS_RESOLVED"
+    }
+  ],
+  "obstacles": [
+    {
+      "summary": "T5 changed packages/ce/src/cli.ts without regenerating action/dist; bundle.test failed so npm test and release.yml Test step would fail",
+      "resolution": "Correction b3f63fb rebuilt action/dist/ce-cli.js (byte-identical to fresh rebuild)",
+      "evidence": [
+        "reviews/phase-pass-phase-2.json",
+        "b3f63fb1044b999b7a3e0dfb6671f0bc1c265606"
+      ]
+    },
+    {
+      "summary": "README Releasing implied one tag also updates rfxlamia/ce@v0 users",
+      "resolution": "Correction a1dc69d adds a step moving the v0 major tag",
+      "evidence": [
+        "reviews/phase-pass-phase-2.json",
+        "a1dc69d2f9b3e8a236a0afa5a6c11541558fc262"
+      ]
+    },
+    {
+      "summary": "T5 audit: runInitCommand too long (Important) plus edge cases (lstat EACCES, directory lockfile, dangling symlink)",
+      "resolution": "In-loop refactor 9d430dc",
+      "evidence": [
+        "reviews/T5-review.json"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "kind": "user",
+      "decision": "First npm publish is manual by the maintainer after merge; later releases via release.yml with npm trusted publishing (OIDC), no NPM_TOKEN",
+      "rationale": "npm classic tokens deprecated; OIDC cannot do a first publish",
+      "source": "user answer 'Manual + workflow OIDC'"
+    },
+    {
+      "kind": "user",
+      "decision": "Release tags are semver vX.Y.Z (filter v[0-9]+.[0-9]+.[0-9]+*)",
+      "rationale": "shared tag namespace with the Action",
+      "source": "user answer '1'"
+    },
+    {
+      "kind": "user",
+      "decision": "Approved one keyed live ce run for T9 timing",
+      "rationale": "Done-when verification",
+      "source": "user answer 2026-11-28"
+    },
+    {
+      "kind": "implementation",
+      "decision": "Runbook bumps package version before the first tag after the manual 0.1.0 publish",
+      "rationale": "republishing 0.1.0 would fail and the tag guard requires tag == version",
+      "source": "T8 implementer, confirmed by T8 audit"
+    }
+  ],
+  "recommendations": [
+    {
+      "suggestion": "Runbook: move v0 only after the release workflow succeeds, and never for prerelease tags",
+      "evidence": "T8 correction audit Minor, phase-pass P2-F4"
+    },
+    {
+      "suggestion": "ce.yml header points to schemas/ce.schema.json, which is not shipped in the tarball or user project; use a repository URL",
+      "evidence": "phase-2 pass reviewer note (phase-1 T3 carry-over)"
+    },
+    {
+      "suggestion": "Measure a cold Chromium download once to confirm the 2-minute budget without cache",
+      "evidence": "phase-pass P2-F3, verification.md"
+    },
+    {
+      "suggestion": "setup-node package-manager-cache: false in release.yml for parity with npm's example",
+      "evidence": "T7 review Minor"
+    }
+  ]
+}

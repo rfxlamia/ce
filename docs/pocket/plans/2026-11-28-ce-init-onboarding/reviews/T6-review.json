@@ -1,0 +1,57 @@
+{
+  "task_id": "T6",
+  "task_name": "Tarball smoke test script and CI job",
+  "cycle": 1,
+  "timestamp": "2026-11-28T00:49:30Z",
+  "reviewer_mode": "read-only",
+  "reviewer_config": "batch-parallel",
+  "stage_1": {
+    "status": "PASS",
+    "issues": [],
+    "concerns_addressed": [
+      "Step 6 a-g all present in scripts/smoke-pack.mjs; keys stripped via childEnv; npx --no-install ce prevents fetching the unrelated registry package",
+      "Observed: workflow.test + smoke-pack.test 26/26 pass; smoke-pack.mjs exits 0 (3.6s elapsed, no leftover temp dir, git status clean); SMOKE_PACK_BREAK=shebang prints 'SMOKE FAIL [shebang]' and exits 1",
+      "ci.yml: smoke-pack job ubuntu-latest, 24.x, cache npm, identical pinned SHAs, persist-credentials false, npm ci before script, timeout 10, no secrets/Chromium, no rfxlamia/ce, verify job untouched (zero deleted lines); workflow-level contents: read applies so no job permissions needed; YAML parses",
+      "Out-of-scope action/bundle.test.ts failure (T5 cli.ts vs action/dist) not counted against T6"
+    ]
+  },
+  "stage_2": {
+    "status": "PASS",
+    "strengths": [
+      "Checks module is pure (no I/O) and returns { ok, message }; each negative control fails for its stated reason",
+      "argv-array spawnSync only, no shell:true; node execPath used for loadConfig; env keys stripped for every child",
+      "Named failing step on every failure path; temp dirs removed on fail() and success; --keep supported",
+      "Script is 134 lines, no function over ~50 lines, no 3x duplicated logic",
+      "Job is minimal and mirrors verify's pinned actions"
+    ],
+    "issues": [
+      {
+        "severity": "Minor",
+        "description": "npm pack --json output parsed via stdout.indexOf('['); if prepack build output ever writes a '[' to stdout before the JSON, parsing fails (reported as a named 'pack' failure, not silent). Prefer locating the JSON array more robustly (e.g. lastIndexOf('\n[') or parse from the first line that equals '[').",
+        "location": "scripts/smoke-pack.mjs:81"
+      },
+      {
+        "severity": "Minor",
+        "description": "Cleanup only runs through fail() and the success path; an unexpected thrown exception (e.g. readFileSync/JSON shape error such as entry.files undefined) leaves the temp dir behind. A try/finally around the body would make cleanup unconditional.",
+        "location": "scripts/smoke-pack.mjs:31-36"
+      },
+      {
+        "severity": "Minor",
+        "description": "Intermediate commit 98352fa is not green: workflow.test.ts smoke-pack assertions were committed before the job existed (RED). This follows the task packet's TDD step order and 09617dd restores green, but the range is not bisect-clean.",
+        "location": "action/workflow.test.ts:87"
+      }
+    ],
+    "assessment": "Approved"
+  },
+  "overall": "REVIEW_PASS",
+  "fix_instructions": "",
+  "loop_info": {
+    "recovery_window": 1,
+    "current_cycle": 1,
+    "max_cycles": 2,
+    "cycles_remaining": 2,
+    "strategies": [],
+    "prior_windows": []
+  },
+  "reviewed_sha": "09617ddc034999922033658c34d5939f5d1c1fd0"
+}

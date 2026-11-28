@@ -1,0 +1,129 @@
+{
+  "header": {
+    "plan_dir": "docs/pocket/plans/2026-11-28-ce-init-onboarding",
+    "plan_type": "phased",
+    "status": "DONE",
+    "date_started": "2026-11-28",
+    "date_completed": "2026-11-28",
+    "baseline_sha": "7c8d274cd112a12303698f9b5498d3fb80679394",
+    "pipeline": 5,
+    "plan_file": "execution-plan/index.md"
+  },
+  "phases": [
+    {
+      "order": 1,
+      "file": "execution-plan/phase-1.md",
+      "status": "DONE",
+      "tasks": [
+        {
+          "id": "T1",
+          "name": "Lean, publishable package manifest",
+          "status": "DONE",
+          "file": "execution-plan/tasks/T1-lean-publishable-package-manifest.md",
+          "done_sha": "6b7fc3ffd61c9a953f9f8ad8cbccf2b64ba1e08d"
+        },
+        {
+          "id": "T2",
+          "name": "Project detection (package manager, script, port, framework)",
+          "status": "DONE",
+          "file": "execution-plan/tasks/T2-project-detection-package-manager-script-port-framework.md",
+          "done_sha": "ce8213fa9bc1a0269b02f96ada1eda46c0921c7d"
+        },
+        {
+          "id": "T3",
+          "name": "Commented ce.yml template",
+          "status": "DONE",
+          "depends": "T2",
+          "file": "execution-plan/tasks/T3-commented-ce-yml-template.md",
+          "done_sha": "24b1ef6eecaea7f9b16d997774d1260ed6aca4a8"
+        },
+        {
+          "id": "T4",
+          "name": "Next-steps text and workflow snippet",
+          "status": "DONE",
+          "depends": "T2",
+          "file": "execution-plan/tasks/T4-next-steps-text-and-workflow-snippet.md",
+          "done_sha": "4c33a4720d4376c383c979c3aa8d69864132870a"
+        }
+      ],
+      "corrections": [
+        {
+          "sha": "60ccbaf023b4c33db8a3ecca5a4dd14fc261c520",
+          "files": [
+            "packages/ce/src/init/detect.test.ts",
+            "packages/ce/src/init/detect.ts",
+            "packages/ce/src/init/next-steps.test.ts",
+            "packages/ce/src/init/next-steps.ts",
+            "packages/ce/src/init/template.test.ts",
+            "packages/ce/src/init/template.ts"
+          ],
+          "for_task": "T2"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "file": "execution-plan/phase-2.md",
+      "status": "DONE",
+      "tasks": [
+        {
+          "id": "T5",
+          "name": "`ce init` command, overwrite guard and CLI wiring",
+          "status": "DONE",
+          "depends": "T3, T4",
+          "file": "execution-plan/tasks/T5-ce-init-command-overwrite-guard-and-cli-wiring.md",
+          "done_sha": "9d430dca6357faf179c05e37ce0a4dab7c189e4c"
+        },
+        {
+          "id": "T6",
+          "name": "Tarball smoke test script and CI job",
+          "status": "DONE",
+          "depends": "T1, T5",
+          "file": "execution-plan/tasks/T6-tarball-smoke-test-script-and-ci-job.md",
+          "done_sha": "09617ddc034999922033658c34d5939f5d1c1fd0"
+        },
+        {
+          "id": "T7",
+          "name": "OIDC release workflow",
+          "status": "DONE",
+          "depends": "T6",
+          "file": "execution-plan/tasks/T7-oidc-release-workflow.md",
+          "done_sha": "818bc0b20cdcaa3e0b100eede097eaaf0e3c5fbf"
+        },
+        {
+          "id": "T8",
+          "name": "README Quick start and Releasing runbook",
+          "status": "DONE",
+          "depends": "T7",
+          "file": "execution-plan/tasks/T8-readme-quick-start-and-releasing-runbook.md",
+          "done_sha": "19a54ea693eeec5a7b8623c785217d6998ed5823"
+        },
+        {
+          "id": "T9",
+          "name": "Done-when verification (keyed live run and timing)",
+          "status": "DONE",
+          "depends": "T6, T8",
+          "file": "execution-plan/tasks/T9-done-when-verification-keyed-live-run-and-timing.md",
+          "done_sha": "4b02781743f84d3b5b14b30f40f3b5dce6b863d8"
+        }
+      ],
+      "corrections": [
+        {
+          "sha": "b3f63fb1044b999b7a3e0dfb6671f0bc1c265606",
+          "files": [
+            "action/dist/ce-cli.js"
+          ],
+          "for_task": "T5"
+        },
+        {
+          "sha": "a1dc69d2f9b3e8a236a0afa5a6c11541558fc262",
+          "files": [
+            "README.md",
+            "action/readme.test.ts"
+          ],
+          "for_task": "T8"
+        }
+      ]
+    }
+  ]
+}

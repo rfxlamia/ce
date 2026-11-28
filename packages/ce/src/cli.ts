@@ -15,6 +15,7 @@ import { existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { runEvalCommand } from './eval/index.js';
 import { VERSION, createJevGateway } from './index.js';
+import { runInitCommand } from './init/index.js';
 import { runRunCommand } from './run/index.js';
 
 const [, , command, ...rest] = process.argv;
@@ -23,6 +24,7 @@ function help(): void {
   console.log(`Continuous Evidence v${VERSION}
 
 Usage:
+  ce init [--force]   Write a starter ce.yml for this project
   ce run [options]    Run Continuous Evidence for the current change
   ce eval [options]   Measure Jev agreement against labelled fixtures
 
@@ -79,6 +81,14 @@ async function main(): Promise<number> {
         stderr: process.stderr,
         createGateway: createJevGateway,
         now: () => new Date(),
+      });
+    case 'init':
+      // Deliberately does not load .env: init only reads package.json and the process env.
+      return runInitCommand(rest, {
+        env: process.env,
+        cwd: process.cwd(),
+        stdout: process.stdout,
+        stderr: process.stderr,
       });
     case 'run':
       if (!loadEnvFileIfPresent(process.cwd())) return 1;

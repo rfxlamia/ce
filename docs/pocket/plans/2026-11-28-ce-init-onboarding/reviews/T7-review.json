@@ -1,0 +1,70 @@
+{
+  "task_id": "T7",
+  "task_name": "OIDC release workflow",
+  "cycle": 1,
+  "timestamp": "2026-11-28T00:53:04Z",
+  "reviewer_mode": "read-only",
+  "reviewer_config": "batch-parallel",
+  "stage_1": {
+    "status": "PASS",
+    "issues": [],
+    "concerns_addressed": [
+      "Trigger filter v[0-9]+.[0-9]+.[0-9]+* verified against GitHub filter-pattern cheat sheet (github/docs workflow-syntax via Context7 /github/docs): '+' = one or more of preceding char, '[]' ranges 0-9 supported, '*' = zero or more non-'/' chars, '.' literal (docs example v[12].[0-9]+.[0-9]+). v0/v1 cannot match (need two dots); quoted so YAML parses. No pull_request/pull_request_target/issue_comment.",
+      "OIDC: permissions id-token write + contents read (release.yml:11-13); setup-node registry-url https://registry.npmjs.org, no cache input (root package.json has no packageManager field so no auto-cache); no NODE_AUTH_TOKEN/NPM_TOKEN/secrets in file. Matches npm trusted-publishers doc example (setup-node + registry-url + plain npm publish, no token); doc states npm CLI detects OIDC and uses it before falling back to tokens.",
+      "Guard output constrained to latest|next: release-tag.mjs prints only after exact equality tag === v<version> (release-tag.mjs:42-46); I ran it: mismatch, empty arg, missing package, 'v0.1.0;x' all exit 1 with empty stdout.",
+      "npm>=11.5.1 check executed against 11.5.0(fail->install), 11.5.1, 11.6.0, 10.9.9(fail), 12.0.0, 11.5.2-pre.1: correct. Runs before npm ci and before publish.",
+      "Step order matches packet and spec D5 1-7; guard is first run step; Chromium install (release.yml:59-60) precedes test; smoke (release.yml:71-72) precedes publish. Pinned SHAs identical to ci.yml (checkout 3d3c42e5..., setup-node 949feb24...).",
+      "Controller gate reproduced: release-tag.test + workflow.test 26/26 (7 + 19).",
+      "Observation (not T7 fault): 'npm test' in release also runs action/bundle.test.ts which reads committed action/dist; a stale dist (T5) will fail the release Test step until the controller's phase correction lands. Release itself does not touch action/dist."
+    ]
+  },
+  "stage_2": {
+    "status": "PASS",
+    "strengths": [
+      "Guard logic extracted into a small testable script (46 lines, no function >50 lines, no duplication) with exact equality, clear error naming both tag and version, and graceful handling of missing tag, missing/invalid package.json, missing --package value, extra args.",
+      "Script-injection hardened: github.ref_name goes through env and is quoted; the only ${{ }} inside a run body is publish --tag ${{ steps.tag.outputs.dist-tag }}, whose value is guaranteed latest|next. Overriding GITHUB_REF_NAME at step env with the identical value github.ref_name is harmless whether or not the runner honors the override.",
+      "checkout persist-credentials false; least-privilege permissions; no stored secrets; all actions SHA-pinned.",
+      "Tests are behavioral: CLI spawned against temp package.json; tag-filter test translates the glob to a regex per GitHub semantics and asserts both match and non-match sets, including the v0.1.0abc glob-only case; seam test asserts id/output/env wiring and no ${{ in guard body.",
+      "Extras are justified: concurrency (cancel-in-progress false) protects a release mid-flight, timeout-minutes 20 bounds the job, extra 'secrets.' assertion strengthens the no-token rule, extra tests (no v prefix, missing tag) cover error paths."
+    ],
+    "issues": [
+      {
+        "severity": "Minor",
+        "description": "setup-node step does not set package-manager-cache: false, which the npm trusted-publishers doc example includes ('never use caching in release builds'). Currently safe (no packageManager field, no cache input) but a future packageManager field could enable auto-cache; workflow test only asserts no 'cache' key.",
+        "location": ".github/workflows/release.yml:31-36"
+      },
+      {
+        "severity": "Minor",
+        "description": "concurrency group 'release' with cancel-in-progress false still replaces an older pending run when a newer one queues, so two tags pushed in quick succession behind a running release may drop the middle one. Edge case; acceptable given lockstep tags.",
+        "location": ".github/workflows/release.yml:16-18"
+      },
+      {
+        "severity": "Minor",
+        "description": "Step env redefines built-in name GITHUB_REF_NAME with the same value; harmless but a distinct name (e.g. RELEASE_TAG) would avoid confusion. Packet text names $GITHUB_REF_NAME so it is spec-faithful.",
+        "location": ".github/workflows/release.yml:40-41"
+      },
+      {
+        "severity": "Minor",
+        "description": "Workflow test checks absence of ${{ only in the guard step; a generic assertion that only the publish step contains ${{ in run bodies would lock the injection-hardening rule.",
+        "location": "action/workflow.test.ts:202-211"
+      },
+      {
+        "severity": "Minor",
+        "description": "Process note, not a defect: in RED phase, 4 error-path tests (no v prefix, v0, v0.1.0abc, no tag) passed trivially because node exits 1 when the script is missing; only the mismatch (stderr content) and latest/next tests were truly RED. Post-implementation they are meaningful (a startsWith/regex guard would flip v0 and v0.1.0abc), but they gave no RED signal.",
+        "location": "action/release-tag.test.ts:46-61"
+      }
+    ],
+    "assessment": "Approved"
+  },
+  "overall": "REVIEW_PASS",
+  "fix_instructions": "",
+  "loop_info": {
+    "recovery_window": 1,
+    "current_cycle": 1,
+    "max_cycles": 2,
+    "cycles_remaining": 2,
+    "strategies": [],
+    "prior_windows": []
+  },
+  "reviewed_sha": "818bc0b20cdcaa3e0b100eede097eaaf0e3c5fbf"
+}

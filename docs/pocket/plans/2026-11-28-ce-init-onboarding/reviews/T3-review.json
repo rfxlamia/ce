@@ -1,0 +1,69 @@
+{
+  "task_id": "T3",
+  "task_name": "Commented ce.yml template",
+  "cycle": 2,
+  "timestamp": "2026-11-28T00:34:17Z",
+  "reviewer_mode": "read-only",
+  "reviewer_config": "batch-parallel",
+  "stage_1": {
+    "status": "PASS",
+    "issues": [],
+    "concerns_addressed": [
+      "Ready timeout 30s not in ConfigDefaults: confirmed (ConfigDefaults has no target.* keys); it is consistent with spec ('ready defaults path / timeout 30s') and with DEFAULT_READY_TIMEOUT in src/runtime/target.ts:173. Example is commented and schema-valid. Literal could be imported (Minor).",
+      "Context example literal src/**: context has no default, so it is illustrative; valid per schema (context.include string array). Header says 'shown with their defaults' which slightly overstates for context (Minor).",
+      "Null-framework hint 'no known framework': accurate, accepted.",
+      "Reason wording: accepted; non-object scripts map to no-script reason 'has no dev or start script', which is truthful and spec A8 only requires a why-comment.",
+      "Duplicated readRendered/validate helpers across the two test files: Minor duplication (2 copies, below 3x heuristic).",
+      "Correction 60ccbaf resolves P1-F1 for the template: FALLBACK_REASONS gains unreadable = \"package.json could not be read\" (Record type forces exhaustiveness). The unreadable it.each case renders through the real readAndParseConfigFile + ConfigSchema (readRendered), asserts no target key, commented target block and a reason comment matching /could not be read/. P1-F3 resolved: DEFAULT_PORT imported from detect.ts, local duplicate removed.",
+      "npx vitest run src/init/: 5 files, 91 tests pass; tsc --noEmit clean (re-run by auditor on 60ccbaf)."
+    ]
+  },
+  "stage_2": {
+    "status": "PASS",
+    "strengths": [
+      "Unreadable rendering validated via real reader and schema, not a string check",
+      "Single DEFAULT_PORT source; value-type import of a const from detect.ts is safe (detect.ts has no imports, no cycle)",
+      "Existing fallback reasons, hostile-input and property tests unchanged and green",
+      "All interpolations verified: pm and script are fixed sets (type-level 'dev'|'start', PM_NAMES), port is a validated integer 1..65535 from detect.ts, framework name comes only from the fixed FRAMEWORKS table; raw scriptText only reaches a sanitised, capped single-line comment.",
+      "Sanitiser replaces \\p{Cc} (incl. CR, LF, NUL, U+0085), \\p{Cf} (incl. BOM, bidi) and U+2028/2029; hint line capped at 120 chars after '# ' accounting for prefix/suffix, truncation is surrogate-safe.",
+      "Output validated through the real readAndParseConfigFile + ConfigSchema in detected, unknown-port and all four fallback branches; url is http://localhost:<port> paired with start; version: 0 matches z.literal(0)."
+    ],
+    "issues": [
+      {
+        "severity": "Minor",
+        "description": "READY_TIMEOUT_EXAMPLE '30s' duplicates exported DEFAULT_READY_TIMEOUT (src/runtime/target.ts:173); quality bar prefers no drifting literals. Consider importing it.",
+        "location": "packages/ce/src/init/template.ts:11"
+      },
+      {
+        "severity": "Minor",
+        "description": "context.include example 'src/**' is not a default (context has none) but sits under 'shown with their defaults'; reword header to 'shown with defaults or illustrative values'.",
+        "location": "packages/ce/src/init/template.ts:93-96"
+      },
+      {
+        "severity": "Minor",
+        "description": "Test helper readRendered (template.test.ts, exported but unused elsewhere) and validate (property test) duplicate reader+schema logic; share one helper. No test asserts that uncommenting the fallback target block yields a valid config.",
+        "location": "packages/ce/src/init/template.test.ts:15; packages/ce/src/init/template.property.test.ts:55"
+      },
+      {
+        "severity": "Minor",
+        "description": "detectedHint interpolates d.framework unsanitised; safe only because detect.ts draws it from a fixed table (type is string|null). Cheap defense: run it through sanitizeForComment.",
+        "location": "packages/ce/src/init/template.ts:45"
+      }
+    ],
+    "assessment": "Approved"
+  },
+  "overall": "REVIEW_PASS",
+  "fix_instructions": "",
+  "loop_info": {
+    "recovery_window": 1,
+    "current_cycle": 1,
+    "max_cycles": 2,
+    "cycles_remaining": 2,
+    "strategies": [
+      "phase-1 correction 60ccbaf audited"
+    ],
+    "prior_windows": []
+  },
+  "reviewed_sha": "60ccbaf023b4c33db8a3ecca5a4dd14fc261c520",
+  "correction_sha": "60ccbaf023b4c33db8a3ecca5a4dd14fc261c520"
+}

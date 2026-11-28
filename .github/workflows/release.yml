@@ -1,0 +1,75 @@
+name: Release
+
+# Publishes continuous-evidence to npm via trusted publishing (OIDC). No npm token
+# is stored anywhere. Fires only on exact semver tags (v1.2.3, v1.2.3-rc.1); floating
+# tags such as v0 never match. Requires the trusted publisher to be configured on
+# npmjs.com for this repository and workflow file.
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+*']
+
+permissions:
+  id-token: write
+  contents: read
+
+# Never cancel a release mid-flight.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: publish continuous-evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.x
+          registry-url: https://registry.npmjs.org
+
+      # Fails fast (before install/test) when the tag and package version disagree.
+      - name: Verify tag matches package version
+        id: tag
+        env:
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          tag_out="$(node scripts/release-tag.mjs "$GITHUB_REF_NAME")"
+          echo "dist-tag=$tag_out" >> "$GITHUB_OUTPUT"
+
+      # Trusted publishing needs npm >= 11.5.1.
+      - name: Ensure npm >= 11.5.1
+        run: |
+          set -euo pipefail
+          if ! node -e 'const [a,b,c]=process.argv[1].split(".").map(n=>parseInt(n,10)); const [x,y,z]=[11,5,1]; process.exit(a>x||(a===x&&(b>y||(b===y&&c>=z)))?0:1)' "$(npm --version)"; then
+            npm install -g npm@^11.5.1
+          fi
+          npm --version
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Smoke-test the packed tarball
+        run: node scripts/smoke-pack.mjs
+
+      - name: Publish to npm
+        run: npm publish --workspace continuous-evidence --access public --tag ${{ steps.tag.outputs.dist-tag }}

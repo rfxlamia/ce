@@ -2,6 +2,22 @@
   "name": "continuous-evidence",
   "version": "0.1.0",
   "description": "Continuous Evidence core and CLI (v0 implementation spike). See SPEC.md at the repository root.",
+  "keywords": [
+    "verification",
+    "evidence",
+    "ci",
+    "playwright",
+    "cli"
+  ],
+  "homepage": "https://github.com/rfxlamia/ce#readme",
+  "bugs": {
+    "url": "https://github.com/rfxlamia/ce/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rfxlamia/ce.git",
+    "directory": "packages/ce"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -12,7 +28,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && npm run build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "generate:config-schema": "tsx src/scripts/generate-config-schema.ts",

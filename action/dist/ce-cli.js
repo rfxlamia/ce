@@ -1324,9 +1324,9 @@ ${indent}`) + "'";
         start = start.replace(/\n+/g, `$&${indent}`);
       }
       const indentSize = indent ? "2" : "1";
-      let header = (startWithSpace ? indentSize : "") + chomp;
+      let header2 = (startWithSpace ? indentSize : "") + chomp;
       if (comment) {
-        header += " " + commentString(comment.replace(/ ?[\r\n]+/g, " "));
+        header2 += " " + commentString(comment.replace(/ ?[\r\n]+/g, " "));
         if (onComment)
           onComment();
       }
@@ -1341,11 +1341,11 @@ ${indent}`) + "'";
         }
         const body = foldFlowLines.foldFlowLines(`${start}${foldedValue}${end}`, indent, foldFlowLines.FOLD_BLOCK, foldOptions);
         if (!literalFallback)
-          return `>${header}
+          return `>${header2}
 ${indent}${body}`;
       }
       value = value.replace(/\n+/g, `$&${indent}`);
-      return `|${header}
+      return `|${header2}
 ${indent}${start}${value}${end}`;
     }
     function plainString(item, ctx, onComment, onChompKeep) {
@@ -4448,10 +4448,10 @@ var require_resolve_block_scalar = __commonJS({
     var Scalar = require_Scalar();
     function resolveBlockScalar(ctx, scalar, onError) {
       const start = scalar.offset;
-      const header = parseBlockScalarHeader(scalar, ctx.options.strict, onError);
-      if (!header)
+      const header2 = parseBlockScalarHeader(scalar, ctx.options.strict, onError);
+      if (!header2)
         return { value: "", type: null, comment: "", range: [start, start, start] };
-      const type = header.mode === ">" ? Scalar.Scalar.BLOCK_FOLDED : Scalar.Scalar.BLOCK_LITERAL;
+      const type = header2.mode === ">" ? Scalar.Scalar.BLOCK_FOLDED : Scalar.Scalar.BLOCK_LITERAL;
       const lines = scalar.source ? splitLines(scalar.source) : [];
       let chompStart = lines.length;
       for (let i = lines.length - 1; i >= 0; --i) {
@@ -4462,26 +4462,26 @@ var require_resolve_block_scalar = __commonJS({
           break;
       }
       if (chompStart === 0) {
-        const value2 = header.chomp === "+" && lines.length > 0 ? "\n".repeat(Math.max(1, lines.length - 1)) : "";
-        let end2 = start + header.length;
+        const value2 = header2.chomp === "+" && lines.length > 0 ? "\n".repeat(Math.max(1, lines.length - 1)) : "";
+        let end2 = start + header2.length;
         if (scalar.source)
           end2 += scalar.source.length;
-        return { value: value2, type, comment: header.comment, range: [start, end2, end2] };
+        return { value: value2, type, comment: header2.comment, range: [start, end2, end2] };
       }
-      let trimIndent = scalar.indent + header.indent;
-      let offset = scalar.offset + header.length;
+      let trimIndent = scalar.indent + header2.indent;
+      let offset = scalar.offset + header2.length;
       let contentStart = 0;
       for (let i = 0; i < chompStart; ++i) {
         const [indent, content] = lines[i];
         if (content === "" || content === "\r") {
-          if (header.indent === 0 && indent.length > trimIndent)
+          if (header2.indent === 0 && indent.length > trimIndent)
             trimIndent = indent.length;
         } else {
           if (indent.length < trimIndent) {
             const message = "Block scalars with more-indented leading empty lines must use an explicit indentation indicator";
             onError(offset + indent.length, "MISSING_CHAR", message);
           }
-          if (header.indent === 0)
+          if (header2.indent === 0)
             trimIndent = indent.length;
           contentStart = i;
           if (trimIndent === 0 && !ctx.atRoot) {
@@ -4508,7 +4508,7 @@ var require_resolve_block_scalar = __commonJS({
         if (crlf)
           content = content.slice(0, -1);
         if (content && indent.length < trimIndent) {
-          const src = header.indent ? "explicit indentation indicator" : "first line";
+          const src = header2.indent ? "explicit indentation indicator" : "first line";
           const message = `Block scalar lines must not be less indented than their ${src}`;
           onError(offset - content.length - (crlf ? 2 : 1), "BAD_INDENT", message);
           indent = "";
@@ -4535,7 +4535,7 @@ var require_resolve_block_scalar = __commonJS({
           prevMoreIndented = false;
         }
       }
-      switch (header.chomp) {
+      switch (header2.chomp) {
         case "-":
           break;
         case "+":
@@ -4547,8 +4547,8 @@ var require_resolve_block_scalar = __commonJS({
         default:
           value += "\n";
       }
-      const end = start + header.length + scalar.source.length;
-      return { value, type, comment: header.comment, range: [start, end, end] };
+      const end = start + header2.length + scalar.source.length;
+      return { value, type, comment: header2.comment, range: [start, end, end] };
     }
     function parseBlockScalarHeader({ offset, props }, strict2, onError) {
       if (props[0].type !== "block-scalar-header") {
@@ -5387,10 +5387,10 @@ var require_cst_scalar = __commonJS({
             type = "QUOTE_DOUBLE";
             break;
           case "block-scalar": {
-            const header = token.props[0];
-            if (header.type !== "block-scalar-header")
+            const header2 = token.props[0];
+            if (header2.type !== "block-scalar-header")
               throw new Error("Invalid block scalar header");
-            type = header.source[0] === ">" ? "BLOCK_FOLDED" : "BLOCK_LITERAL";
+            type = header2.source[0] === ">" ? "BLOCK_FOLDED" : "BLOCK_LITERAL";
             break;
           }
           default:
@@ -5422,10 +5422,10 @@ var require_cst_scalar = __commonJS({
       const head = source.substring(0, he);
       const body = source.substring(he + 1) + "\n";
       if (token.type === "block-scalar") {
-        const header = token.props[0];
-        if (header.type !== "block-scalar-header")
+        const header2 = token.props[0];
+        if (header2.type !== "block-scalar-header")
           throw new Error("Invalid block scalar header");
-        header.source = head;
+        header2.source = head;
         token.source = body;
       } else {
         const { offset } = token;
@@ -7367,8 +7367,8 @@ var require_dist = __commonJS({
 });
 
 // packages/ce/src/cli.ts
-import { existsSync, statSync as statSync4 } from "node:fs";
-import { join as join6 } from "node:path";
+import { existsSync, statSync as statSync5 } from "node:fs";
+import { join as join7 } from "node:path";
 
 // packages/ce/src/eval/fixture.ts
 import { readdirSync as readdirSync2, readFileSync as readFileSync2, statSync as statSync2 } from "node:fs";
@@ -10509,10 +10509,10 @@ function isValidJWT(token, algorithm = null) {
     const tokensParts = token.split(".");
     if (tokensParts.length !== 3)
       return false;
-    const [header] = tokensParts;
-    if (!header)
+    const [header2] = tokensParts;
+    if (!header2)
       return false;
-    const parsedHeader = JSON.parse(atob(header));
+    const parsedHeader = JSON.parse(atob(header2));
     if ("typ" in parsedHeader && parsedHeader?.typ !== "JWT")
       return false;
     if (!parsedHeader.alg)
@@ -29458,8 +29458,8 @@ function resolveGit(input2) {
     for (const e of batch) for (const k of headerKeys(e)) keys.set(k, e);
     for (const block of stdout.split(/^(?=diff --git )/m)) {
       if (!block.startsWith("diff --git ")) continue;
-      const header = block.slice(0, block.indexOf("\n") === -1 ? void 0 : block.indexOf("\n"));
-      const entry2 = keys.get(header);
+      const header2 = block.slice(0, block.indexOf("\n") === -1 ? void 0 : block.indexOf("\n"));
+      const entry2 = keys.get(header2);
       if (!entry2) continue;
       if (Buffer.byteLength(block) > RAW_PATCH_LIMIT) unfit.add(entry2);
       else patches.set(entry2, block);
@@ -39996,12 +39996,495 @@ async function runRunCommand(argv, deps) {
 // packages/ce/src/evidence/comment.ts
 var [SKIPPED_O, EVIDENCED_O, UNSUPPORTED_O, ERROR_O] = OUTCOMES;
 
+// packages/ce/src/init/command.ts
+import { randomBytes } from "node:crypto";
+import * as nodeFs from "node:fs";
+import { join as join6 } from "node:path";
+
+// packages/ce/src/init/detect.ts
+var DEFAULT_PORT = 3e3;
+var FRAMEWORKS = [
+  { name: "vite", port: 5173, commands: ["vite"], deps: ["vite"] },
+  { name: "@sveltejs/kit", port: 5173, commands: [], deps: ["@sveltejs/kit"] },
+  { name: "next", port: 3e3, commands: ["next"], deps: ["next"] },
+  { name: "nuxt", port: 3e3, commands: ["nuxt"], deps: ["nuxt"] },
+  { name: "nuxi", port: 3e3, commands: ["nuxi"], deps: ["nuxi"] },
+  { name: "astro", port: 4321, commands: ["astro"], deps: ["astro"] },
+  { name: "@angular/cli", port: 4200, commands: ["ng"], deps: ["@angular/cli"] },
+  { name: "react-scripts", port: 3e3, commands: ["react-scripts"], deps: ["react-scripts"] },
+  { name: "gatsby", port: 8e3, commands: ["gatsby"], deps: ["gatsby"] }
+];
+var VALUE = "([^\\s;&|]+)";
+var PORT_PATTERNS = [
+  new RegExp(`(?:^|[\\s;&|])--port(?:=|\\s+)${VALUE}`, "g"),
+  new RegExp(`(?:^|[\\s;&|])-p\\s+${VALUE}`, "g"),
+  new RegExp(`(?:^|[\\s;&|])PORT=${VALUE}`, "g")
+];
+function isRecord6(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function validPort(raw) {
+  if (!/^\d+$/.test(raw)) return null;
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= 1 && n <= 65535 ? n : null;
+}
+function explicitPort(script) {
+  const matches = [];
+  for (const pattern of PORT_PATTERNS) {
+    for (const m of script.matchAll(pattern)) {
+      matches.push({ index: m.index ?? 0, value: m[1] ?? "" });
+    }
+  }
+  matches.sort((a, b) => a.index - b.index);
+  for (const { value } of matches) {
+    const port = validPort(value);
+    if (port !== null) return port;
+  }
+  return null;
+}
+function scriptTokens(script) {
+  return script.split(/[\s;&|()]+/).filter(Boolean).map((t) => t.slice(t.lastIndexOf("/") + 1));
+}
+function detectFramework(script, depNames) {
+  const tokens = new Set(scriptTokens(script));
+  return FRAMEWORKS.find((f) => f.commands.some((c) => tokens.has(c))) ?? FRAMEWORKS.find((f) => f.deps.some((d) => depNames.has(d))) ?? null;
+}
+var PM_NAMES = ["npm", "pnpm", "yarn", "bun"];
+function usableScript(value) {
+  return typeof value === "string" && value.trim() !== "";
+}
+function packageManagerField(value) {
+  if (typeof value !== "string") return null;
+  const m = /^([a-z]+)(?:@(.*))?$/.exec(value);
+  const name = PM_NAMES.find((n) => n === m?.[1]);
+  if (!name) return null;
+  const major = /^(\d+)/.exec(m?.[2] ?? "");
+  return { pm: name, pmMajor: major ? Number(major[1]) : null };
+}
+function pmFromLockfiles(files) {
+  if (files.has("pnpm-lock.yaml")) return "pnpm";
+  if (files.has("yarn.lock")) return "yarn";
+  if (files.has("bun.lock") || files.has("bun.lockb")) return "bun";
+  return "npm";
+}
+var LOCKFILES2 = ["pnpm-lock.yaml", "yarn.lock", "bun.lock", "bun.lockb", "package-lock.json"];
+function parseJson(text) {
+  try {
+    return { ok: true, value: JSON.parse(text.charCodeAt(0) === 65279 ? text.slice(1) : text) };
+  } catch {
+    return { ok: false };
+  }
+}
+function detectProject(input2) {
+  const lockfilePm = pmFromLockfiles(input2.files);
+  const hasLockfile = LOCKFILES2.some((f) => input2.files.has(f));
+  const bare = { pm: lockfilePm, pmMajor: null, hasLockfile, ceInstalled: false };
+  if (input2.packageJsonText === null) {
+    return { status: "fallback", reason: input2.packageJsonUnreadable === true ? "unreadable" : "missing", ...bare };
+  }
+  const parsed = parseJson(input2.packageJsonText);
+  if (!parsed.ok) return { status: "fallback", reason: "unparseable", ...bare };
+  const pkg = parsed.value;
+  if (!isRecord6(pkg)) return { status: "fallback", reason: "not-object", ...bare };
+  const deps = isRecord6(pkg.dependencies) ? pkg.dependencies : {};
+  const devDeps = isRecord6(pkg.devDependencies) ? pkg.devDependencies : {};
+  const depNames = /* @__PURE__ */ new Set([...Object.keys(deps), ...Object.keys(devDeps)]);
+  const declared = packageManagerField(pkg.packageManager);
+  const common2 = {
+    pm: declared?.pm ?? lockfilePm,
+    pmMajor: declared?.pmMajor ?? null,
+    hasLockfile,
+    ceInstalled: depNames.has("continuous-evidence")
+  };
+  const scripts = isRecord6(pkg.scripts) ? pkg.scripts : {};
+  const { dev, start } = scripts;
+  const script = usableScript(dev) ? "dev" : usableScript(start) ? "start" : null;
+  if (script === null) return { status: "fallback", reason: "no-script", ...common2 };
+  const scriptText = script === "dev" ? dev : start;
+  const explicit = explicitPort(scriptText);
+  const fw = detectFramework(scriptText, depNames);
+  return {
+    status: "detected",
+    ...common2,
+    script,
+    port: explicit ?? fw?.port ?? DEFAULT_PORT,
+    portSource: explicit !== null ? "explicit" : fw ? "framework" : "unknown",
+    framework: fw?.name ?? null,
+    scriptText
+  };
+}
+
+// packages/ce/src/init/next-steps.ts
+import { basename } from "node:path";
+function installPlan(d) {
+  const plan = (install, extra = {}) => ({
+    before: [],
+    after: [],
+    install,
+    ...extra
+  });
+  if (d.status === "fallback") return plan("npm ci", { comment: "# adjust to your install command" });
+  switch (d.pm) {
+    case "pnpm":
+      return plan(d.hasLockfile ? "pnpm install --frozen-lockfile" : "pnpm install", {
+        // action-setup@v4 needs `version` unless package.json has packageManager (pmMajor known),
+        // and errors when both disagree, so pin only when the field is absent.
+        before: d.pmMajor === null ? [
+          "      - uses: pnpm/action-setup@v4",
+          "        with:",
+          "          version: 10 # match your pnpm version"
+        ] : ["      - uses: pnpm/action-setup@v4"]
+      });
+    case "yarn": {
+      const frozen = d.pmMajor !== null && d.pmMajor >= 2 ? "--immutable" : "--frozen-lockfile";
+      return plan(d.hasLockfile ? `yarn install ${frozen}` : "yarn install", {
+        after: ["      - run: corepack enable"]
+      });
+    }
+    case "bun":
+      return plan(d.hasLockfile ? "bun install --frozen-lockfile" : "bun install", {
+        before: ["      - uses: oven-sh/setup-bun@v2"]
+      });
+    case "npm":
+      return plan(d.hasLockfile ? "npm ci" : "npm install");
+  }
+}
+function workflowSnippet(d) {
+  const plan = installPlan(d);
+  return [
+    "name: CE",
+    "on: pull_request",
+    "permissions:",
+    "  contents: read",
+    "  pull-requests: write",
+    "jobs:",
+    "  evidence:",
+    "    runs-on: ubuntu-latest",
+    "    steps:",
+    "      - uses: actions/checkout@v4",
+    "        with:",
+    "          fetch-depth: 0",
+    ...plan.before,
+    "      - uses: actions/setup-node@v4",
+    "        with:",
+    "          node-version: 22",
+    ...plan.after,
+    ...plan.comment ? [`      ${plan.comment}`] : [],
+    `      - run: ${plan.install}`,
+    "      - uses: rfxlamia/ce@v0",
+    "        env:",
+    "          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}"
+  ].join("\n");
+}
+function runCommandLines(d) {
+  if (d.ceInstalled) return ["Run: npx ce run"];
+  return [
+    "Install continuous-evidence: npm i -D continuous-evidence",
+    "Then run: npx ce run",
+    "(or, without installing: npx continuous-evidence run)"
+  ];
+}
+function renderNextSteps(input2) {
+  const { detection } = input2;
+  const steps = [];
+  if (detection.status === "fallback") {
+    steps.push([`Please edit target in ${basename(input2.configPath)}: we could not detect how to start your app.`]);
+  }
+  const keyIsSet = (input2.env.OPENROUTER_API_KEY ?? "") !== "";
+  steps.push([
+    keyIsSet ? "OPENROUTER_API_KEY is already set in your environment." : "Set OPENROUTER_API_KEY (get one at https://openrouter.ai/keys) in your environment or in .env.",
+    "A .env file in the current directory is loaded automatically; keep it out of git."
+  ]);
+  steps.push(["Install the browser: npx playwright install chromium"]);
+  steps.push(["Add .ce/ and .env to .gitignore"]);
+  steps.push(runCommandLines(detection));
+  const lines = [`Wrote ${input2.configPath}`, "", "Next steps:"];
+  steps.forEach((step, i) => {
+    step.forEach((text, j) => lines.push(j === 0 ? `  ${i + 1}. ${text}` : `     ${text}`));
+  });
+  lines.push("");
+  lines.push("Optional: run CE on pull requests. Save this as .github/workflows/ce.yml:", "");
+  lines.push("```yaml", workflowSnippet(detection), "```");
+  return lines.join("\n") + "\n";
+}
+
+// packages/ce/src/init/template.ts
+var DOCS_URL = "https://github.com/rfxlamia/ce";
+var READY_TIMEOUT_EXAMPLE = "30s";
+function header() {
+  return [
+    "# ce.yml - configuration for continuous-evidence (ce).",
+    `# Docs: ${DOCS_URL}`,
+    "# Schema: schemas/ce.schema.json (point your editor at it for completion and validation).",
+    "",
+    `version: ${ConfigDefaults.version}`,
+    ""
+  ];
+}
+var COMMENT_TEXT_MAX = 120;
+function sanitizeForComment(text) {
+  return text.replace(/[\p{Cc}\p{Cf}\u2028\u2029]/gu, " ");
+}
+function truncateUtf16(text, max) {
+  let out = "";
+  for (const ch of text) {
+    if (out.length + ch.length > max) break;
+    out += ch;
+  }
+  return out;
+}
+function detectedHint(d) {
+  const prefix = `Detected: ${d.framework ?? "no known framework"} (script "${d.script}": "`;
+  const suffix = '")';
+  const room = Math.max(0, COMMENT_TEXT_MAX - prefix.length - suffix.length);
+  const clean = sanitizeForComment(d.scriptText);
+  const body = clean.length <= room ? clean : `${truncateUtf16(clean, Math.max(0, room - 3))}...`;
+  return `# ${prefix}${body}${suffix}`;
+}
+var FALLBACK_REASONS = {
+  missing: "package.json was not found",
+  unreadable: "package.json could not be read",
+  unparseable: "package.json could not be parsed",
+  "not-object": "package.json is not an object",
+  "no-script": "package.json has no dev or start script"
+};
+function targetLines(start, port, indent) {
+  return [
+    `${indent}target:`,
+    `${indent}  start: ${start}`,
+    `${indent}  url: http://localhost:${port}`,
+    `${indent}  ready:`,
+    `${indent}    path: /`,
+    `${indent}    # timeout: ${READY_TIMEOUT_EXAMPLE}`
+  ];
+}
+function targetBlock(d) {
+  const lines = [detectedHint(d)];
+  if (d.portSource === "unknown") {
+    lines.push("# Dev server port not detected; check the url below and change it if needed.");
+  }
+  return [...lines, ...targetLines(`${d.pm} run ${d.script}`, d.port, ""), ""];
+}
+function fallbackTargetBlock(d) {
+  return [
+    `# Target not detected: ${FALLBACK_REASONS[d.reason]}.`,
+    "# Uncomment and adjust this block to tell ce how to start your app:",
+    ...targetLines(`${d.pm} run dev`, DEFAULT_PORT, "# "),
+    ""
+  ];
+}
+function optionalExamples() {
+  const { assessment, runtime, output: output2 } = ConfigDefaults;
+  const t = assessment?.thresholds;
+  const v = runtime?.viewport;
+  return [
+    "# Optional sections (shown with their defaults):",
+    "#",
+    "# context:",
+    '#   include: ["src/**"]',
+    "#",
+    "# assessment:",
+    "#   thresholds:",
+    `#     claim: ${t?.claim}`,
+    `#     observable: ${t?.observable}`,
+    `#     adequate: ${t?.adequate}`,
+    `#   uncertainty-band: ${assessment?.["uncertainty-band"]}`,
+    `#   on-uncertain: ${assessment?.["on-uncertain"]}`,
+    "#",
+    "# runtime:",
+    `#   max-steps: ${runtime?.["max-steps"]}`,
+    `#   timeout: ${runtime?.timeout}`,
+    "#   viewport:",
+    `#     width: ${v?.width}`,
+    `#     height: ${v?.height}`,
+    "#",
+    "# output:",
+    `#   dir: ${output2?.dir}`,
+    `#   fail-on: [${(output2?.["fail-on"] ?? []).join(", ")}]`,
+    ""
+  ];
+}
+function renderConfig(detection) {
+  const target = detection.status === "detected" ? targetBlock(detection) : fallbackTargetBlock(detection);
+  return [...header(), ...target, ...optionalExamples()].join("\n");
+}
+
+// packages/ce/src/init/command.ts
+var LOCKFILES3 = ["pnpm-lock.yaml", "yarn.lock", "bun.lock", "bun.lockb", "package-lock.json"];
+var CONFIG_NAMES = ["ce.yml", ".ce.yml"];
+var defaultFs = {
+  lstat: (p) => nodeFs.lstatSync(p),
+  stat: (p) => nodeFs.statSync(p),
+  readFile: (p, enc) => nodeFs.readFileSync(p, enc),
+  readdir: (p) => nodeFs.readdirSync(p),
+  writeFile: (p, data, options) => nodeFs.writeFileSync(p, data, options),
+  rename: (from, to) => nodeFs.renameSync(from, to),
+  unlink: (p) => nodeFs.unlinkSync(p)
+};
+var USAGE3 = `Usage: ce init [--force]
+
+Options:
+  --force   Overwrite an existing ce.yml (or .ce.yml)
+`;
+function parseInitArgs(argv) {
+  let force = false;
+  for (const arg of argv) {
+    if (arg !== "--force") return null;
+    force = true;
+  }
+  return { force };
+}
+function errorCode(error62) {
+  const code = error62?.code;
+  return typeof code === "string" ? code : "UNKNOWN";
+}
+function existsMessage(name) {
+  return `${name} already exists; re-run with --force to overwrite
+`;
+}
+function isFile2(fs2, path7) {
+  try {
+    return fs2.stat(path7).isFile();
+  } catch {
+    return false;
+  }
+}
+function forceTarget(fs2, cwd) {
+  const ceIsFile = isFile2(fs2, join6(cwd, "ce.yml"));
+  const dotIsFile = isFile2(fs2, join6(cwd, ".ce.yml"));
+  if (ceIsFile) return { name: "ce.yml", bothFiles: dotIsFile };
+  if (dotIsFile) return { name: ".ce.yml", bothFiles: false };
+  return { name: "ce.yml", bothFiles: false };
+}
+function replaceAtomically(fs2, cwd, name, text) {
+  const temp = join6(cwd, `.${name}.${randomBytes(6).toString("hex")}.tmp`);
+  try {
+    fs2.writeFile(temp, text, { flag: "wx" });
+    fs2.rename(temp, join6(cwd, name));
+  } catch (error62) {
+    try {
+      fs2.unlink(temp);
+    } catch {
+    }
+    throw error62;
+  }
+}
+function firstExistingConfig(fs2, cwd) {
+  for (const name of CONFIG_NAMES) {
+    try {
+      fs2.lstat(join6(cwd, name));
+      return name;
+    } catch (error62) {
+      if (errorCode(error62) !== "ENOENT") throw new ConfigCheckError(name, errorCode(error62));
+    }
+  }
+  return null;
+}
+var ConfigCheckError = class extends Error {
+  constructor(file2, code) {
+    super(`Cannot check ${file2}: ${code}`);
+    this.file = file2;
+    this.code = code;
+  }
+};
+function gatherProjectInput(cwd, fs2) {
+  let packageJsonText = null;
+  let readErrorCode = null;
+  try {
+    packageJsonText = fs2.readFile(join6(cwd, "package.json"), "utf8");
+  } catch (error62) {
+    const code = errorCode(error62);
+    if (code !== "ENOENT") readErrorCode = code;
+  }
+  let names = [];
+  try {
+    names = fs2.readdir(cwd);
+  } catch {
+  }
+  const files = new Set(LOCKFILES3.filter((f) => names.includes(f) && isFile2(fs2, join6(cwd, f))));
+  return { packageJsonText, packageJsonUnreadable: readErrorCode !== null, readErrorCode, files };
+}
+function writeConfig(fs2, cwd, text, force, stderr) {
+  if (!force) {
+    try {
+      fs2.writeFile(join6(cwd, "ce.yml"), text, { flag: "wx" });
+    } catch (error62) {
+      throw new ConfigWriteError("ce.yml", errorCode(error62), errorCode(error62) === "EEXIST");
+    }
+    return "ce.yml";
+  }
+  const target = forceTarget(fs2, cwd);
+  try {
+    replaceAtomically(fs2, cwd, target.name, text);
+  } catch (error62) {
+    throw new ConfigWriteError(target.name, errorCode(error62), false);
+  }
+  if (target.bothFiles) stderr.write("Note: .ce.yml also exists and stays ignored; ce.yml takes precedence.\n");
+  return target.name;
+}
+var ConfigWriteError = class extends Error {
+  constructor(file2, code, alreadyExists) {
+    super(`Cannot write ${file2}: ${code}`);
+    this.file = file2;
+    this.code = code;
+    this.alreadyExists = alreadyExists;
+  }
+};
+function packageJsonNotes(input2, detection) {
+  if (input2.readErrorCode !== null) return [`package.json could not be read (${input2.readErrorCode})
+`];
+  if (detection.status === "fallback" && detection.reason === "unparseable") {
+    return ["package.json could not be parsed\n"];
+  }
+  return [];
+}
+async function runInitCommand(argv, deps) {
+  const { cwd, env, stdout, stderr } = deps;
+  const fs2 = deps.fs ?? defaultFs;
+  const args = parseInitArgs(argv);
+  if (args === null) {
+    stderr.write(USAGE3);
+    return 1;
+  }
+  try {
+    if (!args.force) {
+      const existing = firstExistingConfig(fs2, cwd);
+      if (existing !== null) {
+        stderr.write(existsMessage(existing));
+        return 1;
+      }
+    }
+    const input2 = gatherProjectInput(cwd, fs2);
+    const detection = detectProject({
+      packageJsonText: input2.packageJsonText,
+      packageJsonUnreadable: input2.packageJsonUnreadable,
+      files: input2.files
+    });
+    const name = writeConfig(fs2, cwd, renderConfig(detection), args.force, stderr);
+    for (const note of packageJsonNotes(input2, detection)) stderr.write(note);
+    stdout.write(renderNextSteps({ detection, configPath: name, env }));
+    return 0;
+  } catch (error62) {
+    if (error62 instanceof ConfigCheckError) {
+      stderr.write(`${error62.message}
+`);
+    } else if (error62 instanceof ConfigWriteError) {
+      stderr.write(error62.alreadyExists ? existsMessage(error62.file) : `${error62.message}
+`);
+    } else {
+      throw error62;
+    }
+    return 1;
+  }
+}
+
 // packages/ce/src/cli.ts
 var [, , command, ...rest] = process.argv;
 function help() {
   console.log(`Continuous Evidence v${VERSION2}
 
 Usage:
+  ce init [--force]   Write a starter ce.yml for this project
   ce run [options]    Run Continuous Evidence for the current change
   ce eval [options]   Measure Jev agreement against labelled fixtures
 
@@ -40013,10 +40496,10 @@ Run options:
 Options are not finalized for v0; see SPEC.md at the repository root.`);
 }
 function loadEnvFileIfPresent(cwd) {
-  const file2 = join6(cwd, ".env");
+  const file2 = join7(cwd, ".env");
   if (!existsSync(file2)) return true;
   try {
-    if (statSync4(file2).isDirectory()) {
+    if (statSync5(file2).isDirectory()) {
       console.error("Cannot read .env: EISDIR");
       return false;
     }
@@ -40050,6 +40533,13 @@ async function main() {
         stderr: process.stderr,
         createGateway: createJevGateway,
         now: () => /* @__PURE__ */ new Date()
+      });
+    case "init":
+      return runInitCommand(rest, {
+        env: process.env,
+        cwd: process.cwd(),
+        stdout: process.stdout,
+        stderr: process.stderr
       });
     case "run":
       if (!loadEnvFileIfPresent(process.cwd())) return 1;

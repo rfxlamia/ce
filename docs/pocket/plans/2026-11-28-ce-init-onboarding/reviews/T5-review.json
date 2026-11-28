@@ -1,0 +1,75 @@
+{
+  "task_id": "T5",
+  "task_name": "`ce init` command, overwrite guard and CLI wiring",
+  "cycle": 3,
+  "timestamp": "2026-11-28T01:20:00Z",
+  "reviewer_mode": "read-only",
+  "reviewer_config": "standard",
+  "correction": {
+    "sha": "b3f63fb1044b999b7a3e0dfb6671f0bc1c265606",
+    "finding": "P2-F1"
+  },
+  "stage_1": {
+    "status": "PASS",
+    "issues": [],
+    "concerns_addressed": [
+      "P2-F1 resolved: action/dist/ce-cli.js rebuilt after T5 changed packages/ce/src/cli.ts; the commit touches only that one file (git diff --name-only), no source edits, no log.json.",
+      "Independent rebuild via 'node scripts/build-action.mjs --out-dir=<scratch>' yields ce-cli.js and index.js byte-identical (cmp) to committed action/dist; bundle contains the init code.",
+      "cd action && npx vitest run bundle.test.ts: 3/3 passed, including 'equals a fresh rebuild'.",
+      "Prior T5 behavior (spec compliance of init command, overwrite guard, CLI wiring) unchanged by this correction."
+    ]
+  },
+  "stage_2": {
+    "status": "PASS",
+    "strengths": [
+      "Generated artifact only; diff is the expected growth from bundling src/init/* into the CLI (523+/33-), no hand edits.",
+      "Build is deterministic: scratch rebuild matches committed file exactly.",
+      "Commit message follows convention and references #13."
+    ],
+    "issues": [
+      {
+        "severity": "Minor",
+        "description": "Carried over from prior cycle, unchanged: non-force create writes ce.yml directly (partial file possible on ENOSPC).",
+        "location": "packages/ce/src/init/command.ts:160"
+      },
+      {
+        "severity": "Minor",
+        "description": "Carried over: InitFs adds readdir beyond packet deps contract.",
+        "location": "packages/ce/src/init/command.ts:18,146-152"
+      },
+      {
+        "severity": "Minor",
+        "description": "Carried over: error classes declared after use.",
+        "location": "packages/ce/src/init/command.ts:119,176"
+      }
+    ],
+    "assessment": "Approved"
+  },
+  "overall": "REVIEW_PASS",
+  "fix_instructions": "",
+  "loop_info": {
+    "recovery_window": 1,
+    "current_cycle": 3,
+    "max_cycles": 2,
+    "cycles_remaining": 0,
+    "strategies": [
+      "round 1: extract helpers from runInitCommand; fix lstat EACCES, note ordering, dir lockfile; add dangling-symlink --force test",
+      "phase-level correction b3f63fb: rebuild action/dist/ce-cli.js for P2-F1 (verified, passed first try)"
+    ],
+    "prior_windows": []
+  },
+  "reviewed_sha": "b3f63fb1044b999b7a3e0dfb6671f0bc1c265606",
+  "history": [
+    {
+      "cycle": 2,
+      "timestamp": "2026-11-28T00:50:00Z",
+      "overall": "REVIEW_PASS",
+      "reviewed_sha": "9d430dca6357faf179c05e37ce0a4dab7c189e4c",
+      "stage_2_issues": [
+        "Non-force create writes ce.yml directly with wx; a mid-write failure (e.g. ENOSPC) can leave a partial ce.yml that is not cleaned up (intentionally left as is by the fix round).",
+        "InitFs still adds readdir beyond the packet's declared deps contract; lockfile detection silently degrades when readdir fails.",
+        "ConfigCheckError and ConfigWriteError classes are declared after the functions that throw them (works at runtime since use is deferred, but reads out of order)."
+      ]
+    }
+  ]
+}

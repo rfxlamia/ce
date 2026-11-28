@@ -11,6 +11,38 @@ Read [`SPEC.md`](./SPEC.md) for the full v0 specification.
 `v0.1` — specification frozen for the MVP; implementation spike in progress
 (Milestone 1: *Prove the Concept*).
 
+## Quick start
+
+CE requires Node.js 22.12 or newer. Install it in your project and run the
+setup command:
+
+```sh
+npm i -D continuous-evidence
+npx ce init
+```
+
+Set `OPENROUTER_API_KEY` in your shell, or in a `.env` file that you never
+commit. Then install the Chromium browser and run CE:
+
+```sh
+npx playwright install chromium
+npx ce run
+```
+
+Other ways to start:
+
+```sh
+npm i -g continuous-evidence && ce init
+```
+
+```sh
+npx continuous-evidence init
+```
+
+> **Warning:** bare `npx ce` without the package installed resolves to the
+> unrelated `ce` package on npm, not to CE. Install `continuous-evidence`
+> first, as shown above, or run `npx continuous-evidence <command>`.
+
 ## Repository layout
 
 ```
@@ -38,12 +70,15 @@ Run the demo app:
 npm run dev --workspace @ce/demo-app   # serves http://localhost:5173
 ```
 
-Run the CE CLI (stub for now):
+Build the CE CLI and check its version:
 
 ```bash
 npm run build --workspace continuous-evidence
 npx ce --version
 ```
+
+Inside the workspace, `npx ce` runs the local build. To use CE in your own
+project, follow [Quick start](#quick-start).
 
 ## CI requirements
 
@@ -194,6 +229,38 @@ default applies. List inputs are split at `,`.
   new comment on each run.
 - **`artifact-name`**: when set, it must be unique per step in the job.
   Leave it empty to get a unique name automatically.
+
+## Releasing
+
+This section is for maintainers. Pushing one tag releases the GitHub Action and the npm package together.
+Action users pin `rfxlamia/ce@v0`, so the `v0` major tag must also move (step 5).
+
+1. Run `npm login` with an account that can publish `continuous-evidence`.
+2. After the PR is merged, publish the first release by hand from the
+   repository root:
+
+   ```sh
+   npm publish --workspace continuous-evidence --access public
+   ```
+
+3. On npmjs.com, add a trusted publisher to the package: publisher GitHub
+   Actions, repository `rfxlamia/ce`, workflow filename `release.yml`.
+4. Set the version in `packages/ce/package.json` to the next release, merge
+   it, and push the semver tag `vX.Y.Z` that matches it (for example
+   `v0.1.1`). Push the tag soon after step 3, because a trusted publisher
+   configuration may expire if it goes unused. The release workflow fails
+   when the tag and the package version differ.
+5. Move the `v0` major tag to the same release so `rfxlamia/ce@v0` users get
+   it:
+
+   ```sh
+   git tag -f v0 vX.Y.Z
+   git push -f origin v0
+   ```
+
+6. Optionally, in the package settings on npmjs.com, select "Require 2FA and disallow tokens".
+
+Pushing a tag runs `.github/workflows/release.yml`. It publishes with OIDC trusted publishing, so the repository stores no npm token. Stable versions go to the `latest` dist-tag. Prerelease versions (for example `0.2.0-rc.1`) go to the `next` dist-tag.
 
 ## License
 

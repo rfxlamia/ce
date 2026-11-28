@@ -1,0 +1,75 @@
+{
+  "task_id": "T2",
+  "task_name": "Project detection (package manager, script, port, framework)",
+  "cycle": 2,
+  "timestamp": "2026-11-28T00:34:17Z",
+  "reviewer_mode": "read-only",
+  "reviewer_config": "batch-parallel",
+  "stage_1": {
+    "status": "PASS",
+    "issues": [],
+    "concerns_addressed": [
+      "Unknown packageManager prefix ignored (falls to lockfile): consistent with A2 prefix set npm|pnpm|yarn|bun; tested with deno@2.0.0. Accepted.",
+      "-p matched only with whitespace: matches spec literal '-p N'; avoids -p=... ambiguity. Accepted.",
+      "ng matched without requiring serve: spec says '@angular/cli (ng serve)'; looser than spec, Minor.",
+      "@sveltejs/kit deps-only: it has no command token, so command-first is vacuous; tested. Accepted.",
+      "Cycle 2 RED partly from a crash: process observation only, no code impact; final tests cover parsing behaviour. Accepted.",
+      "Correction 60ccbaf resolves P1-F1 for detection: DetectInput gains optional packageJsonUnreadable; null text plus flag true yields reason unreadable (pm from lockfile kept), flag false/absent yields missing. Matches A8 which lists missing and unreadable separately. Optional field keeps existing callers and the pure detectProject signature backward compatible.",
+      "npx vitest run src/init/: 5 files, 91 tests pass; tsc --noEmit clean (re-run by auditor on 60ccbaf)."
+    ]
+  },
+  "stage_2": {
+    "status": "PASS",
+    "strengths": [
+      "detectProject stays pure: detect.ts still has no imports, fs or process access; the change is one conditional",
+      "Detection union widened additively (new reason member); existing reasons and shapes unchanged; optional input flag means no existing call site breaks",
+      "New test covers flag true, flag false and flag omitted, asserting reason and pm; would fail before the fix",
+      "DEFAULT_PORT now exported from detect.ts as the single definition (P1-F3 resolved)",
+      "detect.ts is pure: no imports, no fs, no process.*, no new dependencies; package.json untouched",
+      "Detection type matches the task contract exactly (field names and types); scriptText documented as raw",
+      "52 tests pass in src/init; tsc --noEmit clean; every Story A scenario has a test (earliest-port, invalid ports 0/70000/$PORT/abc, framework table, tokens-before-deps, unknown 3000, packageManager+pmMajor, wrong-typed packageManager, fallback reasons, BOM)"
+    ],
+    "issues": [
+      {
+        "severity": "Minor",
+        "description": "Port VALUE captures any non-whitespace except ;&|, so a closing paren or quote glued to the number invalidates a real explicit port: '(vite --port 3000)' and 'vite --port \"4000\"' fall back to the framework default. Consider also excluding ')' and quotes from VALUE or trimming them.",
+        "location": "packages/ce/src/init/detect.ts:59"
+      },
+      {
+        "severity": "Minor",
+        "description": "'ng' command token matches without requiring 'serve' (e.g. 'ng build', 'echo ng' report @angular/cli 4200); spec A3 says '@angular/cli (ng serve)'.",
+        "location": "packages/ce/src/init/detect.ts:54"
+      },
+      {
+        "severity": "Minor",
+        "description": "Framework command match follows FRAMEWORKS table order, not script position ('vite build && next dev' reports vite). Spec is silent; acceptable.",
+        "location": "packages/ce/src/init/detect.ts:102"
+      },
+      {
+        "severity": "Minor",
+        "description": "scripts that is not an object yields reason 'no-script' (A8 lists it separately but the Detection reason set has no distinct value); matches the task contract. A shell comment 'node a.js # PORT=9' yields explicit 9. Both are acceptable edge behaviour.",
+        "location": "packages/ce/src/init/detect.ts:162"
+      },
+      {
+        "severity": "Minor",
+        "description": "No production caller sets packageJsonUnreadable yet; the wiring in the init command (T5) must pass it for ENOENT vs other read errors, otherwise A8 unreadable is still reported as missing end to end.",
+        "location": "packages/ce/src/init/detect.ts:9"
+      }
+    ],
+    "assessment": "Approved"
+  },
+  "overall": "REVIEW_PASS",
+  "fix_instructions": "",
+  "loop_info": {
+    "recovery_window": 1,
+    "current_cycle": 1,
+    "max_cycles": 2,
+    "cycles_remaining": 2,
+    "strategies": [
+      "phase-1 correction 60ccbaf audited"
+    ],
+    "prior_windows": []
+  },
+  "reviewed_sha": "60ccbaf023b4c33db8a3ecca5a4dd14fc261c520",
+  "correction_sha": "60ccbaf023b4c33db8a3ecca5a4dd14fc261c520"
+}
