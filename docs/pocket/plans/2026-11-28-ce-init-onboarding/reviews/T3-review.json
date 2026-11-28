@@ -1,0 +1,64 @@
+{
+  "task_id": "T3",
+  "task_name": "Commented ce.yml template",
+  "cycle": 1,
+  "timestamp": "2026-11-28T00:30:00Z",
+  "reviewer_mode": "read-only",
+  "reviewer_config": "batch-parallel",
+  "stage_1": {
+    "status": "PASS",
+    "issues": [],
+    "concerns_addressed": [
+      "Ready timeout 30s not in ConfigDefaults: confirmed (ConfigDefaults has no target.* keys); it is consistent with spec ('ready defaults path / timeout 30s') and with DEFAULT_READY_TIMEOUT in src/runtime/target.ts:173. Example is commented and schema-valid. Literal could be imported (Minor).",
+      "Context example literal src/**: context has no default, so it is illustrative; valid per schema (context.include string array). Header says 'shown with their defaults' which slightly overstates for context (Minor).",
+      "Null-framework hint 'no known framework': accurate, accepted.",
+      "Reason wording: accepted; non-object scripts map to no-script reason 'has no dev or start script', which is truthful and spec A8 only requires a why-comment.",
+      "Duplicated readRendered/validate helpers across the two test files: Minor duplication (2 copies, below 3x heuristic)."
+    ]
+  },
+  "stage_2": {
+    "status": "PASS",
+    "strengths": [
+      "All interpolations verified: pm and script are fixed sets (type-level 'dev'|'start', PM_NAMES), port is a validated integer 1..65535 from detect.ts, framework name comes only from the fixed FRAMEWORKS table; raw scriptText only reaches a sanitised, capped single-line comment.",
+      "Sanitiser replaces \\p{Cc} (incl. CR, LF, NUL, U+0085), \\p{Cf} (incl. BOM, bidi) and U+2028/2029; hint line capped at 120 chars after '# ' accounting for prefix/suffix, truncation is surrogate-safe.",
+      "Output validated through the real readAndParseConfigFile + ConfigSchema in detected, unknown-port and all four fallback branches; url is http://localhost:<port> paired with start; version: 0 matches z.literal(0).",
+      "Fallback target block fully commented; manually traced that uncommenting it yields valid start/url/ready.path; commented examples use ConfigDefaults values and correct schema key names (uncertainty-band, on-uncertain, max-steps, fail-on, viewport).",
+      "Tests would fail on regression: hostile cases assert no injected assessment/output/runtime/jev keys, single hint line, <=120 chars, no control chars; property test pipes fc-generated package.json through detectProject -> renderConfig -> reader/schema (200 runs) and checks loopback url/port range/start pairing.",
+      "npx vitest run src/init/: 4 files, 67 tests pass; tsc --noEmit clean. ConfigSchema/defaults untouched; detection imported, not reimplemented."
+    ],
+    "issues": [
+      {
+        "severity": "Minor",
+        "description": "READY_TIMEOUT_EXAMPLE '30s' duplicates exported DEFAULT_READY_TIMEOUT (src/runtime/target.ts:173); quality bar prefers no drifting literals. Consider importing it.",
+        "location": "packages/ce/src/init/template.ts:11"
+      },
+      {
+        "severity": "Minor",
+        "description": "context.include example 'src/**' is not a default (context has none) but sits under 'shown with their defaults'; reword header to 'shown with defaults or illustrative values'.",
+        "location": "packages/ce/src/init/template.ts:93-96"
+      },
+      {
+        "severity": "Minor",
+        "description": "Test helper readRendered (template.test.ts, exported but unused elsewhere) and validate (property test) duplicate reader+schema logic; share one helper. No test asserts that uncommenting the fallback target block yields a valid config.",
+        "location": "packages/ce/src/init/template.test.ts:15; packages/ce/src/init/template.property.test.ts:55"
+      },
+      {
+        "severity": "Minor",
+        "description": "detectedHint interpolates d.framework unsanitised; safe only because detect.ts draws it from a fixed table (type is string|null). Cheap defense: run it through sanitizeForComment.",
+        "location": "packages/ce/src/init/template.ts:45"
+      }
+    ],
+    "assessment": "Approved"
+  },
+  "overall": "REVIEW_PASS",
+  "fix_instructions": "",
+  "loop_info": {
+    "recovery_window": 1,
+    "current_cycle": 1,
+    "max_cycles": 2,
+    "cycles_remaining": 2,
+    "strategies": [],
+    "prior_windows": []
+  },
+  "reviewed_sha": "24b1ef6eecaea7f9b16d997774d1260ed6aca4a8"
+}

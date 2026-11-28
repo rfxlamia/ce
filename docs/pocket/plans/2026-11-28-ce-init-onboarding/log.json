@@ -32,9 +32,10 @@
         {
           "id": "T3",
           "name": "Commented ce.yml template",
-          "status": "WAITING",
+          "status": "DONE",
           "depends": "T2",
-          "file": "execution-plan/tasks/T3-commented-ce-yml-template.md"
+          "file": "execution-plan/tasks/T3-commented-ce-yml-template.md",
+          "done_sha": "24b1ef6eecaea7f9b16d997774d1260ed6aca4a8"
         },
         {
           "id": "T4",
