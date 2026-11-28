@@ -74,17 +74,35 @@ function workflowSnippet(d: Detection): string {
   ].join('\n');
 }
 
+function runCommandLines(d: Detection): string[] {
+  if (d.ceInstalled) return ['Run: npx ce run'];
+  return [
+    'Install continuous-evidence: npm i -D continuous-evidence',
+    'Then run: npx ce run',
+    '(or, without installing: npx continuous-evidence run)',
+  ];
+}
+
 export function renderNextSteps(input: NextStepsInput): string {
-  const lines: string[] = [];
-  lines.push(`Wrote ${input.configPath}`, '');
-  lines.push('Next steps:');
-  lines.push('  1. Set OPENROUTER_API_KEY (get one at https://openrouter.ai/keys) in your environment or in .env.');
-  lines.push('     A .env file in the current directory is loaded automatically; keep it out of git.');
-  lines.push('  2. Install the browser: npx playwright install chromium');
-  lines.push('  3. Add .ce/ and .env to .gitignore');
-  lines.push('  4. Run: npx ce run');
+  const { detection } = input;
+  const steps: string[][] = [];
+  if (detection.status === 'fallback') {
+    steps.push(['Please edit target in ce.yml: we could not detect how to start your app.']);
+  }
+  steps.push([
+    'Set OPENROUTER_API_KEY (get one at https://openrouter.ai/keys) in your environment or in .env.',
+    'A .env file in the current directory is loaded automatically; keep it out of git.',
+  ]);
+  steps.push(['Install the browser: npx playwright install chromium']);
+  steps.push(['Add .ce/ and .env to .gitignore']);
+  steps.push(runCommandLines(detection));
+
+  const lines: string[] = [`Wrote ${input.configPath}`, '', 'Next steps:'];
+  steps.forEach((step, i) => {
+    step.forEach((text, j) => lines.push(j === 0 ? `  ${i + 1}. ${text}` : `     ${text}`));
+  });
   lines.push('');
   lines.push('Optional: run CE on pull requests. Save this as .github/workflows/ce.yml:', '');
-  lines.push('```yaml', workflowSnippet(input.detection), '```');
+  lines.push('```yaml', workflowSnippet(detection), '```');
   return lines.join('\n') + '\n';
 }
