@@ -77,9 +77,10 @@
         {
           "id": "T6",
           "name": "Tarball smoke test script and CI job",
-          "status": "WAITING",
+          "status": "DONE",
           "depends": "T1, T5",
-          "file": "execution-plan/tasks/T6-tarball-smoke-test-script-and-ci-job.md"
+          "file": "execution-plan/tasks/T6-tarball-smoke-test-script-and-ci-job.md",
+          "done_sha": "09617ddc034999922033658c34d5939f5d1c1fd0"
         },
         {
           "id": "T7",
