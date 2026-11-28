@@ -1,8 +1,9 @@
 // Evidence_Bundle writer. Builds, redacts and validates the Run_Record, then
 // writes `run.json` atomically inside the Run_Dir. File system access and the
 // clock are injected. This module reads no environment variable, imports no
-// Jev gateway, SDK or fetch, writes no `report.html` and never touches
-// `jev-calls.jsonl`. It decides no Outcome (Requirement 9.1).
+// Jev gateway, SDK or fetch and never touches `jev-calls.jsonl`. The
+// Report_Generator writes `report.html` after the Bundle_Writer; `report.html`
+// is never listed in `artifacts`. It decides no Outcome (Requirement 9.1).
 import path from 'node:path';
 import { StageError } from '../errors.js';
 import {
@@ -51,7 +52,7 @@ export interface WriteMinimalBundleInput extends WriteBundleInput {
 }
 
 export type WriteBundleResult =
-  | { ok: true; reportPath: string }
+  | { ok: true; reportPath: string; record: RunRecord }
   | { ok: false; error: StageError; validationFailure?: { fields: string[] } };
 
 /** Cause of a Validation_Failure. The message lists field paths and no values. */
@@ -146,7 +147,11 @@ async function persist(
   }
 
   const hasReport = names.includes(REPORT_HTML_FILE);
-  return { ok: true, reportPath: path.join(input.runDir, hasReport ? REPORT_HTML_FILE : RUN_JSON_FILE) };
+  return {
+    ok: true,
+    reportPath: path.join(input.runDir, hasReport ? REPORT_HTML_FILE : RUN_JSON_FILE),
+    record: parsed.data,
+  };
 }
 
 async function listRunDir(input: WriteBundleInput): Promise<string[]> {

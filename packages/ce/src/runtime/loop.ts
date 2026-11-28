@@ -33,11 +33,23 @@ import type { PlaywrightPage } from './playwright-types.js';
 
 export type StopReason = 'done' | 'reached' | 'give_up' | 'max-steps' | 'time-budget' | 'aborted';
 
+export interface StepAlternative {
+  /** Option index as a string, `done` or `give_up`. */
+  key: string;
+  description: string;
+  probability: number;
+}
+
 export interface StepLogEntry {
   observation: Observation;
   action: DecidedAction;
   /** Probabilities of the Options considered, keyed by Option index, `done` and `give_up`. */
   probabilities: Record<string, number>;
+  /**
+   * The Alternatives sent to `runtime.next_action` with their probabilities, in key order.
+   * `description` is the Option description (fixture key only, never a fixture value).
+   */
+  alternatives: StepAlternative[];
   /** True only when the Executor ran the Action (status `ok`). Refused and timed-out Actions are not executed. */
   executed?: boolean;
 }
@@ -145,6 +157,26 @@ function readStateReachedDom(response: Jev_Response): number | undefined {
 }
 
 /** Normalized box (fractions of the screenshot): `x`, `y` is the top-left corner. */
+/** Pairs each answered key with its Option description. Pure; keys that name no Option are dropped. */
+function buildAlternatives(
+  options: readonly { description: string }[],
+  probabilities: Record<string, number>,
+): StepAlternative[] {
+  const out: StepAlternative[] = [];
+  for (const [key, probability] of Object.entries(probabilities)) {
+    if (!Number.isFinite(probability)) continue;
+    let description: string;
+    if (key === 'done' || key === 'give_up') description = key;
+    else {
+      const option = /^\d+$/.test(key) ? options[Number(key)] : undefined;
+      if (option === undefined) continue;
+      description = option.description;
+    }
+    out.push({ key, description, probability: Math.min(1, Math.max(0, probability)) });
+  }
+  return out;
+}
+
 type SubjectBox = NonNullable<LoopResult['subjectBox']>;
 
 function readNoul(response: Jev_Response, name: string): number | undefined {
@@ -479,12 +511,22 @@ export async function runLoop(input: RunLoopInput): Promise<LoopResult> {
 
       if (stateReachedDom !== undefined && stateReachedDom >= REACHED_THRESHOLD) {
         // Reached: stop with no Action. Logged as `done`, the Action that was not taken.
-        steps.push({ observation: publish(observation), action: { kind: 'done' }, probabilities });
+        steps.push({
+          observation: publish(observation),
+          action: { kind: 'done' },
+          probabilities,
+          alternatives: buildAlternatives(options, probabilities),
+        });
         return await finish('reached');
       }
 
       const action = mapAnswerToAction({ options, probabilities });
-      steps.push({ observation: publish(observation), action, probabilities });
+      steps.push({
+        observation: publish(observation),
+        action,
+        probabilities,
+        alternatives: buildAlternatives(options, probabilities),
+      });
       if (action.kind === 'done') {
         endedWithDone = true;
         return await finish('done');

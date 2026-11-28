@@ -128,6 +128,7 @@ describe('Property 11: no secret value and no raw Jev payload reaches the serial
             action: { kind: 'click', description: withSecret(secrets, 4, pre, ' button') },
             executed: true,
             probabilities: {},
+            alternatives: [],
           };
           const input: BuildRunRecordInput = {
             ...base,

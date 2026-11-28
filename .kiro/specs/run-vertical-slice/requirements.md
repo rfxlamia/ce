@@ -217,7 +217,7 @@ The CLI output for `UNSUPPORTED` is specified once, in Requirement 10 criterion 
 1. WHEN the Run_Pipeline calls `createGateway`, THE Run_Pipeline SHALL pass `createJsonlCallLog` for a `jev-calls.jsonl` file in a run directory under `output.dir`, resolved against `cwd`, which defaults to `.ce/runs`.
 2. THE Run_Pipeline SHALL name the run directory `run-<iso>`, where `<iso>` is `now().toISOString()` with `:` and `.` replaced by `-`, so that run directories are distinguishable from the `eval-<iso>` directories in `.ce/runs`.
 3. WHERE `gateway` is supplied, THE Run_Pipeline SHALL NOT create a run directory or a call log.
-4. THE Run_Pipeline SHALL NOT write `run.json`, `report.html` or any other evidence file, which belong to later issues.
+4. THE Run_Pipeline SHALL write `report.html` through the Report_Generator after `run.json` (see spec `report-html-evidence-page`), and SHALL NOT write any other evidence file beyond the call log, `run.json` and `report.html`.
 
 ### Requirement 12: Stub removal
 

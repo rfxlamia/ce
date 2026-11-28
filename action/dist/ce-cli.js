@@ -113,17 +113,17 @@ var require_visit = __commonJS({
     visit2.BREAK = BREAK;
     visit2.SKIP = SKIP;
     visit2.REMOVE = REMOVE;
-    function visit_(key, node2, visitor, path7) {
-      const ctrl = callVisitor(key, node2, visitor, path7);
+    function visit_(key, node2, visitor, path8) {
+      const ctrl = callVisitor(key, node2, visitor, path8);
       if (identity.isNode(ctrl) || identity.isPair(ctrl)) {
-        replaceNode(key, path7, ctrl);
-        return visit_(key, ctrl, visitor, path7);
+        replaceNode(key, path8, ctrl);
+        return visit_(key, ctrl, visitor, path8);
       }
       if (typeof ctrl !== "symbol") {
         if (identity.isCollection(node2)) {
-          path7 = Object.freeze(path7.concat(node2));
+          path8 = Object.freeze(path8.concat(node2));
           for (let i = 0; i < node2.items.length; ++i) {
-            const ci = visit_(i, node2.items[i], visitor, path7);
+            const ci = visit_(i, node2.items[i], visitor, path8);
             if (typeof ci === "number")
               i = ci - 1;
             else if (ci === BREAK)
@@ -134,13 +134,13 @@ var require_visit = __commonJS({
             }
           }
         } else if (identity.isPair(node2)) {
-          path7 = Object.freeze(path7.concat(node2));
-          const ck = visit_("key", node2.key, visitor, path7);
+          path8 = Object.freeze(path8.concat(node2));
+          const ck = visit_("key", node2.key, visitor, path8);
           if (ck === BREAK)
             return BREAK;
           else if (ck === REMOVE)
             node2.key = null;
-          const cv = visit_("value", node2.value, visitor, path7);
+          const cv = visit_("value", node2.value, visitor, path8);
           if (cv === BREAK)
             return BREAK;
           else if (cv === REMOVE)
@@ -161,17 +161,17 @@ var require_visit = __commonJS({
     visitAsync.BREAK = BREAK;
     visitAsync.SKIP = SKIP;
     visitAsync.REMOVE = REMOVE;
-    async function visitAsync_(key, node2, visitor, path7) {
-      const ctrl = await callVisitor(key, node2, visitor, path7);
+    async function visitAsync_(key, node2, visitor, path8) {
+      const ctrl = await callVisitor(key, node2, visitor, path8);
       if (identity.isNode(ctrl) || identity.isPair(ctrl)) {
-        replaceNode(key, path7, ctrl);
-        return visitAsync_(key, ctrl, visitor, path7);
+        replaceNode(key, path8, ctrl);
+        return visitAsync_(key, ctrl, visitor, path8);
       }
       if (typeof ctrl !== "symbol") {
         if (identity.isCollection(node2)) {
-          path7 = Object.freeze(path7.concat(node2));
+          path8 = Object.freeze(path8.concat(node2));
           for (let i = 0; i < node2.items.length; ++i) {
-            const ci = await visitAsync_(i, node2.items[i], visitor, path7);
+            const ci = await visitAsync_(i, node2.items[i], visitor, path8);
             if (typeof ci === "number")
               i = ci - 1;
             else if (ci === BREAK)
@@ -182,13 +182,13 @@ var require_visit = __commonJS({
             }
           }
         } else if (identity.isPair(node2)) {
-          path7 = Object.freeze(path7.concat(node2));
-          const ck = await visitAsync_("key", node2.key, visitor, path7);
+          path8 = Object.freeze(path8.concat(node2));
+          const ck = await visitAsync_("key", node2.key, visitor, path8);
           if (ck === BREAK)
             return BREAK;
           else if (ck === REMOVE)
             node2.key = null;
-          const cv = await visitAsync_("value", node2.value, visitor, path7);
+          const cv = await visitAsync_("value", node2.value, visitor, path8);
           if (cv === BREAK)
             return BREAK;
           else if (cv === REMOVE)
@@ -215,23 +215,23 @@ var require_visit = __commonJS({
       }
       return visitor;
     }
-    function callVisitor(key, node2, visitor, path7) {
+    function callVisitor(key, node2, visitor, path8) {
       if (typeof visitor === "function")
-        return visitor(key, node2, path7);
+        return visitor(key, node2, path8);
       if (identity.isMap(node2))
-        return visitor.Map?.(key, node2, path7);
+        return visitor.Map?.(key, node2, path8);
       if (identity.isSeq(node2))
-        return visitor.Seq?.(key, node2, path7);
+        return visitor.Seq?.(key, node2, path8);
       if (identity.isPair(node2))
-        return visitor.Pair?.(key, node2, path7);
+        return visitor.Pair?.(key, node2, path8);
       if (identity.isScalar(node2))
-        return visitor.Scalar?.(key, node2, path7);
+        return visitor.Scalar?.(key, node2, path8);
       if (identity.isAlias(node2))
-        return visitor.Alias?.(key, node2, path7);
+        return visitor.Alias?.(key, node2, path8);
       return void 0;
     }
-    function replaceNode(key, path7, node2) {
-      const parent = path7[path7.length - 1];
+    function replaceNode(key, path8, node2) {
+      const parent = path8[path8.length - 1];
       if (identity.isCollection(parent)) {
         parent.items[key] = node2;
       } else if (identity.isPair(parent)) {
@@ -357,14 +357,14 @@ var require_directives = __commonJS({
           return null;
         }
         if (source[1] === "<") {
-          const verbatim = source.slice(2, -1);
-          if (verbatim === "!" || verbatim === "!!") {
+          const verbatim2 = source.slice(2, -1);
+          if (verbatim2 === "!" || verbatim2 === "!!") {
             onError(`Verbatim tags aren't resolved, so ${source} is invalid.`);
             return null;
           }
           if (source[source.length - 1] !== ">")
             onError("Verbatim tags must end with a >");
-          return verbatim;
+          return verbatim2;
         }
         const [, handle, suffix] = source.match(/^(.*!)([^!]*)$/s);
         if (!suffix)
@@ -843,10 +843,10 @@ var require_Collection = __commonJS({
     var createNode = require_createNode();
     var identity = require_identity();
     var Node = require_Node();
-    function collectionFromPath(schema, path7, value) {
+    function collectionFromPath(schema, path8, value) {
       let v = value;
-      for (let i = path7.length - 1; i >= 0; --i) {
-        const k = path7[i];
+      for (let i = path8.length - 1; i >= 0; --i) {
+        const k = path8[i];
         if (typeof k === "number" && Number.isInteger(k) && k >= 0) {
           const a = [];
           a[k] = v;
@@ -865,7 +865,7 @@ var require_Collection = __commonJS({
         sourceObjects: /* @__PURE__ */ new Map()
       });
     }
-    var isEmptyPath = (path7) => path7 == null || typeof path7 === "object" && !!path7[Symbol.iterator]().next().done;
+    var isEmptyPath = (path8) => path8 == null || typeof path8 === "object" && !!path8[Symbol.iterator]().next().done;
     var Collection = class extends Node.NodeBase {
       constructor(type, schema) {
         super(type);
@@ -895,11 +895,11 @@ var require_Collection = __commonJS({
        * be a Pair instance or a `{ key, value }` object, which may not have a key
        * that already exists in the map.
        */
-      addIn(path7, value) {
-        if (isEmptyPath(path7))
+      addIn(path8, value) {
+        if (isEmptyPath(path8))
           this.add(value);
         else {
-          const [key, ...rest2] = path7;
+          const [key, ...rest2] = path8;
           const node2 = this.get(key, true);
           if (identity.isCollection(node2))
             node2.addIn(rest2, value);
@@ -913,8 +913,8 @@ var require_Collection = __commonJS({
        * Removes a value from the collection.
        * @returns `true` if the item was found and removed.
        */
-      deleteIn(path7) {
-        const [key, ...rest2] = path7;
+      deleteIn(path8) {
+        const [key, ...rest2] = path8;
         if (rest2.length === 0)
           return this.delete(key);
         const node2 = this.get(key, true);
@@ -928,8 +928,8 @@ var require_Collection = __commonJS({
        * scalar values from their surrounding node; to disable set `keepScalar` to
        * `true` (collections are always returned intact).
        */
-      getIn(path7, keepScalar) {
-        const [key, ...rest2] = path7;
+      getIn(path8, keepScalar) {
+        const [key, ...rest2] = path8;
         const node2 = this.get(key, true);
         if (rest2.length === 0)
           return !keepScalar && identity.isScalar(node2) ? node2.value : node2;
@@ -947,8 +947,8 @@ var require_Collection = __commonJS({
       /**
        * Checks if the collection includes a value with the key `key`.
        */
-      hasIn(path7) {
-        const [key, ...rest2] = path7;
+      hasIn(path8) {
+        const [key, ...rest2] = path8;
         if (rest2.length === 0)
           return this.has(key);
         const node2 = this.get(key, true);
@@ -958,8 +958,8 @@ var require_Collection = __commonJS({
        * Sets a value in this collection. For `!!set`, `value` needs to be a
        * boolean to add/remove the item from the set.
        */
-      setIn(path7, value) {
-        const [key, ...rest2] = path7;
+      setIn(path8, value) {
+        const [key, ...rest2] = path8;
         if (rest2.length === 0) {
           this.set(key, value);
         } else {
@@ -3474,9 +3474,9 @@ var require_Document = __commonJS({
           this.contents.add(value);
       }
       /** Adds a value to the document. */
-      addIn(path7, value) {
+      addIn(path8, value) {
         if (assertCollection(this.contents))
-          this.contents.addIn(path7, value);
+          this.contents.addIn(path8, value);
       }
       /**
        * Create a new `Alias` node, ensuring that the target `node` has the required anchor.
@@ -3551,14 +3551,14 @@ var require_Document = __commonJS({
        * Removes a value from the document.
        * @returns `true` if the item was found and removed.
        */
-      deleteIn(path7) {
-        if (Collection.isEmptyPath(path7)) {
+      deleteIn(path8) {
+        if (Collection.isEmptyPath(path8)) {
           if (this.contents == null)
             return false;
           this.contents = null;
           return true;
         }
-        return assertCollection(this.contents) ? this.contents.deleteIn(path7) : false;
+        return assertCollection(this.contents) ? this.contents.deleteIn(path8) : false;
       }
       /**
        * Returns item at `key`, or `undefined` if not found. By default unwraps
@@ -3573,10 +3573,10 @@ var require_Document = __commonJS({
        * scalar values from their surrounding node; to disable set `keepScalar` to
        * `true` (collections are always returned intact).
        */
-      getIn(path7, keepScalar) {
-        if (Collection.isEmptyPath(path7))
+      getIn(path8, keepScalar) {
+        if (Collection.isEmptyPath(path8))
           return !keepScalar && identity.isScalar(this.contents) ? this.contents.value : this.contents;
-        return identity.isCollection(this.contents) ? this.contents.getIn(path7, keepScalar) : void 0;
+        return identity.isCollection(this.contents) ? this.contents.getIn(path8, keepScalar) : void 0;
       }
       /**
        * Checks if the document includes a value with the key `key`.
@@ -3587,10 +3587,10 @@ var require_Document = __commonJS({
       /**
        * Checks if the document includes a value at `path`.
        */
-      hasIn(path7) {
-        if (Collection.isEmptyPath(path7))
+      hasIn(path8) {
+        if (Collection.isEmptyPath(path8))
           return this.contents !== void 0;
-        return identity.isCollection(this.contents) ? this.contents.hasIn(path7) : false;
+        return identity.isCollection(this.contents) ? this.contents.hasIn(path8) : false;
       }
       /**
        * Sets a value in this document. For `!!set`, `value` needs to be a
@@ -3607,13 +3607,13 @@ var require_Document = __commonJS({
        * Sets a value in this document. For `!!set`, `value` needs to be a
        * boolean to add/remove the item from the set.
        */
-      setIn(path7, value) {
-        if (Collection.isEmptyPath(path7)) {
+      setIn(path8, value) {
+        if (Collection.isEmptyPath(path8)) {
           this.contents = value;
         } else if (this.contents == null) {
-          this.contents = Collection.collectionFromPath(this.schema, Array.from(path7), value);
+          this.contents = Collection.collectionFromPath(this.schema, Array.from(path8), value);
         } else if (assertCollection(this.contents)) {
-          this.contents.setIn(path7, value);
+          this.contents.setIn(path8, value);
         }
       }
       /**
@@ -5574,9 +5574,9 @@ var require_cst_visit = __commonJS({
     visit2.BREAK = BREAK;
     visit2.SKIP = SKIP;
     visit2.REMOVE = REMOVE;
-    visit2.itemAtPath = (cst, path7) => {
+    visit2.itemAtPath = (cst, path8) => {
       let item = cst;
-      for (const [field, index] of path7) {
+      for (const [field, index] of path8) {
         const tok = item?.[field];
         if (tok && "items" in tok) {
           item = tok.items[index];
@@ -5585,23 +5585,23 @@ var require_cst_visit = __commonJS({
       }
       return item;
     };
-    visit2.parentCollection = (cst, path7) => {
-      const parent = visit2.itemAtPath(cst, path7.slice(0, -1));
-      const field = path7[path7.length - 1][0];
+    visit2.parentCollection = (cst, path8) => {
+      const parent = visit2.itemAtPath(cst, path8.slice(0, -1));
+      const field = path8[path8.length - 1][0];
       const coll = parent?.[field];
       if (coll && "items" in coll)
         return coll;
       throw new Error("Parent collection not found");
     };
-    function _visit(path7, item, visitor) {
-      let ctrl = visitor(item, path7);
+    function _visit(path8, item, visitor) {
+      let ctrl = visitor(item, path8);
       if (typeof ctrl === "symbol")
         return ctrl;
       for (const field of ["key", "value"]) {
         const token = item[field];
         if (token && "items" in token) {
           for (let i = 0; i < token.items.length; ++i) {
-            const ci = _visit(Object.freeze(path7.concat([[field, i]])), token.items[i], visitor);
+            const ci = _visit(Object.freeze(path8.concat([[field, i]])), token.items[i], visitor);
             if (typeof ci === "number")
               i = ci - 1;
             else if (ci === BREAK)
@@ -5612,10 +5612,10 @@ var require_cst_visit = __commonJS({
             }
           }
           if (typeof ctrl === "function" && field === "key")
-            ctrl = ctrl(item, path7);
+            ctrl = ctrl(item, path8);
         }
       }
-      return typeof ctrl === "function" ? ctrl(item, path7) : ctrl;
+      return typeof ctrl === "function" ? ctrl(item, path8) : ctrl;
     }
     exports2.visit = visit2;
   }
@@ -8191,10 +8191,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path7) {
-  if (!path7)
+function getElementAtPath(obj, path8) {
+  if (!path8)
     return obj;
-  return path7.reduce((acc, key) => acc?.[key], obj);
+  return path8.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -8534,11 +8534,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path7, issues) {
+function prefixIssues(path8, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path7);
+    iss.path.unshift(path8);
     return iss;
   });
 }
@@ -9000,16 +9000,16 @@ function flattenError(error62, mapper = (issue2) => issue2.message) {
 }
 function formatError(error62, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error63, path7 = []) => {
+  const processError = (error63, path8 = []) => {
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path7, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path8, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
       } else {
-        const fullpath = [...path7, ...issue2.path];
+        const fullpath = [...path8, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -9048,17 +9048,17 @@ function formatError(error62, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error62, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error63, path7 = []) => {
+  const processError = (error63, path8 = []) => {
     var _a3;
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path7, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path8, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
       } else {
-        const fullpath = [...path7, ...issue2.path];
+        const fullpath = [...path8, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -9097,8 +9097,8 @@ function treeifyError(error62, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path7 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path7) {
+  const path8 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path8) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -18085,8 +18085,8 @@ var error43 = () => {
       case "not_multiple_of":
         return `N\xFAmero inv\xE1lido: deve ser m\xFAltiplo de ${issue2.divisor}`;
       case "unrecognized_keys": {
-        const plural2 = issue2.keys.length > 1 ? "s" : "";
-        return `Chave${plural2} inv\xE1lida${plural2}: ${joinValues(issue2.keys, ", ")}`;
+        const plural3 = issue2.keys.length > 1 ? "s" : "";
+        return `Chave${plural3} inv\xE1lida${plural3}: ${joinValues(issue2.keys, ", ")}`;
       }
       case "invalid_key":
         return `Entrada inv\xE1lida n${translateOriginWithArticle(issue2.origin, "definite")}`;
@@ -18230,8 +18230,8 @@ var error44 = () => {
       case "not_multiple_of":
         return `N\xFAmero inv\xE1lido: deve ser m\xFAltiplo de ${issue2.divisor}`;
       case "unrecognized_keys": {
-        const plural2 = issue2.keys.length > 1 ? "s" : "";
-        return `Chave${plural2} inv\xE1lida${plural2}: ${joinValues(issue2.keys, ", ")}`;
+        const plural3 = issue2.keys.length > 1 ? "s" : "";
+        return `Chave${plural3} inv\xE1lida${plural3}: ${joinValues(issue2.keys, ", ")}`;
       }
       case "invalid_key":
         return `Entrada inv\xE1lida n${translateOriginWithArticle(issue2.origin, "definite")}`;
@@ -26236,13 +26236,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path7 = ref.slice(1).split("/").filter(Boolean);
-  if (path7.length === 0) {
+  const path8 = ref.slice(1).split("/").filter(Boolean);
+  if (path8.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path7[0] === defsKey) {
-    const key = path7[1] === void 0 ? void 0 : decodeJSONPointerSegment(path7[1]);
+  if (path8[0] === defsKey) {
+    const key = path8[1] === void 0 ? void 0 : decodeJSONPointerSegment(path8[1]);
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -27853,7 +27853,7 @@ var TypeSafeClient = class {
     if (config2.fetch === void 0 && typeof globalThis.fetch !== "function") missingFetch();
     this.fetch = config2.fetch ?? defaultFetch;
     const transport = {
-      request: (method, path7, options) => this.#request(method, path7, options),
+      request: (method, path8, options) => this.#request(method, path8, options),
       defaultModel: this.defaultModel
     };
     this.models = new Models(transport);
@@ -27906,12 +27906,12 @@ var TypeSafeClient = class {
     });
   }
   /** Send a request and parse its response body. */
-  #request(method, path7, options = {}) {
+  #request(method, path8, options = {}) {
     let resolved;
     try {
       resolved = {
         method,
-        path: path7,
+        path: path8,
         body: options.body,
         headers: mergeHeaders(this.defaultHeaders, options.headers ?? {}),
         signal: options.signal,
@@ -27921,7 +27921,7 @@ var TypeSafeClient = class {
     } catch (err) {
       return rejectedAPIPromise(err);
     }
-    const tag = `#${++this.#requestCount} ${method} ${path7}`;
+    const tag = `#${++this.#requestCount} ${method} ${path8}`;
     return new APIPromise(this.fetchWithRetries(tag, resolved), async (res) => {
       const parsed = await parseBody(res);
       this.logger.debug(`${tag} <- body`, parsed);
@@ -28137,15 +28137,15 @@ var RANK_USER_FACING = 0;
 var RANK_TEST = 1;
 var RANK_OTHER = 2;
 var RANK_LOW = 3;
-function isTestFile(path7) {
-  const segments = path7.split("/");
+function isTestFile(path8) {
+  const segments = path8.split("/");
   const base = segments[segments.length - 1] ?? "";
   const dirs = segments.slice(0, -1);
   return dirs.some((d) => TEST_DIRS.has(d)) || base.includes(".test.") || base.includes(".spec.");
 }
 var DOCUMENTATION_EXTENSIONS = /* @__PURE__ */ new Set([".md", ".mdx", ".markdown", ".rst", ".adoc"]);
-function isDocumentationFile(path7) {
-  const segments = path7.split("/");
+function isDocumentationFile(path8) {
+  const segments = path8.split("/");
   const base = segments[segments.length - 1] ?? "";
   const dot = base.lastIndexOf(".");
   return dot >= 0 && DOCUMENTATION_EXTENSIONS.has(base.slice(dot).toLowerCase());
@@ -28382,6 +28382,16 @@ var CATALOG = {
     () => box("Where is the subject of `claim` in the screenshot?")
   )
 };
+function questionTextOf(e) {
+  const question = e.idVersion === CATALOG.runtimeNextAction.idVersion ? CATALOG.runtimeNextAction.build([]) : e.build();
+  return typeof question.instructions === "string" ? question.instructions : "";
+}
+var BY_ID_VERSION = new Map(
+  Object.values(CATALOG).map((e) => [e.idVersion, questionTextOf(e)])
+);
+function questionTextFor(idVersion) {
+  return BY_ID_VERSION.get(idVersion);
+}
 function finalImageQuestions(claim2, pngBytes) {
   const screenshot = image(pngBytes);
   const state = withAssets`claim: ${claim2}\nscreenshot: ${screenshot}`;
@@ -28401,10 +28411,10 @@ function shortenBy(text, excess) {
 function buildClassificationRequest(context, candidate) {
   let title = context.change.title ?? "";
   let files = filesSummary(context);
-  const render = () => `candidate: ${candidate.text}
+  const render2 = () => `candidate: ${candidate.text}
 title: ${title}
 files: ${files}`;
-  const over = () => estimateTokens(render()) - STATE_BUDGET_TOKENS;
+  const over = () => estimateTokens(render2()) - STATE_BUDGET_TOKENS;
   const cuts = [];
   if (over() > 0 && files.length > 0) {
     while (over() > 0 && files.length > 0) files = shortenBy(files, over());
@@ -28422,7 +28432,7 @@ files: ${files}`;
   return {
     request: {
       stage: "assessment",
-      state: render(),
+      state: render2(),
       questions: { is_behavior: CATALOG.claimIsBehavior.built() }
     },
     cuts
@@ -28439,13 +28449,13 @@ function buildAssessmentRequest(context, subject) {
   const patches = files.map((f) => f.patch);
   const filesText = filesSummary(context);
   const checksText = kept.map((c) => `${c.name} ${c.status}`).join("\n");
-  const render = () => `claim: ${subject.text}
+  const render2 = () => `claim: ${subject.text}
 files: ${filesText}
 patches:
 ` + files.map((f, i) => `${f.path}
 ${patches[i]}`).join("\n") + `
 checks: ${checksText}`;
-  const over = () => estimateTokens(render()) - STATE_BUDGET_TOKENS;
+  const over = () => estimateTokens(render2()) - STATE_BUDGET_TOKENS;
   if (over() > 0) {
     const indexes = files.map((_, i) => i);
     const order = [
@@ -28471,7 +28481,7 @@ checks: ${checksText}`;
   return {
     request: {
       stage: "assessment",
-      state: render(),
+      state: render2(),
       questions: {
         runtime_observable: CATALOG.assessRuntimeObservable.built(),
         checks_adequate: CATALOG.assessChecksAdequate.built(),
@@ -28796,8 +28806,8 @@ var C_EXT = ["js", "jsx", "ts", "tsx", "java", "c", "h", "cc", "cpp", "cs", "go"
 var HASH_EXT = ["rb", "sh", "yml", "yaml", "toml"];
 var DASH_EXT = ["sql", "lua"];
 var HTML_EXT = ["html", "hbs", "vue", "svelte", "md"];
-function syntaxFor(path7) {
-  const base = path7.slice(path7.lastIndexOf("/") + 1);
+function syntaxFor(path8) {
+  const base = path8.slice(path8.lastIndexOf("/") + 1);
   const dot = base.lastIndexOf(".");
   if (dot < 0) return void 0;
   const ext = base.slice(dot + 1).toLowerCase();
@@ -29234,11 +29244,11 @@ function compileGlob(pattern) {
   }
   return new RegExp(`^${source}$`, "s");
 }
-function matchesGlob(pattern, path7) {
-  return compileGlob(pattern).test(path7);
+function matchesGlob(pattern, path8) {
+  return compileGlob(pattern).test(path8);
 }
-function matchesAny(patterns, path7) {
-  return patterns.some((pattern) => matchesGlob(pattern, path7));
+function matchesAny(patterns, path8) {
+  return patterns.some((pattern) => matchesGlob(pattern, path8));
 }
 
 // packages/ce/src/context/providers/git.ts
@@ -29272,17 +29282,17 @@ var SENSITIVE_PATHSPEC_NAMES = [
   ".git-credentials",
   ".pypirc"
 ];
-function baseName(path7) {
-  const i = path7.lastIndexOf("/");
-  return (i === -1 ? path7 : path7.slice(i + 1)).toLowerCase();
+function baseName(path8) {
+  const i = path8.lastIndexOf("/");
+  return (i === -1 ? path8 : path8.slice(i + 1)).toLowerCase();
 }
-function isEnvName(path7) {
-  const b = baseName(path7);
+function isEnvName(path8) {
+  const b = baseName(path8);
   return b.startsWith(".env");
 }
-function isSensitiveName(path7) {
-  const b = baseName(path7);
-  return isEnvName(path7) || SENSITIVE_EXACT.has(b) || SENSITIVE_SUFFIX.some((s) => b.endsWith(s));
+function isSensitiveName(path8) {
+  const b = baseName(path8);
+  return isEnvName(path8) || SENSITIVE_EXACT.has(b) || SENSITIVE_SUFFIX.some((s) => b.endsWith(s));
 }
 var GIT_OPTIONS = [
   "--no-optional-locks",
@@ -29331,13 +29341,13 @@ function parseNameStatus(out) {
     if (letter === "") return void 0;
     if (letter[0] === "R" || letter[0] === "C") {
       const oldPath = tokens[i++];
-      const path7 = tokens[i++];
-      if (oldPath === void 0 || path7 === void 0) return void 0;
-      entries.push({ path: path7, oldPath, status: mapStatus(letter) });
+      const path8 = tokens[i++];
+      if (oldPath === void 0 || path8 === void 0) return void 0;
+      entries.push({ path: path8, oldPath, status: mapStatus(letter) });
     } else {
-      const path7 = tokens[i++];
-      if (path7 === void 0) return void 0;
-      entries.push({ path: path7, status: mapStatus(letter) });
+      const path8 = tokens[i++];
+      if (path8 === void 0) return void 0;
+      entries.push({ path: path8, status: mapStatus(letter) });
     }
   }
   return entries;
@@ -31718,16 +31728,16 @@ var MatcherView = class {
    * @returns {string|undefined}
    */
   getCurrentTag() {
-    const path7 = this._matcher.path;
-    return path7.length > 0 ? path7[path7.length - 1].tag : void 0;
+    const path8 = this._matcher.path;
+    return path8.length > 0 ? path8[path8.length - 1].tag : void 0;
   }
   /**
    * Get current namespace.
    * @returns {string|undefined}
    */
   getCurrentNamespace() {
-    const path7 = this._matcher.path;
-    return path7.length > 0 ? path7[path7.length - 1].namespace : void 0;
+    const path8 = this._matcher.path;
+    return path8.length > 0 ? path8[path8.length - 1].namespace : void 0;
   }
   /**
    * Get current node's attribute value.
@@ -31735,9 +31745,9 @@ var MatcherView = class {
    * @returns {*}
    */
   getAttrValue(attrName) {
-    const path7 = this._matcher.path;
-    if (path7.length === 0) return void 0;
-    return path7[path7.length - 1].values?.[attrName];
+    const path8 = this._matcher.path;
+    if (path8.length === 0) return void 0;
+    return path8[path8.length - 1].values?.[attrName];
   }
   /**
    * Check if current node has an attribute.
@@ -31745,9 +31755,9 @@ var MatcherView = class {
    * @returns {boolean}
    */
   hasAttr(attrName) {
-    const path7 = this._matcher.path;
-    if (path7.length === 0) return false;
-    const current = path7[path7.length - 1];
+    const path8 = this._matcher.path;
+    if (path8.length === 0) return false;
+    const current = path8[path8.length - 1];
     return current.values !== void 0 && attrName in current.values;
   }
   /**
@@ -31773,18 +31783,18 @@ var MatcherView = class {
    * @returns {number}
    */
   getPosition() {
-    const path7 = this._matcher.path;
-    if (path7.length === 0) return -1;
-    return path7[path7.length - 1].position ?? 0;
+    const path8 = this._matcher.path;
+    if (path8.length === 0) return -1;
+    return path8[path8.length - 1].position ?? 0;
   }
   /**
    * Get current node's repeat counter (occurrence count of this tag name).
    * @returns {number}
    */
   getCounter() {
-    const path7 = this._matcher.path;
-    if (path7.length === 0) return -1;
-    return path7[path7.length - 1].counter ?? 0;
+    const path8 = this._matcher.path;
+    if (path8.length === 0) return -1;
+    return path8[path8.length - 1].counter ?? 0;
   }
   /**
    * Get current node's sibling index (alias for getPosition).
@@ -33991,8 +34001,8 @@ function listFilesRecursive(dir) {
 function compareBytes3(a, b) {
   return Buffer.compare(Buffer.from(a, "utf8"), Buffer.from(b, "utf8"));
 }
-function extensionOf(path7) {
-  const base = path7.slice(path7.lastIndexOf("/") + 1);
+function extensionOf(path8) {
+  const base = path8.slice(path8.lastIndexOf("/") + 1);
   const dot = base.lastIndexOf(".");
   return dot > 0 ? base.slice(dot) : "";
 }
@@ -34036,22 +34046,22 @@ function resolveContextUnsafe(options) {
   const cli = (p.cli ?? resolveCliArgs)(cliOptions);
   const github = (p.github ?? resolveGithubEvent)({
     ...options.env.GITHUB_EVENT_PATH !== void 0 ? { eventPath: options.env.GITHUB_EVENT_PATH } : {},
-    readFile: (path7) => readFileSync(path7, "utf8")
+    readFile: (path8) => readFileSync(path8, "utf8")
   });
   const junit = (p.junit ?? resolveJunit)({
     cwd,
     ...ctxConfig.checks !== void 0 ? { checksPattern: ctxConfig.checks } : {},
     listFiles: (dir) => listFilesRecursive(dir),
-    lstat: (path7) => {
+    lstat: (path8) => {
       try {
-        return lstatSync(path7);
+        return lstatSync(path8);
       } catch {
         return void 0;
       }
     },
-    readFile: (path7) => {
-      const size = statSync(path7).size;
-      return { size, text: () => readFileSync(path7, "utf8") };
+    readFile: (path8) => {
+      const size = statSync(path8).size;
+      return { size, text: () => readFileSync(path8, "utf8") };
     }
   });
   const pr = github.pullRequest;
@@ -34116,14 +34126,14 @@ function resolveContextUnsafe(options) {
       provenance.push(git.head.provenance);
     }
     change.files = git.files.map((f) => {
-      const path7 = red(f.path, quiet(f.path), "text");
+      const path8 = red(f.path, quiet(f.path), "text");
       const file2 = {
         ...f,
-        path: path7,
-        patch: red(f.patch, path7, "patch", extensionOf(f.path)),
-        provenance: { ...f.provenance, ...f.provenance.location !== void 0 ? { location: path7 } : {} }
+        path: path8,
+        patch: red(f.patch, path8, "patch", extensionOf(f.path)),
+        provenance: { ...f.provenance, ...f.provenance.location !== void 0 ? { location: path8 } : {} }
       };
-      if (f.oldPath !== void 0) file2.oldPath = red(f.oldPath, path7, "text");
+      if (f.oldPath !== void 0) file2.oldPath = red(f.oldPath, path8, "text");
       return file2;
     });
     change.commits = git.commits.map((c) => ({
@@ -34283,12 +34293,12 @@ var EvalFixtureSchema = external_exports.object({
     required: external_exports.boolean()
   }).strict()
 }).strict();
-function schemaFailure(file2, path7, value, expected) {
-  return { ok: false, kind: "schema", file: file2, path: path7, value, expected };
+function schemaFailure(file2, path8, value, expected) {
+  return { ok: false, kind: "schema", file: file2, path: path8, value, expected };
 }
-function valueAt(root, path7) {
+function valueAt(root, path8) {
   let cur = root;
-  for (const key of path7) {
+  for (const key of path8) {
     if (cur === null || typeof cur !== "object") return void 0;
     cur = cur[key];
   }
@@ -34320,8 +34330,8 @@ function loadFixtures(dir) {
     if (!result.success) {
       const issue2 = result.error.issues[0];
       if (issue2 === void 0) return schemaFailure(name, "", json2, "a valid Eval_Fixture");
-      const path7 = issue2.path.map(String).join(".");
-      return schemaFailure(name, path7, valueAt(json2, issue2.path), issue2.message);
+      const path8 = issue2.path.map(String).join(".");
+      return schemaFailure(name, path8, valueAt(json2, issue2.path), issue2.message);
     }
     const file2 = result.data;
     const expectedId = name.slice(0, -".json".length);
@@ -35069,16 +35079,16 @@ var TYPE_NAMES = {
   boolean: "boolean",
   null: "null"
 };
-function lookup(input2, path7) {
+function lookup(input2, path8) {
   let current = input2;
-  for (const key of path7) {
+  for (const key of path8) {
     if (current === null || typeof current !== "object") return void 0;
     current = current[key];
   }
   return current;
 }
-function joinPath(path7) {
-  return path7.map((part) => String(part)).join(".");
+function joinPath(path8) {
+  return path8.map((part) => String(part)).join(".");
 }
 function expectedFor(issue2) {
   switch (issue2.code) {
@@ -35109,8 +35119,8 @@ function expectedFor(issue2) {
 }
 function fromZodError(error62, source, input2) {
   const out = [];
-  const make = (path7, expected) => {
-    const entry2 = { path: joinPath(path7), value: lookup(input2, path7), expected };
+  const make = (path8, expected) => {
+    const entry2 = { path: joinPath(path8), value: lookup(input2, path8), expected };
     if (source !== void 0) entry2.source = source;
     out.push(entry2);
   };
@@ -35197,21 +35207,21 @@ function leafKind(node2) {
   }
   return "string";
 }
-function envNameForPath(path7) {
-  return `CE_${path7.replace(/[.-]/g, "_").toUpperCase()}`;
+function envNameForPath(path8) {
+  return `CE_${path8.replace(/[.-]/g, "_").toUpperCase()}`;
 }
 function collect2(shape, prefix, out) {
   for (const [key, child] of Object.entries(shape)) {
     const segments = [...prefix, key];
-    const path7 = segments.join(".");
-    if (path7 === FIXTURES_PATH) continue;
+    const path8 = segments.join(".");
+    if (path8 === FIXTURES_PATH) continue;
     const inner = unwrap(child);
     const def = defOf(inner);
     if (def.type === "object") {
       collect2(def.shape, segments, out);
       continue;
     }
-    out.set(envNameForPath(path7), { path: path7, segments, kind: leafKind(inner) });
+    out.set(envNameForPath(path8), { path: path8, segments, kind: leafKind(inner) });
   }
 }
 function buildEnvKeyEntries(schema) {
@@ -35394,16 +35404,16 @@ function isPlainObject2(value) {
 function collectLeaves(node2, prefix, out) {
   for (const [key, value] of Object.entries(node2)) {
     if (value === void 0) continue;
-    const path7 = prefix === "" ? key : `${prefix}.${key}`;
-    if (isPlainObject2(value) && !WHOLE_LEAF_PATHS.has(path7)) {
-      collectLeaves(value, path7, out);
+    const path8 = prefix === "" ? key : `${prefix}.${key}`;
+    if (isPlainObject2(value) && !WHOLE_LEAF_PATHS.has(path8)) {
+      collectLeaves(value, path8, out);
     } else {
-      out.set(path7, value);
+      out.set(path8, value);
     }
   }
 }
-function setAtPath(target, path7, value) {
-  const keys = path7.split(".");
+function setAtPath(target, path8, value) {
+  const keys = path8.split(".");
   let cursor = target;
   for (const key of keys.slice(0, -1)) {
     const next = cursor[key];
@@ -35429,10 +35439,10 @@ function mergeSources(input2) {
   for (const [source, values] of ordered) {
     const leaves = /* @__PURE__ */ new Map();
     collectLeaves(values, "", leaves);
-    for (const [path7, value] of leaves) {
-      if (Object.hasOwn(sources, path7)) continue;
-      sources[path7] = source;
-      setAtPath(merged, path7, structuredClone(value));
+    for (const [path8, value] of leaves) {
+      if (Object.hasOwn(sources, path8)) continue;
+      sources[path8] = source;
+      setAtPath(merged, path8, structuredClone(value));
     }
   }
   return { merged, sources };
@@ -35507,8 +35517,8 @@ function buildRedactedConfig(config2, meta3, env) {
 function isPlainObject3(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
-function assignExpanded(target, path7, value) {
-  const keys = path7.split(".");
+function assignExpanded(target, path8, value) {
+  const keys = path8.split(".");
   let cursor = target;
   for (const key of keys.slice(0, -1)) {
     const next = cursor[key];
@@ -35546,8 +35556,8 @@ function findFixturesFlag(flags) {
   }
   return null;
 }
-function sourceForPath(path7, sources) {
-  let current = path7;
+function sourceForPath(path8, sources) {
+  let current = path8;
   for (; ; ) {
     const hit = sources[current];
     if (hit !== void 0) return hit;
@@ -35705,11 +35715,11 @@ var CallLogEntrySchema = external_exports.strictObject({
   ]).optional(),
   httpStatus: external_exports.number().int().optional()
 });
-function createJsonlCallLog(path7) {
+function createJsonlCallLog(path8) {
   let queue = Promise.resolve();
   let directoryReady;
   const ensureDirectory = () => {
-    directoryReady ??= mkdir(dirname(path7), { recursive: true }).then(() => void 0);
+    directoryReady ??= mkdir(dirname(path8), { recursive: true }).then(() => void 0);
     directoryReady.catch(() => {
       directoryReady = void 0;
     });
@@ -35729,7 +35739,7 @@ function createJsonlCallLog(path7) {
 `;
       const write = queue.then(async () => {
         await ensureDirectory();
-        await appendFile(path7, line, "utf8");
+        await appendFile(path8, line, "utf8");
       });
       queue = write.catch(() => void 0);
       return write;
@@ -35879,7 +35889,7 @@ var VERSION2 = "0.1.1";
 
 // packages/ce/src/run/pipeline.ts
 import * as fsPromises from "node:fs/promises";
-import path6 from "node:path";
+import path7 from "node:path";
 
 // packages/ce/src/evidence/build.ts
 function dedupInOrder(...lists) {
@@ -36012,13 +36022,19 @@ function fromTrace(trace, subject) {
       action: { kind: s.action.kind, description: s.action.description },
       executed: s.executed,
       screenshot: s.screenshot,
-      probabilities: { ...s.probabilities }
+      probabilities: { ...s.probabilities },
+      alternatives: s.alternatives.map((a) => ({ key: a.key, description: a.description, probability: a.probability }))
     })),
     eventLog: trace.eventLog.map((e) => ({ step: e.step, kind: e.kind, detail: e.detail })),
     finalImage: {
       model: trace.finalImageModel ?? null,
       error: trace.finalImageError ?? null,
-      screenshot: trace.finalScreenshot ?? null
+      screenshot: trace.finalScreenshot ?? null,
+      box: trace.finalBox === void 0 ? null : { ...trace.finalBox },
+      signals: {
+        stateReachedDom: trace.finalSignals?.stateReachedDom ?? null,
+        stateReached: trace.finalSignals?.stateReached ?? null
+      }
     },
     runtime: { stopReason: trace.stopReason }
   };
@@ -36033,7 +36049,8 @@ function fromEvidenceSummary(result) {
       action: { kind: "unknown", description: "" },
       executed: false,
       screenshot: o.screenshot,
-      probabilities: {}
+      probabilities: {},
+      alternatives: []
     })),
     eventLog: [],
     finalImage: null,
@@ -36058,7 +36075,8 @@ function fromPartial(partial2) {
       action: { kind: a.kind, description },
       executed: s.executed === true,
       screenshot: s.observation.screenshot,
-      probabilities: { ...s.probabilities }
+      probabilities: { ...s.probabilities },
+      alternatives: []
     };
   });
   const covered = new Set(steps.map((s) => s.step));
@@ -36072,7 +36090,8 @@ function fromPartial(partial2) {
       action: { kind: "none", description: "" },
       executed: false,
       screenshot: o.screenshot,
-      probabilities: {}
+      probabilities: {},
+      alternatives: []
     });
   }
   steps.sort((x, y) => x.step - y.step);
@@ -36112,7 +36131,7 @@ function buildRunRecord(input2) {
   const assessment = input2.assessment === null ? null : buildAssessment(input2.assessment);
   const claims = !isError || input2.assessment !== null ? buildClaims(input2.claims) : [];
   const record2 = {
-    schemaVersion: "1",
+    schemaVersion: "2",
     ceVersion: input2.ceVersion ?? VERSION2,
     jevModels: dedupInOrder(
       input2.assessment?.record.modelIds,
@@ -36143,7 +36162,7 @@ function buildMinimalRunRecord(input2) {
 function buildValidationFailureRunRecord(input2) {
   const { resolution } = input2;
   const record2 = {
-    schemaVersion: "1",
+    schemaVersion: "2",
     ceVersion: input2.ceVersion ?? VERSION2,
     jevModels: [],
     outcome: resolution.outcome,
@@ -36205,7 +36224,7 @@ var OUTCOMES = ["SKIPPED", "EVIDENCED", "UNSUPPORTED", "ERROR"];
 var V0_SUPPORTED_SURFACES = ["browser_ui"];
 
 // packages/ce/src/evidence/schema.ts
-var SCHEMA_VERSION = "1";
+var SCHEMA_VERSION = "2";
 var [SKIPPED_OUTCOME, EVIDENCED_OUTCOME, UNSUPPORTED_OUTCOME, ERROR_OUTCOME] = OUTCOMES;
 var BundleRelativePath = external_exports.string().regex(/^(?!\/)(?!(?:.*\/)?\.\.(?:\/|$))[^\n]+$/);
 var ARTIFACT_KINDS = ["screenshot", "log", "jev-calls"];
@@ -36293,17 +36312,36 @@ var StepRecord = external_exports.strictObject({
   action: external_exports.strictObject({ kind: external_exports.string(), description: external_exports.string() }),
   executed: external_exports.boolean(),
   screenshot: BundleRelativePath,
-  probabilities: external_exports.record(external_exports.string(), external_exports.number())
+  probabilities: external_exports.record(external_exports.string(), external_exports.number()),
+  alternatives: external_exports.array(
+    external_exports.strictObject({
+      key: external_exports.string(),
+      description: external_exports.string(),
+      probability: external_exports.number().min(0).max(1)
+    })
+  )
 });
 var EventLogRecord = external_exports.strictObject({
   step: external_exports.number().int().nonnegative(),
   kind: external_exports.enum(["dialog", "download", "popup", "settle", "refusal"]),
   detail: external_exports.string()
 });
+var FractionBox = external_exports.strictObject({
+  x: external_exports.number(),
+  y: external_exports.number(),
+  width: external_exports.number(),
+  height: external_exports.number()
+});
+var unitSignal = external_exports.number().min(0).max(1).nullable();
 var FinalImage = external_exports.strictObject({
   model: external_exports.string().nullable(),
   error: external_exports.string().nullable(),
-  screenshot: BundleRelativePath.nullable()
+  screenshot: BundleRelativePath.nullable(),
+  box: FractionBox.nullable(),
+  signals: external_exports.strictObject({
+    stateReachedDom: unitSignal,
+    stateReached: unitSignal
+  })
 });
 var RuntimeRecord = external_exports.strictObject({ stopReason: StopReasonSchema });
 var ContextRecord = external_exports.strictObject({
@@ -36532,7 +36570,11 @@ async function persist(record2, input2, names) {
     return { ok: false, error: new StageError("evidence", cause) };
   }
   const hasReport = names.includes(REPORT_HTML_FILE);
-  return { ok: true, reportPath: path3.join(input2.runDir, hasReport ? REPORT_HTML_FILE : RUN_JSON_FILE) };
+  return {
+    ok: true,
+    reportPath: path3.join(input2.runDir, hasReport ? REPORT_HTML_FILE : RUN_JSON_FILE),
+    record: parsed.data
+  };
 }
 async function listRunDir(input2) {
   try {
@@ -36575,6 +36617,729 @@ async function writeMinimalBundle(input2) {
     return await persist(record2, input2, names);
   } catch (cause) {
     return { ok: false, error: new StageError("evidence", cause) };
+  }
+}
+
+// packages/ce/src/evidence/report/escape.ts
+var HTML_ENTITIES = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;"
+};
+function escapeHtml(text) {
+  return text.replace(/[&<>"']/g, (ch) => HTML_ENTITIES[ch] ?? ch);
+}
+function escapeAttr(text) {
+  return escapeHtml(text).replace(/`/g, "&#96;").replace(/=/g, "&#61;");
+}
+var UNSAFE_HREF_PLACEHOLDER = "#";
+var IGNORED_IN_SCHEME = /[\u0000-\u0020\u007f-\u009f\u200b-\u200d\u2060\ufeff]/g;
+var DANGEROUS_SCHEME = /^(?:javascript|vbscript|data):/i;
+function hrefFor(relativePath) {
+  try {
+    if (typeof relativePath !== "string" || relativePath === "") {
+      return UNSAFE_HREF_PLACEHOLDER;
+    }
+    if (DANGEROUS_SCHEME.test(relativePath.replace(IGNORED_IN_SCHEME, ""))) {
+      return UNSAFE_HREF_PLACEHOLDER;
+    }
+    return relativePath.split("/").map((segment) => encodeURIComponent(segment)).join("/");
+  } catch {
+    return UNSAFE_HREF_PLACEHOLDER;
+  }
+}
+function rawJsonScriptSafe(json2) {
+  return escapeHtml(json2).replace(/<\//g, "<\\/");
+}
+
+// packages/ce/src/evidence/report/logo.ts
+var LOGO_WIDTH = 400;
+var LOGO_HEIGHT = 278;
+var LOGO_ALT = "CE, continuous evidence";
+var LOGO_DATA_URI = "data:image/webp;base64,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";
+
+// packages/ce/src/evidence/report/palette.ts
+var PALETTE = {
+  bg: "#0d1117",
+  surface: "#161b22",
+  surface2: "#1c232d",
+  border: "#3d4654",
+  text: "#e6edf3",
+  muted: "#a6b0bd",
+  link: "#79b8ff",
+  focus: "#ffd33d",
+  outcomeTones: {
+    SKIPPED: "#58a6ff",
+    EVIDENCED: "#3fb950",
+    UNSUPPORTED: "#e3b341",
+    ERROR: "#ff7b72"
+  },
+  bar: "#79b8ff",
+  barTrack: "#2a323d",
+  box: "#ff9bce",
+  /** Declared dominant color of the committed Logo_Asset. */
+  logoDominant: "#7490b8"
+};
+function blendSrgb(fg, bg, pct2) {
+  const parse3 = (hex3) => [1, 3, 5].map((i) => parseInt(hex3.slice(i, i + 2), 16));
+  const a = parse3(fg);
+  const b = parse3(bg);
+  const w = pct2 / 100;
+  return "#" + a.map(
+    (c, i) => Math.round(c * w + b[i] * (1 - w)).toString(16).padStart(2, "0")
+  ).join("");
+}
+var BANNER_MIX = {
+  backgroundTonePct: 13,
+  borderTonePct: 55,
+  mutedTonePct: 28,
+  mutedBase: "#d4dbe3"
+};
+function bannerColors(tone, p = PALETTE) {
+  return {
+    background: blendSrgb(tone, p.surface, BANNER_MIX.backgroundTonePct),
+    border: blendSrgb(tone, p.border, BANNER_MIX.borderTonePct),
+    onToneMuted: blendSrgb(tone, BANNER_MIX.mutedBase, BANNER_MIX.mutedTonePct)
+  };
+}
+
+// packages/ce/src/evidence/report/sections/banner.ts
+var ICON_SHAPES = {
+  // circle with a bar: deliberately not run
+  SKIPPED: '<circle cx="12" cy="12" r="10"/><path d="M7.5 12h9"/>',
+  // circle with a check mark
+  EVIDENCED: '<circle cx="12" cy="12" r="10"/><path d="m7.5 12.5 3 3 6-7"/>',
+  // triangle with an exclamation mark: required but not possible
+  UNSUPPORTED: '<path d="M12 3 22 20H2Z"/><path d="M12 10v4.5"/><path d="M12 17.2h.01"/>',
+  // octagon with a cross
+  ERROR: '<path d="M8 2h8l6 6v8l-6 6H8l-6-6V8Z"/><path d="m9 9 6 6"/><path d="m15 9-6 6"/>'
+};
+var EXPLANATIONS = {
+  SKIPPED: "Additional Evidence was not required.",
+  EVIDENCED: "Runtime Evidence was collected.",
+  UNSUPPORTED: "Evidence was required, but the available capabilities were insufficient.",
+  ERROR: "CE did not complete."
+};
+function icon(outcome) {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + ICON_SHAPES[outcome] + "</svg>";
+}
+function fact(label, value, mono = false) {
+  return { label, html: escapeHtml(value), mono };
+}
+function dl(cls, facts) {
+  const items = facts.map(
+    (f) => `<div><dt>${escapeHtml(f.label)}</dt><dd${f.mono === true ? ' class="mono"' : ""}>${f.html}</dd></div>`
+  ).join("");
+  return `<dl class="${cls}">${items}</dl>`;
+}
+function formatStarted(iso) {
+  const m = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})(?:\.\d+)?(?:Z|\+00:00)$/.exec(iso);
+  return m ? `${m[1]} ${m[2]} UTC` : iso;
+}
+function formatDuration(ms2) {
+  if (!Number.isFinite(ms2)) return String(ms2);
+  if (ms2 < 1e3) return `${Math.round(ms2)} ms`;
+  return `${(ms2 / 1e3).toFixed(1)} s`;
+}
+function nonEmpty2(text) {
+  return typeof text === "string" && text.trim() !== "";
+}
+function renderBanner(record2) {
+  const title = record2.context?.change.title;
+  const lead = [
+    fact("Change", nonEmpty2(title) ? title : "No title"),
+    fact("Subject", nonEmpty2(record2.subject) ? record2.subject : "No subject observed", nonEmpty2(record2.subject))
+  ];
+  const meta3 = [];
+  if (record2.outcome === "EVIDENCED") {
+    meta3.push(fact("Final state", record2.finalState));
+    if (record2.runtime) meta3.push(fact("Stop reason", record2.runtime.stopReason));
+  } else if (record2.outcome === "UNSUPPORTED") {
+    lead.push(fact("Unsupported surface", record2.assessment.surface));
+  } else if (record2.outcome === "ERROR") {
+    const e = record2.error;
+    lead.push(fact("Failed stage", e.stage));
+    lead.push(fact("Error reason", e.reason));
+    lead.push(fact("Cause", e.causeName ?? "not recorded"));
+    if (e.fields.length > 0) {
+      const items = e.fields.map((p) => `<li class="mono">${escapeHtml(p)}</li>`).join("");
+      lead.push({ label: "Failing fields", html: `<ul class="fields">${items}</ul>` });
+    }
+  }
+  meta3.push(
+    fact("Started", formatStarted(record2.timings.startedAt)),
+    fact("Duration", formatDuration(record2.timings.durationMs)),
+    fact("CE version", record2.ceVersion)
+  );
+  const word = escapeHtml(record2.outcome);
+  return `<section id="banner" class="banner" data-outcome="${word}" aria-labelledby="h-banner"><h2 id="h-banner" class="sr-only">Outcome</h2><div class="head">${icon(record2.outcome)}<span class="outcome">${word}</span></div><p class="what">${escapeHtml(EXPLANATIONS[record2.outcome])}</p><p class="why">Reason: ${escapeHtml(record2.outcomeReason)}</p><hr>` + dl("lead-facts", lead) + dl("meta", meta3) + `</section>`;
+}
+var BANNER_CSS = (() => {
+  const base = bannerColors(PALETTE.outcomeTones.EVIDENCED);
+  const rules = Object.entries(PALETTE.outcomeTones).map(([name, tone]) => {
+    const c = bannerColors(tone);
+    return `.banner[data-outcome="${name}"]{--tone:${tone};--banner-bg:${c.background};--banner-border:${c.border};--on-tone-muted:${c.onToneMuted}}`;
+  });
+  void BANNER_MIX;
+  return [
+    `.banner{--tone:${PALETTE.outcomeTones.EVIDENCED};--banner-bg:${base.background};--banner-border:${base.border};--on-tone-muted:${base.onToneMuted};background:var(--banner-bg);border:1px solid var(--banner-border);border-radius:10px;padding:1.5rem 1.6rem 1.3rem;color:var(--text);overflow-wrap:anywhere}`,
+    ...rules,
+    `.banner .head{display:flex;align-items:center;gap:.8rem}`,
+    `.banner .head svg{flex:none;width:2.4rem;height:2.4rem;color:var(--tone)}`,
+    `.banner .outcome{font-size:2.4rem;line-height:1;font-weight:800;letter-spacing:.03em;color:var(--tone)}`,
+    `.banner .what{font-size:1.2rem;font-weight:600;margin:.55rem 0 0;color:var(--text)}`,
+    `.banner .why{margin:.3rem 0 0;color:var(--on-tone-muted);max-width:60ch}`,
+    `.banner hr{border:0;border-top:1px solid var(--banner-border);margin:1.2rem 0 1rem}`,
+    `.banner .lead-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(16rem,100%),1fr));gap:.9rem 2rem;margin:0}`,
+    `.banner .lead-facts dt,.banner .meta dt{color:var(--on-tone-muted);font-size:.82rem;font-weight:500}`,
+    `.banner .lead-facts dd{margin:.1rem 0 0;font-size:1.05rem;font-weight:600;overflow-wrap:anywhere}`,
+    `.banner .meta{display:flex;flex-wrap:wrap;gap:.6rem 2rem;margin:1.1rem 0 0;padding:0}`,
+    `.banner .meta div{min-width:0}`,
+    `.banner .meta dd{margin:0;font-size:.82rem;overflow-wrap:anywhere}`,
+    `.banner .fields{margin:.1rem 0 0;padding-left:1.1rem}`
+  ].join("\n");
+})();
+
+// packages/ce/src/evidence/report/document.ts
+var CSP = "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' data:";
+var NAV = [
+  { id: "banner", label: "Outcome" },
+  { id: "claims", label: "Claims" },
+  { id: "assessment", label: "Assessment" },
+  { id: "timeline", label: "Timeline" },
+  { id: "final", label: "Final screenshot" },
+  { id: "logs", label: "Logs" },
+  { id: "raw", label: "Raw run.json" }
+];
+var SIGNAL_NOTE = `<p class="note" role="note"><strong>How to read the numbers.</strong> Every probability on this page is a <strong>signal</strong>: the classifier's reading of the input. It is not a verdict on whether the software is correct. The Assessment decides whether runtime Evidence is needed, not whether the Change is correct.</p>`;
+var COPY_SCRIPT = "document.getElementById('copy').addEventListener('click', function () {\n  var pre = document.getElementById('rawjson');\n  if (navigator.clipboard && pre) { navigator.clipboard.writeText(pre.textContent); }\n});";
+function rootVariables() {
+  const p = PALETTE;
+  const tones = Object.entries(p.outcomeTones).map(([name, value]) => `--tone-${name.toLowerCase()}:${value};`).join(" ");
+  return `:root{--bg:${p.bg}; --surface:${p.surface}; --surface-2:${p.surface2}; --border:${p.border}; --text:${p.text}; --muted:${p.muted}; --link:${p.link}; --focus:${p.focus}; ${tones} --bar:${p.bar}; --bar-track:${p.barTrack}; --box:${p.box};}`;
+}
+var SECTION_CSS = [
+  // base
+  "*{box-sizing:border-box}",
+  "html{color-scheme:dark}",
+  'body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;overflow-wrap:break-word}',
+  "a{color:var(--link)}",
+  // type scale: h1 1.8rem > h2 1.44rem > h3 1.1rem > body 1rem
+  "h1{font-size:1.8rem;line-height:1.15;font-weight:700;margin:0}",
+  "h2{font-size:1.44rem;line-height:1.25;font-weight:700;margin:0 0 .75rem}",
+  "h3{font-size:1.1rem;line-height:1.3;font-weight:650;margin:0 0 .35rem}",
+  // focus
+  "a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:3px}",
+  // skip link
+  ".skip{position:absolute;left:-999px;top:0;background:var(--focus);color:#000;padding:.5rem 1rem;z-index:10}",
+  ".skip:focus{left:0}",
+  ".sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}",
+  // layout
+  ".wrap{max-width:62rem;margin:0 auto;padding:0 1rem 4rem}",
+  "header.top{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;padding:1.1rem 0 .2rem}",
+  "header.top img{width:7.5rem;max-width:100%;height:auto;flex:none}",
+  "header.top h1{min-width:0;flex:1 1 14rem}",
+  "header.top h1 span{display:block;font-size:.88rem;font-weight:400;color:var(--muted);margin-top:.15rem}",
+  "main>section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;margin:1.1rem 0;min-width:0}",
+  "main>section.banner{margin:1.1rem 0}",
+  ".muted{color:var(--muted)}",
+  ".mono,code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.88rem}",
+  ".mono{overflow-wrap:anywhere}",
+  // note and nav
+  ".note{border:1px dashed var(--border);border-radius:8px;padding:.7rem 1rem;color:var(--muted);margin:1.1rem 0;max-width:75ch}",
+  ".note strong{color:var(--text)}",
+  "nav ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}",
+  "nav a{display:inline-block;padding:.25rem .7rem;border:1px solid var(--border);border-radius:999px;text-decoration:none}",
+  "nav a:hover{background:var(--surface-2)}",
+  // chips and signal tags
+  ".chip{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:0 .6rem;font-size:.8rem;color:var(--text);background:var(--surface-2);margin-right:.35rem;overflow-wrap:anywhere}",
+  ".chip b{color:var(--link);font-weight:600}",
+  ".tag-signal{display:inline-block;font-size:.72rem;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--bar);border:1px solid var(--bar);border-radius:4px;padding:0 .35rem;margin-left:.4rem;white-space:nowrap}",
+  // claims
+  ".claim{border-bottom:1px solid var(--border);padding:.75rem 0}",
+  ".claim-text{margin:.1rem 0 .4rem;max-width:75ch}",
+  ".claim-declared,.no-claim,.context-reduction,.context-null{margin:.4rem 0}",
+  ".candidates{margin:.6rem 0}",
+  ".candidates .claim:last-child{border-bottom:0}",
+  // bars
+  ".bar{display:grid;grid-template-columns:minmax(8rem,16rem) 1fr 3.2rem;gap:.6rem;align-items:center;margin:.2rem 0}",
+  ".bar .lbl{min-width:0;overflow-wrap:anywhere}",
+  ".bar .track{height:.7rem;background:var(--bar-track);border-radius:99px;overflow:hidden;border:1px solid var(--border)}",
+  ".bar .fill{height:100%;background:var(--bar)}",
+  ".bar .val{text-align:right;font-variant-numeric:tabular-nums}",
+  ".bar.chosen .fill{background:var(--tone-evidenced)}",
+  ".bar.no-answer{grid-template-columns:minmax(8rem,16rem) 1fr}",
+  ".bar.no-answer .val{text-align:left;color:var(--muted)}",
+  // assessment
+  ".q{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem;margin:.7rem 0}",
+  ".q blockquote,.q-text{margin:.3rem 0 .7rem;padding:.55rem .8rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text)}",
+  ".q-noanswer{margin:.3rem 0}",
+  // tables
+  "table{border-collapse:collapse;width:100%}",
+  "th,td{text-align:left;padding:.3rem .6rem;border-bottom:1px solid var(--border);vertical-align:top;overflow-wrap:anywhere}",
+  "th{color:var(--muted);font-weight:600;font-size:.85rem}",
+  ".files,.checks,.per-claim,.assessment-summary,.event-log{margin:.5rem 0}",
+  // timeline
+  "ol.steps{list-style:none;margin:0;padding:0}",
+  "ol.steps>li{display:grid;grid-template-columns:15rem minmax(0,1fr);gap:1rem;padding:1rem 0;border-bottom:1px solid var(--border)}",
+  "ol.steps>li:last-child{border-bottom:0}",
+  ".shot{display:block;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:var(--surface-2);line-height:0}",
+  ".shot img{display:block;width:100%;max-width:100%;height:auto}",
+  ".step-body{min-width:0}",
+  ".step-body p{margin:.1rem 0}",
+  ".stepno{display:inline-block;min-width:1.8rem;text-align:center;background:var(--bar);color:#000;border-radius:5px;font-weight:700;margin-right:.4rem}",
+  ".exec-yes{color:var(--tone-evidenced)}",
+  ".exec-no{color:var(--tone-error)}",
+  ".refusal{margin:.3rem 0}",
+  ".alt{display:flex;flex-wrap:wrap;align-items:center;gap:.2rem .6rem}",
+  ".alt .bar{flex:1 1 20rem}",
+  ".taken-mark{color:var(--tone-evidenced);font-weight:600}",
+  ".no-alternatives,.empty,.no-final,.no-events,.no-log-artifacts{color:var(--muted);margin:.4rem 0}",
+  "details{margin:.4rem 0}",
+  "summary{cursor:pointer;color:var(--link)}",
+  // final
+  ".final{position:relative;display:block;max-width:34rem;border:1px solid var(--border);border-radius:6px;overflow:hidden;line-height:0}",
+  ".final img{display:block;width:100%;max-width:100%;height:auto}",
+  ".box{position:absolute;border:3px solid var(--box);box-shadow:0 0 0 1px #000;pointer-events:none}",
+  ".box-coords,.no-box{margin:.5rem 0}",
+  ".final-error{border:1px solid var(--tone-error);border-radius:6px;padding:.5rem .8rem;margin:.5rem 0}",
+  // logs
+  ".stop-reason,.jev-calls-note,.stage-durations,.jev-config,.settings{margin:.5rem 0}",
+  ".log-artifacts{padding-left:1.2rem;margin:.5rem 0}",
+  ".artifact-note{color:var(--muted)}",
+  ".jev-models ul{margin:.2rem 0;padding-left:1.2rem}",
+  // raw
+  "pre{background:#010409;border:1px solid var(--border);border-radius:8px;padding:1rem;overflow:auto;max-height:26rem;margin:.5rem 0 0;max-width:100%}",
+  "button{background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:.3rem .8rem;font:inherit;cursor:pointer}",
+  // small viewports and motion
+  "@media (max-width:640px){",
+  "  ol.steps>li{grid-template-columns:minmax(0,1fr)}",
+  "  .bar{grid-template-columns:minmax(0,1fr) 3.2rem}",
+  "  .bar .track{grid-column:1/-1;grid-row:2}",
+  "  .bar.no-answer{grid-template-columns:minmax(0,1fr)}",
+  "}",
+  "@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}"
+].join("\n");
+function css() {
+  return [rootVariables(), SECTION_CSS, BANNER_CSS].join("\n");
+}
+function navHtml() {
+  const items = NAV.map((n) => `<li><a href="#${escapeAttr(n.id)}">${escapeHtml(n.label)}</a></li>`).join("");
+  return `<nav aria-label="Report sections"><ul>${items}</ul></nav>`;
+}
+function renderDocument(record2, sections) {
+  const started = record2.timings.startedAt;
+  const title = `${record2.outcome} \xB7 CE run ${started}`;
+  const logo = `<img src="${escapeAttr(LOGO_DATA_URI)}" width="${LOGO_WIDTH}" height="${LOGO_HEIGHT}" alt="${escapeAttr(LOGO_ALT)}">`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="${CSP}">
+<title>${escapeHtml(title)}</title>
+<style>
+${css()}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="wrap">
+<header class="top">${logo}<h1>Evidence report<span class="mono">run ${escapeHtml(started)}</span></h1></header>
+<main id="main">
+${sections.banner}
+${SIGNAL_NOTE}
+${navHtml()}
+${sections.claims}
+${sections.assessment}
+${sections.timeline}
+${sections.final}
+${sections.logs}
+${sections.raw}
+</main>
+</div>
+<script>
+${COPY_SCRIPT}
+</script>
+</body>
+</html>
+`;
+}
+
+// packages/ce/src/evidence/report/signal.ts
+function signalLabel() {
+  return "signal";
+}
+function clampPercent(value) {
+  const percent = value * 100;
+  if (percent < 0) return 0;
+  if (percent > 100) return 100;
+  return percent;
+}
+function twoDecimals(n) {
+  const s = n.toFixed(2);
+  return s === "-0.00" ? "0.00" : s;
+}
+function signalBar(label, value, options = {}) {
+  const cls = options.chosen === true ? "bar chosen" : "bar";
+  const name = escapeHtml(label);
+  if (value === null || !Number.isFinite(value)) {
+    return `<div class="${cls} no-answer"><span class="lbl">${name}</span><span class="val">no answer</span></div>`;
+  }
+  const percent = clampPercent(value);
+  const now = twoDecimals(percent);
+  const text = twoDecimals(value);
+  return `<div class="${cls}"><span class="lbl">${name}</span><div class="track" role="meter" aria-label="${escapeAttr(`${label} ${signalLabel()}`)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${now}" aria-valuetext="${text}"><div class="fill" style="width:${now}%"></div></div><span class="val">${text}</span></div>`;
+}
+
+// packages/ce/src/evidence/report/sections/assessment.ts
+var UNAVAILABLE = "question text unavailable for this version";
+function two(n) {
+  if (!Number.isFinite(n)) return String(n);
+  const s = n.toFixed(2);
+  return s === "-0.00" ? "0.00" : s;
+}
+function subjectText(record2, subjectId) {
+  const claim2 = record2.claims.find((c) => c.id === subjectId);
+  if (claim2 !== void 0) return claim2.text;
+  const candidate = record2.context?.candidates.find((c) => c.id === subjectId);
+  if (candidate !== void 0) return candidate.text;
+  return subjectId;
+}
+function renderQuestion(record2, q, questionText) {
+  const text = questionText(q.idVersion);
+  const subject = subjectText(record2, q.subjectId);
+  const subjectLine = subject === q.subjectId ? `<span class="mono">${escapeHtml(q.subjectId)}</span>` : `<span class="mono">${escapeHtml(q.subjectId)}</span> ${escapeHtml(subject)}`;
+  let answer;
+  if (q.probabilities !== null) {
+    const entries = Object.entries(q.probabilities).sort((a, b) => b[1] - a[1]);
+    answer = entries.length === 0 ? '<p class="muted q-noanswer">This question returned no answer.</p>' : entries.map(([label, p]) => signalBar(label, p)).join("");
+  } else if (q.probability !== null) {
+    answer = signalBar("probability", q.probability);
+  } else {
+    answer = '<p class="muted q-noanswer">This question returned no answer.</p>';
+  }
+  return `<div class="q"><h3>${subjectLine} <span class="tag-signal">${escapeHtml(signalLabel())}</span></h3><p class="muted q-id" style="margin:.1rem 0">Question asked <span class="mono">(${escapeHtml(q.idVersion)})</span></p><blockquote class="q-text">${text === void 0 ? escapeHtml(UNAVAILABLE) : escapeHtml(text)}</blockquote>` + answer + `</div>`;
+}
+function renderPerClaim(a) {
+  if (a.perClaimProbabilities.length === 0) return "";
+  const rows = a.perClaimProbabilities.map(
+    (p) => `<tr><td class="mono">${escapeHtml(p.claimId)}</td><td>${escapeHtml(two(p.runtimeObservable))}</td><td>${escapeHtml(two(p.checksAdequate))}</td></tr>`
+  ).join("");
+  return `<table class="per-claim"><thead><tr><th>Claim</th><th>Runtime observable</th><th>Checks adequate</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function renderAssessment(record2, questionText) {
+  const head = `<section id="assessment" aria-labelledby="h-assess"><h2 id="h-assess">Assessment</h2>`;
+  const a = record2.assessment;
+  if (a === null) {
+    return `${head}<p class="muted">The assessment stage did not complete, so there is no Assessment to show.</p></section>`;
+  }
+  const decidedBy = a.decidedBy === "policy" ? "policy. A configured policy decided this Assessment, not a classifier." : "classifier signals + thresholds";
+  const summary = `<table class="assessment-summary"><tbody><tr><th>Evidence required</th><td>${a.required ? "yes" : "no"}</td><th>Decided by</th><td>${escapeHtml(decidedBy)}</td></tr><tr><th>Surface</th><td>${escapeHtml(a.surface)}</td><th>Claim status</th><td>${escapeHtml(a.claimStatus)}</td></tr></tbody></table>`;
+  const questions = a.questions.length === 0 ? '<p class="muted">No questions were asked.</p>' : a.questions.map((q) => renderQuestion(record2, q, questionText)).join("");
+  const s = a.settings;
+  const settings = `<p class="muted settings" style="margin-bottom:0">Thresholds: claim \u2265 ${escapeHtml(two(s.claimThreshold))} \xB7 observable \u2265 ${escapeHtml(two(s.observableThreshold))} \xB7 adequate \u2265 ${escapeHtml(two(s.adequateThreshold))} \xB7 uncertainty band \xB1${escapeHtml(two(s.uncertaintyBand))} \xB7 on uncertain: ${escapeHtml(s.onUncertain)}.</p>`;
+  return `${head}${summary}${questions}${renderPerClaim(a)}${settings}</section>`;
+}
+
+// packages/ce/src/evidence/report/sections/claims.ts
+function chip(p) {
+  const detail = [p.ref, p.location].filter((v) => typeof v === "string" && v !== "").map(escapeHtml).join(" \xB7 ");
+  return `<span class="chip"><b>${escapeHtml(p.provider)}</b>${detail === "" ? "" : ` ${detail}`}</span>`;
+}
+function plural2(n, one, many) {
+  return n === 1 ? one : many;
+}
+function claimList(record2) {
+  if (record2.assessment?.claimStatus === "not_identified") {
+    return '<p class="no-claim">No claim identified.</p>';
+  }
+  if (record2.claims.length === 0) {
+    return '<p class="muted no-claim">No claims recorded for this run.</p>';
+  }
+  const items = record2.claims.map((c) => {
+    const probability2 = c.probability === null ? '<span class="muted claim-declared">declared, no classifier signal</span>' : `<span class="tag-signal">${signalLabel()}</span> ${signalBar("Claim signal", c.probability)}`;
+    return `<div class="claim" data-claim-id="${escapeHtml(c.id)}"><h3>${escapeHtml(c.id)}</h3><p class="claim-text">${escapeHtml(c.text)}</p>${chip(c.provenance)} ${probability2}</div>`;
+  });
+  return items.join("");
+}
+function candidateList(record2) {
+  const candidates = record2.context?.candidates ?? [];
+  if (candidates.length === 0) return "";
+  const n = candidates.length;
+  const items = candidates.map(
+    (c) => `<div class="claim candidate" data-candidate-id="${escapeHtml(c.id)}"><p class="claim-text">${escapeHtml(c.text)}</p>${chip(c.provenance)}</div>`
+  ).join("");
+  return `<details class="candidates"><summary>${n} ${plural2(n, "candidate", "candidates")} (candidates, not Claims)</summary>${items}</details>`;
+}
+function filesTable(record2) {
+  const files = record2.context?.change.files ?? [];
+  if (files.length === 0) return '<p class="muted">No changed files recorded.</p>';
+  const rows = files.map((f) => {
+    const old = f.oldPath === void 0 ? "" : ` <span class="muted">(from ${escapeHtml(f.oldPath)})</span>`;
+    return `<tr><td class="mono">${escapeHtml(f.path)}${old}</td><td>${escapeHtml(f.status)}</td><td>${escapeHtml(f.provenance.provider)}</td></tr>`;
+  }).join("");
+  return `<table class="files"><thead><tr><th>File</th><th>Status</th><th>Reported by</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function checksTable(record2) {
+  const checks = record2.context?.checks ?? [];
+  if (checks.length === 0) return '<p class="muted">No existing Checks recorded.</p>';
+  const rows = checks.map(
+    (c) => `<tr><td>${escapeHtml(c.name)}</td><td>${escapeHtml(c.status)}</td><td>${escapeHtml(c.provenance.provider)}</td></tr>`
+  ).join("");
+  return `<table class="checks"><thead><tr><th>Check</th><th>Check status</th><th>Reported by</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function reduction(record2) {
+  const ctx = record2.context;
+  if (ctx === null) return "";
+  const truncated = ctx.truncated.length;
+  const redacted = ctx.redactions.reduce((sum, r) => sum + r.count, 0);
+  return `<p class="muted context-reduction">Context was reduced: ${truncated} ${plural2(truncated, "file", "files")} truncated or dropped, ${redacted} ${plural2(redacted, "value", "values")} redacted.</p>`;
+}
+function renderClaims(record2) {
+  const head = '<section id="claims" aria-labelledby="h-claims"><h2 id="h-claims">Claims</h2>';
+  const ctx = record2.context;
+  const context = ctx === null ? '<p class="muted context-null">No context was gathered for this run, so changed files and Checks are not available.</p>' : `<h3>Changed files and existing Checks</h3>${filesTable(record2)}${checksTable(record2)}${reduction(record2)}`;
+  return `${head}${claimList(record2)}${candidateList(record2)}${context}</section>`;
+}
+
+// packages/ce/src/evidence/report/sections/final.ts
+var STATE_REACHED_IMAGE = "runtime.state_reached@1";
+var STATE_REACHED_DOM = "runtime.state_reached_dom@1";
+var UNAVAILABLE2 = "question text unavailable for this version";
+function textOrFallback(questionText, idVersion) {
+  const text = questionText(idVersion);
+  return text === void 0 ? `${idVersion}: ${UNAVAILABLE2}` : text;
+}
+function clamp01(n) {
+  if (!Number.isFinite(n)) return 0;
+  return n < 0 ? 0 : n > 1 ? 1 : n;
+}
+function pct(n) {
+  return `${(clamp01(n) * 100).toFixed(2)}%`;
+}
+function verbatim(n) {
+  return String(n);
+}
+function figure(src, alt, box2) {
+  const highlight = box2 === null ? "" : `<div class="box" style="left:${pct(box2.x)};top:${pct(box2.y)};width:${pct(box2.width)};height:${pct(box2.height)};border-color:${PALETTE.box};background:none"><span>subject</span></div>`;
+  return `<div class="final"><img src="${escapeAttr(hrefFor(src))}" alt="${escapeAttr(alt)}">${highlight}</div>`;
+}
+function renderFinal(record2, questionText) {
+  const fi = record2.finalImage;
+  const parts = ['<section id="final" aria-labelledby="h-final">', '<h2 id="h-final">Final screenshot</h2>'];
+  const finalShot = fi?.screenshot ?? null;
+  if (finalShot === null) {
+    const last = record2.steps.length > 0 ? record2.steps[record2.steps.length - 1] : void 0;
+    parts.push('<p class="no-final">No final screenshot exists for this run.</p>');
+    if (last !== void 0) {
+      parts.push(figure(last.screenshot, `${last.screenshot}, screenshot of the last step`, null));
+      parts.push(`<p class="muted">Showing the screenshot of the last step (step ${escapeHtml(String(last.step))}).</p>`);
+    }
+  } else {
+    const box2 = fi !== null && fi.error === null ? fi.box : null;
+    parts.push(figure(finalShot, `${finalShot}, final screenshot`, box2));
+    if (fi !== null && fi.error !== null) {
+      parts.push(
+        `<p class="final-error">The final image request failed: ${escapeHtml(fi.error)}. No Box highlight is drawn. The Outcome was resolved from text ${signalLabel()}s.</p>`
+      );
+    } else if (box2 !== null) {
+      parts.push(
+        `<p class="muted box-coords">Box <span class="tag-signal">${signalLabel()}</span> x ${escapeHtml(verbatim(box2.x))}, y ${escapeHtml(verbatim(box2.y))}, width ${escapeHtml(verbatim(box2.width))}, height ${escapeHtml(verbatim(box2.height))} of the screenshot.</p>`
+      );
+    } else {
+      parts.push('<p class="muted no-box">The classifier returned no Box.</p>');
+    }
+  }
+  if (fi !== null && fi.model !== null) {
+    parts.push(`<p class="muted">Model <span class="mono">${escapeHtml(fi.model)}</span>.</p>`);
+  }
+  if (fi !== null) {
+    const image2 = fi.signals.stateReached;
+    const dom = fi.signals.stateReachedDom;
+    if (image2 !== null) {
+      parts.push(signalBar(textOrFallback(questionText, STATE_REACHED_IMAGE), image2));
+    }
+    if (dom !== null) {
+      parts.push(signalBar(textOrFallback(questionText, STATE_REACHED_DOM), dom));
+    }
+  }
+  parts.push("</section>");
+  return parts.join("\n");
+}
+
+// packages/ce/src/evidence/report/sections/logs.ts
+var STOP_REASON_MEANING = {
+  done: "The classifier judged the task complete and the loop stopped on its own.",
+  reached: "The classifier judged that the state described by the Claim was reached, so the loop stopped.",
+  give_up: "The classifier chose to give up because no available action moved the page toward the Claim.",
+  "max-steps": "The step budget ended the loop before the state was reached.",
+  "time-budget": "The time budget ended the loop before the state was reached.",
+  aborted: "The run was aborted before the loop could finish."
+};
+function stopReasonMeaning(stopReason) {
+  return Object.prototype.hasOwnProperty.call(STOP_REASON_MEANING, stopReason) ? STOP_REASON_MEANING[stopReason] : "The loop ended for a reason this report does not recognize.";
+}
+var STAGE_ORDER = ["config", "context", "assessment", "runtime"];
+function formatDuration2(ms2) {
+  if (!Number.isFinite(ms2)) return "unknown";
+  return ms2 < 1e3 ? `${Math.round(ms2)} ms` : `${(ms2 / 1e3).toFixed(1)} s`;
+}
+function renderEvents(record2) {
+  if (record2.eventLog.length === 0) {
+    return `<p class="no-events">No runtime events</p>`;
+  }
+  const rows = record2.eventLog.map(
+    (e) => `<tr><td>${escapeHtml(String(e.step))}</td><td>${escapeHtml(e.kind)}</td><td>${escapeHtml(e.detail)}</td></tr>`
+  ).join("");
+  return `<table class="event-log"><thead><tr><th scope="col">Step</th><th scope="col">Event</th><th scope="col">Detail</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function renderStopReason(record2) {
+  if (record2.runtime === null) {
+    return `<p class="stop-reason">The runtime did not start, so there is no stop reason.</p>`;
+  }
+  const reason = record2.runtime.stopReason;
+  return `<p class="stop-reason">Stop reason: <span class="mono">${escapeHtml(reason)}</span>. ${escapeHtml(stopReasonMeaning(reason))}</p>`;
+}
+function renderArtifacts(record2) {
+  const items = record2.artifacts.filter((a) => a.kind === "log" || a.kind === "jev-calls").map((a) => {
+    const note2 = a.kind === "jev-calls" ? "per-call Jev log with state hashes, no state text" : "log file written during the run";
+    return `<li><a href="${escapeAttr(hrefFor(a.path))}" class="mono">${escapeHtml(a.path)}</a> <span class="artifact-note">${escapeHtml(note2)}</span></li>`;
+  }).join("");
+  const note = `<p class="muted jev-calls-note">jev-calls.jsonl holds the per-call Jev log with state hashes and no state text.</p>`;
+  const list = items === "" ? `<p class="no-log-artifacts">No log files were recorded.</p>` : `<ul class="log-artifacts">${items}</ul>`;
+  return list + note;
+}
+function renderStageDurations(record2) {
+  const parts = STAGE_ORDER.map((stage) => {
+    const ms2 = record2.timings.stages[stage];
+    return `${stage} ${ms2 === null ? "not started" : formatDuration2(ms2)}`;
+  });
+  return `<p class="stage-durations muted">Stage durations: ${escapeHtml(parts.join(" \xB7 "))}.</p>`;
+}
+function renderModels(record2) {
+  if (record2.jevModels.length === 0) {
+    return `<p class="jev-models muted">No Jev call returned a model id.</p>`;
+  }
+  const items = record2.jevModels.map((m) => `<li class="mono">${escapeHtml(m)}</li>`).join("");
+  return `<div class="jev-models"><p class="muted">Jev models returned:</p><ul>${items}</ul></div>`;
+}
+function renderEffectiveJev(record2) {
+  if (record2.config === null) {
+    return `<p class="jev-config muted">Effective Jev provider and model alias: not available, the config stage did not complete.</p>`;
+  }
+  const provider = record2.config.jev?.provider;
+  const model = record2.config.jev?.model;
+  const show = (v) => v === void 0 ? "not recorded" : `<span class="mono">${escapeHtml(v)}</span>`;
+  return `<p class="jev-config muted">Effective Jev provider: ${show(provider)}. Model alias: ${show(model)}.</p>`;
+}
+function renderLogs(record2) {
+  return `<section id="logs" aria-labelledby="h-logs"><h2 id="h-logs">Logs</h2>` + renderEvents(record2) + renderStopReason(record2) + renderArtifacts(record2) + renderStageDurations(record2) + renderModels(record2) + renderEffectiveJev(record2) + `</section>`;
+}
+
+// packages/ce/src/evidence/report/sections/raw.ts
+function renderRaw(record2) {
+  const json2 = rawJsonScriptSafe(JSON.stringify(record2, null, 2));
+  return `<section id="raw" aria-labelledby="h-raw"><h2 id="h-raw">Raw run.json</h2><details><summary>Show the full record (<a href="${hrefFor("run.json")}">run.json</a>)</summary><button type="button" id="copy" data-copy-target="rawjson">Copy JSON</button><pre id="rawjson">${json2}</pre></details></section>`;
+}
+
+// packages/ce/src/evidence/report/sections/timeline.ts
+var COLLAPSE_ABOVE_STEPS = 12;
+function probabilityOf(alternative) {
+  return Number.isFinite(alternative.probability) ? alternative.probability : Number.NEGATIVE_INFINITY;
+}
+function sortAlternatives(alternatives) {
+  return alternatives.map((alternative, index) => ({ alternative, index })).sort((a, b) => {
+    const diff = probabilityOf(b.alternative) - probabilityOf(a.alternative);
+    if (diff !== 0 && !Number.isNaN(diff)) return diff;
+    return a.index - b.index;
+  }).map((entry2) => entry2.alternative);
+}
+function takenAlternative(step, sorted) {
+  const kind = step.action.kind;
+  if (kind === "done" || kind === "give_up") {
+    const byKey = sorted.find((a) => a.key === kind);
+    if (byKey !== void 0) return byKey;
+  } else {
+    const byDescription = sorted.find(
+      (a) => a.key !== "done" && a.key !== "give_up" && a.description === step.action.description
+    );
+    if (byDescription !== void 0) return byDescription;
+    const firstAction = sorted.find((a) => a.key !== "done" && a.key !== "give_up");
+    if (firstAction !== void 0) return firstAction;
+  }
+  return sorted[0];
+}
+function alternativeLabel(alternative) {
+  return alternative.description === "" ? alternative.key : `${alternative.key} \xB7 ${alternative.description}`;
+}
+function renderAlternatives(step, collapsed) {
+  if (step.alternatives.length === 0) {
+    return `<p class="no-alternatives">no alternatives recorded</p>`;
+  }
+  const sorted = sortAlternatives(step.alternatives);
+  const taken = takenAlternative(step, sorted);
+  const bars = sorted.map((alternative) => {
+    const isTaken = alternative === taken;
+    const bar = signalBar(`${alternativeLabel(alternative)} (${signalLabel()})`, alternative.probability, {
+      chosen: isTaken
+    });
+    return isTaken ? `<div class="alt taken">${bar}<span class="taken-mark">taken</span></div>` : `<div class="alt">${bar}</div>`;
+  }).join("");
+  return `<details class="alternatives"${collapsed ? "" : " open"}><summary>Alternatives considered <span class="tag-signal">${signalLabel()}</span></summary>` + bars + `</details>`;
+}
+function renderStep(step, record2, collapsed) {
+  const n = String(step.step);
+  const path8 = step.screenshot;
+  const alt = `${path8}, screenshot of step ${n}`;
+  const refusals = record2.eventLog.filter((e) => e.kind === "refusal" && e.step === step.step);
+  const shot = `<a class="shot" href="${escapeAttr(hrefFor(path8))}" aria-label="${escapeAttr(`Open full-size screenshot of step ${n}: ${path8}`)}"><img src="${escapeAttr(hrefFor(path8))}" alt="${escapeAttr(alt)}" loading="lazy"></a>`;
+  const description = step.action.description === "" ? "" : ` ${escapeHtml(step.action.description)}`;
+  const executed = step.executed ? `<span class="exec-yes">\xB7 executed</span>` : `<span class="exec-no">\xB7 not executed</span>`;
+  const refusalHtml = step.executed ? "" : refusals.map((e) => `<p class="refusal">Refusal: <span class="mono">${escapeHtml(e.detail)}</span></p>`).join("");
+  return `<li class="step" id="step-${escapeAttr(n)}">` + shot + `<div class="step-body"><h3><span class="stepno">${escapeHtml(n)}</span> ${escapeHtml(step.title)} \xB7 <span class="mono">${escapeHtml(step.url)}</span></h3><p class="action">Action: <strong>${escapeHtml(step.action.kind)}</strong>${description} ${executed}</p>` + refusalHtml + renderAlternatives(step, collapsed) + `</div></li>`;
+}
+function renderTimeline(record2) {
+  const heading = `<h2 id="h-time">Step timeline</h2>`;
+  if (record2.steps.length === 0) {
+    const reason = record2.outcomeReason;
+    return `<section id="timeline" aria-labelledby="h-time">${heading}<p class="empty">No runtime steps were recorded: ${escapeHtml(reason)}</p></section>`;
+  }
+  const steps = record2.steps.map((step, index) => ({ step, index })).sort((a, b) => a.step.step - b.step.step || a.index - b.index).map((entry2) => entry2.step);
+  const collapsed = steps.length > COLLAPSE_ABOVE_STEPS;
+  return `<section id="timeline" aria-labelledby="h-time">${heading}<ol class="steps">${steps.map((s) => renderStep(s, record2, collapsed)).join("")}</ol></section>`;
+}
+
+// packages/ce/src/evidence/report/render.ts
+function render(record2, deps = { questionText: questionTextFor }) {
+  return renderDocument(record2, {
+    banner: renderBanner(record2),
+    claims: renderClaims(record2),
+    assessment: renderAssessment(record2, deps.questionText),
+    timeline: renderTimeline(record2),
+    final: renderFinal(record2, deps.questionText),
+    logs: renderLogs(record2),
+    raw: renderRaw(record2)
+  });
+}
+
+// packages/ce/src/evidence/report/write.ts
+import path4 from "node:path";
+var REPORT_HTML_TMP_FILE = `${REPORT_HTML_FILE}.tmp`;
+async function writeReportFile(runDir, text, fs2) {
+  const tmp = path4.join(runDir, REPORT_HTML_TMP_FILE);
+  const target = path4.join(runDir, REPORT_HTML_FILE);
+  try {
+    await fs2.writeFile(tmp, text, "utf8");
+    await fs2.rename(tmp, target);
+  } catch (cause) {
+    try {
+      await fs2.rm(tmp, { force: true });
+    } catch {
+    }
+    throw cause;
   }
 }
 
@@ -37394,16 +38159,16 @@ function createJevGateway(loaded, env, options = {}) {
 }
 
 // packages/ce/src/outcome/evidence.ts
-function nonEmpty2(value) {
+function nonEmpty3(value) {
   return typeof value === "string" && value.trim().length > 0;
 }
 function satisfiesMinimumEvidence(summary) {
-  const changeOk = nonEmpty2(summary.change.title) || nonEmpty2(summary.change.description) || nonEmpty2(summary.change.base) || nonEmpty2(summary.change.head) || summary.change.files.length > 0;
-  const claimOk = summary.claim.status === "not_identified" ? true : nonEmpty2(summary.claim.id) && nonEmpty2(summary.claim.text);
-  const subjectOk = nonEmpty2(summary.subject.url);
+  const changeOk = nonEmpty3(summary.change.title) || nonEmpty3(summary.change.description) || nonEmpty3(summary.change.base) || nonEmpty3(summary.change.head) || summary.change.files.length > 0;
+  const claimOk = summary.claim.status === "not_identified" ? true : nonEmpty3(summary.claim.id) && nonEmpty3(summary.claim.text);
+  const subjectOk = nonEmpty3(summary.subject.url);
   const actionsOk = Array.isArray(summary.actions);
-  const observationsOk = summary.observations.length > 0 && summary.observations.every((o) => nonEmpty2(o.screenshot));
-  const artifactsOk = nonEmpty2(summary.artifacts.runDir) && nonEmpty2(summary.artifacts.reportPath);
+  const observationsOk = summary.observations.length > 0 && summary.observations.every((o) => nonEmpty3(o.screenshot));
+  const artifactsOk = nonEmpty3(summary.artifacts.runDir) && nonEmpty3(summary.artifacts.reportPath);
   return changeOk && claimOk && subjectOk && actionsOk && observationsOk && artifactsOk;
 }
 
@@ -37457,7 +38222,7 @@ function exitCodeFor(resolution, failOn) {
 }
 
 // packages/ce/src/runtime/capability.ts
-import path5 from "node:path";
+import path6 from "node:path";
 
 // packages/ce/src/runtime/constants.ts
 var REACHED_THRESHOLD = 0.7;
@@ -37913,15 +38678,15 @@ function buildOptions2(input2) {
     if (resolved.origin !== origin) continue;
     if (observedHrefs.has(resolved.href) || seenRoutes.has(resolved.href)) continue;
     seenRoutes.add(resolved.href);
-    const path7 = sanitizeText(`${resolved.pathname}${resolved.search}${resolved.hash}`, {
+    const path8 = sanitizeText(`${resolved.pathname}${resolved.search}${resolved.hash}`, {
       maxLength: PATH_TEXT_LIMIT,
       fixtureValues: Object.values(fixtures)
     });
     options.push({
       kind: "navigation",
-      description: `go to ${path7}`,
+      description: `go to ${path8}`,
       url: resolved.href,
-      proximityScore: proximityScore(path7, changeTerms)
+      proximityScore: proximityScore(path8, changeTerms)
     });
   }
   const ranked = options.map((option, index) => ({ option, index })).sort((a, b) => b.option.proximityScore - a.option.proximityScore || a.index - b.index).map((entry2) => entry2.option);
@@ -37982,7 +38747,7 @@ function mapAnswerToAction(input2) {
 
 // packages/ce/src/runtime/loop.ts
 import { mkdir as mkdir3, readFile } from "node:fs/promises";
-import path4 from "node:path";
+import path5 from "node:path";
 
 // packages/ce/src/runtime/capture.ts
 var DIALOG_DETAIL_LIMIT = 500;
@@ -38326,6 +39091,21 @@ function readStateReachedDom(response) {
   const value = answer["noul"];
   return typeof value === "number" && Number.isFinite(value) ? value : void 0;
 }
+function buildAlternatives(options, probabilities) {
+  const out = [];
+  for (const [key, probability2] of Object.entries(probabilities)) {
+    if (!Number.isFinite(probability2)) continue;
+    let description;
+    if (key === "done" || key === "give_up") description = key;
+    else {
+      const option = /^\d+$/.test(key) ? options[Number(key)] : void 0;
+      if (option === void 0) continue;
+      description = option.description;
+    }
+    out.push({ key, description, probability: Math.min(1, Math.max(0, probability2)) });
+  }
+  return out;
+}
 function readNoul2(response, name) {
   const answer = response.answers[name];
   if (!isRecord5(answer) || answer["type"] !== "noul") return void 0;
@@ -38417,7 +39197,7 @@ async function runLoop(input2) {
     try {
       await mkdir3(runDir, { recursive: true });
       const masks = await maskTargetsFor({ page, filledFieldLocators: [...filledFieldLocators], fixtureValues });
-      await takeScreenshot({ page, path: path4.join(runDir, relative), masks, timeoutMs: callTimeout() });
+      await takeScreenshot({ page, path: path5.join(runDir, relative), masks, timeoutMs: callTimeout() });
     } catch (cause) {
       throw fail(cause);
     }
@@ -38477,13 +39257,13 @@ async function runLoop(input2) {
     try {
       await mkdir3(runDir, { recursive: true });
       const masks = await maskTargetsFor({ page, filledFieldLocators: [...filledFieldLocators], fixtureValues });
-      await takeScreenshot({ page, path: path4.join(runDir, relative), masks, timeoutMs: callTimeout() });
+      await takeScreenshot({ page, path: path5.join(runDir, relative), masks, timeoutMs: callTimeout() });
     } catch (cause) {
       if (isTimeoutError(cause)) return void 0;
       throw fail(cause);
     }
     try {
-      return { relative, bytes: new Uint8Array(await readFile(path4.join(runDir, relative))) };
+      return { relative, bytes: new Uint8Array(await readFile(path5.join(runDir, relative))) };
     } catch (cause) {
       throw fail(cause);
     }
@@ -38596,11 +39376,21 @@ async function runLoop(input2) {
         if (stateReachedDom >= REACHED_THRESHOLD) stateReachedHits.push(stateReachedDom);
       }
       if (stateReachedDom !== void 0 && stateReachedDom >= REACHED_THRESHOLD) {
-        steps.push({ observation: publish(observation), action: { kind: "done" }, probabilities });
+        steps.push({
+          observation: publish(observation),
+          action: { kind: "done" },
+          probabilities,
+          alternatives: buildAlternatives(options, probabilities)
+        });
         return await finish("reached");
       }
       const action = mapAnswerToAction({ options, probabilities });
-      steps.push({ observation: publish(observation), action, probabilities });
+      steps.push({
+        observation: publish(observation),
+        action,
+        probabilities,
+        alternatives: buildAlternatives(options, probabilities)
+      });
       if (action.kind === "done") {
         endedWithDone = true;
         return await finish("done");
@@ -38763,10 +39553,10 @@ function failureToLastStatus(error62) {
   return "network";
 }
 function resolveReadyDefaults(ready) {
-  const path7 = ready?.path ?? DEFAULT_READY_PATH;
+  const path8 = ready?.path ?? DEFAULT_READY_PATH;
   const text = ready?.timeout ?? DEFAULT_READY_TIMEOUT;
   try {
-    return { path: path7, timeoutMs: parseDuration(text) };
+    return { path: path8, timeoutMs: parseDuration(text) };
   } catch {
     throw new TargetConfigError(`target.ready.timeout is not a valid duration: ${JSON.stringify(text)}`, "target.ready.timeout");
   }
@@ -39346,7 +40136,8 @@ function mapLoopResultToRuntimeResult(input2) {
       screenshot: s.observation.screenshot,
       action: { kind: s.action.kind, description: describeAction2(s, redact3) },
       executed: s.executed === true,
-      probabilities: { ...s.probabilities }
+      probabilities: { ...s.probabilities },
+      alternatives: s.alternatives.map((a) => ({ key: a.key, description: redact3(a.description), probability: a.probability }))
     })),
     eventLog: loopResult.eventLog.map((e) => ({ step: e.step, kind: e.kind, detail: e.detail })),
     stopReason: loopResult.stopReason,
@@ -39355,6 +40146,8 @@ function mapLoopResultToRuntimeResult(input2) {
   if (loopResult.finalScreenshot !== void 0) trace.finalScreenshot = loopResult.finalScreenshot;
   if (loopResult.finalImageModel !== void 0) trace.finalImageModel = loopResult.finalImageModel;
   if (loopResult.finalImageError !== void 0) trace.finalImageError = loopResult.finalImageError;
+  if (loopResult.subjectBox !== void 0) trace.finalBox = { ...loopResult.subjectBox };
+  trace.finalSignals = { ...loopResult.finalSignals };
   return {
     finalState: loopResult.finalState,
     evidence: {
@@ -39363,7 +40156,7 @@ function mapLoopResultToRuntimeResult(input2) {
       subject: { url: baseUrl },
       actions,
       observations: loopResult.observations.map((o) => ({ step: o.step, screenshot: o.screenshot })),
-      artifacts: { runDir, reportPath: path5.join(runDir, "report.html") }
+      artifacts: { runDir, reportPath: path6.join(runDir, "report.html") }
     },
     trace
   };
@@ -39570,7 +40363,7 @@ function startTimer(o, st, key) {
   };
 }
 function defaultRunDir(o) {
-  return path6.resolve(o.cwd, ".ce/runs", runDirName(o.now()));
+  return path7.resolve(o.cwd, ".ce/runs", runDirName(o.now()));
 }
 function toResolution(res) {
   const r = { outcome: res.outcome, reason: res.reason };
@@ -39618,13 +40411,27 @@ function withBundle(o, st, res, runDir, write) {
   }
   return out;
 }
+async function attachReport(o, runDir, written) {
+  if (!written.ok) return written;
+  try {
+    await writeReportFile(runDir, render(written.record), o.fs);
+    return { ...written, reportPath: path7.join(runDir, REPORT_HTML_FILE) };
+  } catch (cause) {
+    try {
+      o.stderr.write(`report.html was not written (${causeNameOf(cause) ?? "unknown"}).
+`);
+    } catch {
+    }
+    return written;
+  }
+}
 async function finishRunWithBundle(o, st, config2, input2) {
   const first = finishRun({ ...input2, config: config2, registry: o.capabilities });
   st.final = first;
   st.lastStage = "evidence";
   const runDir = st.runDir ?? defaultRunDir(o);
   const written = await writeBundle(bundleInput(o, st, first, input2.error ?? null));
-  if (written.ok) return withBundle(o, st, first, runDir, written);
+  if (written.ok) return withBundle(o, st, first, runDir, await attachReport(o, runDir, written));
   const second = finishRun({ ...input2, error: written.error, config: config2, registry: o.capabilities });
   st.final = second;
   const minimalInput = {
@@ -39632,7 +40439,7 @@ async function finishRunWithBundle(o, st, config2, input2) {
     ...written.validationFailure === void 0 ? {} : { validationFailure: written.validationFailure }
   };
   const minimal = await writeMinimalBundle(minimalInput);
-  return withBundle(o, st, second, runDir, minimal);
+  return withBundle(o, st, second, runDir, await attachReport(o, runDir, minimal));
 }
 async function configFailureWithBundle(o, st, runDir, error62) {
   const resolution = resolveAfterAssessment({ registry: EMPTY_REGISTRY, error: error62 });
@@ -39640,7 +40447,7 @@ async function configFailureWithBundle(o, st, runDir, error62) {
   st.final = result;
   st.runDir = runDir;
   const written = await writeMinimalBundle(bundleInput(o, st, result, error62));
-  return withBundle(o, st, result, runDir, written);
+  return withBundle(o, st, result, runDir, await attachReport(o, runDir, written));
 }
 function configError(reportFailure) {
   return reportFailure ?? new StageError("config", new Error("config failure"));
@@ -39677,7 +40484,7 @@ async function recover(o, st, thrown) {
   }
   const runDir = st.runDir ?? defaultRunDir(o);
   const written = await writeMinimalBundle(bundleInput(o, st, result, result.error ?? error62));
-  return withBundle(o, st, result, runDir, written);
+  return withBundle(o, st, result, runDir, await attachReport(o, runDir, written));
 }
 async function runStages(options, o, st) {
   st.lastStage = "config";
@@ -39698,7 +40505,7 @@ async function runStages(options, o, st) {
   st.effective = config2;
   st.redacted = loaded.redacted;
   let gateway;
-  const runDir = path6.resolve(o.cwd, config2.output?.dir ?? ".ce/runs", runDirName(o.now()));
+  const runDir = path7.resolve(o.cwd, config2.output?.dir ?? ".ce/runs", runDirName(o.now()));
   st.runDir = runDir;
   if (options.gateway !== void 0) {
     gateway = options.gateway;
@@ -39711,7 +40518,7 @@ async function runStages(options, o, st) {
         return await configFailureWithBundle(o, st, runDir, configError(reportFailure));
       }
       const created = o.createGateway(loaded, o.env, {
-        callLog: createJsonlCallLog(path6.join(runDir, "jev-calls.jsonl"))
+        callLog: createJsonlCallLog(path7.join(runDir, "jev-calls.jsonl"))
       });
       if (!created.ok) {
         const reportFailure = reportSafely(o, { ok: false, errors: created.errors });
@@ -40342,9 +41149,9 @@ function existsMessage(name) {
   return `${name} already exists; re-run with --force to overwrite
 `;
 }
-function isFile2(fs2, path7) {
+function isFile2(fs2, path8) {
   try {
-    return fs2.stat(path7).isFile();
+    return fs2.stat(path8).isFile();
   } catch {
     return false;
   }

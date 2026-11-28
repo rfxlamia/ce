@@ -7,7 +7,7 @@ import { OUTCOMES, type ResolveReason } from '../outcome/types.js';
 import type { Stage } from '../errors.js';
 import type { StopReason } from './trace.js';
 
-export const SCHEMA_VERSION = '1' as const;
+export const SCHEMA_VERSION = '2' as const;
 
 // The discriminator values come from OUTCOMES (the only literal declaration).
 const [SKIPPED_OUTCOME, EVIDENCED_OUTCOME, UNSUPPORTED_OUTCOME, ERROR_OUTCOME] = OUTCOMES;
@@ -118,6 +118,13 @@ export const StepRecord = z.strictObject({
   executed: z.boolean(),
   screenshot: BundleRelativePath,
   probabilities: z.record(z.string(), z.number()),
+  alternatives: z.array(
+    z.strictObject({
+      key: z.string(),
+      description: z.string(),
+      probability: z.number().min(0).max(1),
+    }),
+  ),
 });
 
 export const EventLogRecord = z.strictObject({
@@ -126,10 +133,25 @@ export const EventLogRecord = z.strictObject({
   detail: z.string(),
 });
 
+/** The Box answer as fractions of the image; recorded as returned, not clamped. */
+export const FractionBox = z.strictObject({
+  x: z.number(),
+  y: z.number(),
+  width: z.number(),
+  height: z.number(),
+});
+
+const unitSignal = z.number().min(0).max(1).nullable();
+
 export const FinalImage = z.strictObject({
   model: z.string().nullable(),
   error: z.string().nullable(),
   screenshot: BundleRelativePath.nullable(),
+  box: FractionBox.nullable(),
+  signals: z.strictObject({
+    stateReachedDom: unitSignal,
+    stateReached: unitSignal,
+  }),
 });
 
 export const RuntimeRecord = z.strictObject({ stopReason: StopReasonSchema });

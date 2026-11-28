@@ -9,6 +9,7 @@ export interface RuntimeTraceStep {
   action: { kind: string; description: string };
   executed: boolean;
   probabilities: Record<string, number>;
+  alternatives: { key: string; description: string; probability: number }[];
 }
 
 export interface RuntimeTraceEvent {
@@ -26,6 +27,9 @@ export interface RuntimeTrace {
   finalScreenshot?: string;
   finalImageModel?: string;
   finalImageError?: string;
+  /** Fractions of the final screenshot. */
+  finalBox?: { x: number; y: number; width: number; height: number };
+  finalSignals?: { stateReachedDom?: number; stateReached?: number };
   stopReason: StopReason;
   /** Distinct returned model ids of the decide calls and the final image request, in order of first appearance. */
   modelIds: string[];

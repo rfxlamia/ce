@@ -120,7 +120,7 @@ describe('evidence-bundle Property 21: trace mirrors LoopResult', () => {
       fc.property(scenarioArb, (s) => {
         const steps: StepLogEntry[] = s.observations.map((observation, i) => {
           const [action, probabilities, executed] = s.perStep[i]!;
-          const entry: StepLogEntry = { observation, action, probabilities };
+          const entry: StepLogEntry = { observation, action, probabilities, alternatives: [] };
           if (executed !== undefined) entry.executed = executed;
           return entry;
         });
@@ -163,11 +163,14 @@ describe('evidence-bundle Property 21: trace mirrors LoopResult', () => {
             action: { kind: st.action.kind, description: describeAction(st, redact) },
             executed: st.executed === true,
             probabilities: st.probabilities,
+            alternatives: [],
           })),
         );
         expect(t.eventLog).toEqual(s.eventLog);
         expect(t.stopReason).toBe(s.stopReason);
         expect(t.modelIds).toEqual(s.modelIds);
+        expect(t.finalSignals).toEqual({});
+        expect('finalBox' in t).toBe(false);
 
         // Optional fields are present exactly when present in the LoopResult.
         expect('finalScreenshot' in t).toBe(s.finalScreenshot !== undefined);
@@ -180,11 +183,11 @@ describe('evidence-bundle Property 21: trace mirrors LoopResult', () => {
         // No fixture value in any action description; no payload fields leak into the trace.
         for (const step of t.steps) for (const value of s.fixtures) expect(step.action.description).not.toContain(value);
         expect(Object.keys(t).every((k) =>
-          ['steps', 'eventLog', 'finalScreenshot', 'finalImageModel', 'finalImageError', 'stopReason', 'modelIds'].includes(k),
+          ['steps', 'eventLog', 'finalScreenshot', 'finalImageModel', 'finalImageError', 'finalBox', 'finalSignals', 'stopReason', 'modelIds'].includes(k),
         )).toBe(true);
         for (const step of t.steps) {
           expect(Object.keys(step).sort()).toEqual(
-            ['action', 'executed', 'probabilities', 'screenshot', 'step', 'title', 'url'],
+            ['action', 'alternatives', 'executed', 'probabilities', 'screenshot', 'step', 'title', 'url'],
           );
         }
 

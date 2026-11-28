@@ -83,7 +83,7 @@ Issue #41 coverage:
     - Implement `run(options = {})` following the algorithm in `design.md`: `loadConfig`, report config failure through `reportConfigFailure` with `collectSecretValues(env)`, gateway selection (`requireJevCredentials` and `createGateway` with `createJsonlCallLog` for `<output.dir>/run-<iso>/jev-calls.jsonl` only when no `gateway` is supplied), `resolveContext` with `providers` and `exec`, `assess`, `selectCapability`, the awaited Runtime_Hook, then one call to `resolveAfterAssessment` and `exitCodeFor`
     - Wrap thrown values with `wrapStage` for `context`, `assessment` and `runtime`, and never throw for a stage failure
     - Mark the Runtime_Hook call site with a comment naming issues #9 and #10; pass `runDir` only when one was computed
-    - Resolve a config failure through `resolveOutcome` with `StageError('config', cause)` (ERROR, exit 1); write no `run.json`, `report.html` or other evidence file
+    - Resolve a config failure through `resolveOutcome` with `StageError('config', cause)` (ERROR, exit 1); write no evidence file for a config failure (no run directory exists); `report.html` is written for later outcomes through the Report_Generator after `run.json` (spec `report-html-evidence-page`)
     - Export the public surface from `run/index.ts`
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 5.4, 5.5, 6.1, 6.2, 6.3, 6.5, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 8.5, 8.6, 8.7, 8.8, 8.10, 9.2, 9.3, 9.4, 9.6, 11.1, 11.2, 11.3, 11.4_
 
@@ -107,7 +107,7 @@ Issue #41 coverage:
     - Two capabilities on one Surface: only the first is called
     - Call order of stages; `resolveOutcome` called once per resolved run and not for a config failure
     - Config failures (invalid config, missing key, `createGateway` failure) resolve to `ERROR` with `errorStage` `config` and exit code 1, call neither the Context_Resolver nor the Assessor, and leak no key
-    - No run directory or call log when `gateway` is supplied; only `jev-calls.jsonl` is written otherwise
+    - No run directory or call log when `gateway` is supplied; the slice itself writes only `jev-calls.jsonl` otherwise (`run.json` and `report.html` come from the evidence-bundle and `report-html-evidence-page` specs)
     - _Requirements: 1.1, 3.1, 3.2, 3.3, 4.1, 4.3, 4.4, 5.4, 5.5, 6.1, 6.2, 6.3, 6.4, 6.5, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 8.5, 8.6, 8.9, 8.10, 11.3, 11.4, 13.1, 13.2, 13.3, 13.4, 13.5, 13.9, 13.13_
 
 - [x] 5. Replace the stub in `index.ts`

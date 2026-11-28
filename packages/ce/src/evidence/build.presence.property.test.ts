@@ -42,6 +42,7 @@ function coherent(input: BuildRunRecordInput, seed: BuildRunRecordInput): BuildR
                       action: { kind: 'done', description: '' },
                       executed: true,
                       probabilities: {},
+                      alternatives: [],
                     },
                   ],
           },
@@ -95,7 +96,7 @@ describe('buildRunRecord field presence', () => {
 
         const r = built;
         expect(r.outcome).toBe(input.resolution.outcome);
-        expect(r.schemaVersion).toBe('1');
+        expect(r.schemaVersion).toBe('2');
         expect(Array.isArray(r.jevModels)).toBe(true);
         expect(Array.isArray(r.artifacts)).toBe(true);
         expect(r.timings).toBeDefined();

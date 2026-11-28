@@ -149,6 +149,28 @@ export const CATALOG = {
   ),
 } as const;
 
+/** The `instructions` text of one entry's built question. `runtime.next_action` is built with no options. */
+function questionTextOf(e: (typeof CATALOG)[keyof typeof CATALOG]): string {
+  const question: Question =
+    e.idVersion === CATALOG.runtimeNextAction.idVersion
+      ? CATALOG.runtimeNextAction.build([])
+      : (e as CatalogEntry<Question, []>).build();
+  // Every catalog entry passes a string; the SDK type merely allows other shapes.
+  return typeof question.instructions === 'string' ? question.instructions : '';
+}
+
+const BY_ID_VERSION: ReadonlyMap<string, string> = new Map(
+  Object.values(CATALOG).map((e) => [e.idVersion, questionTextOf(e)] as const),
+);
+
+/**
+ * Read-only question text for one catalog entry, keyed by `idVersion`.
+ * Returns `undefined` for an unknown or retired version; callers show a fallback.
+ */
+export function questionTextFor(idVersion: string): string | undefined {
+  return BY_ID_VERSION.get(idVersion);
+}
+
 /**
  * Builds the Final_Image_Request: the screenshot as an image asset inside the
  * state text, with `runtime.state_reached` and `runtime.locate_subject`.

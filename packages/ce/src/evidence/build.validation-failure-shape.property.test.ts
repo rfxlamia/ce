@@ -76,7 +76,7 @@ describe('Validation_Failure bundle shape', () => {
           });
 
           // Only the allowed top-level keys carry content.
-          expect(record.schemaVersion).toBe('1');
+          expect(record.schemaVersion).toBe('2');
           expect(record.outcome).toBe(ERROR_OUTCOME);
           expect(record.outcomeReason).toBe(resolution.reason);
           expect(record.timings).toEqual(valid.timings);

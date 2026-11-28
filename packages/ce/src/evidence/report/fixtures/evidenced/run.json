@@ -1,0 +1,278 @@
+{
+  "schemaVersion": "2",
+  "ceVersion": "0.1.1",
+  "jevModels": [
+    "typesafe/jev-1.14-2026-01-01"
+  ],
+  "outcome": "EVIDENCED",
+  "outcomeReason": "evidence-collected",
+  "config": {
+    "version": 0,
+    "assessment": {
+      "thresholds": {
+        "claim": 0.6,
+        "observable": 0.6,
+        "adequate": 0.7
+      },
+      "uncertainty-band": 0.1,
+      "on-uncertain": "evidence"
+    },
+    "runtime": {
+      "max-steps": 12,
+      "timeout": "90s",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      }
+    },
+    "jev": {
+      "provider": "openrouter",
+      "model": "typesafe/jev-1.14"
+    },
+    "output": {
+      "dir": ".ce/runs",
+      "fail-on": [
+        "error"
+      ]
+    }
+  },
+  "context": {
+    "change": {
+      "title": "Show an empty state in the inbox",
+      "base": "main",
+      "head": "feature/inbox-empty-state",
+      "files": [
+        {
+          "path": "examples/demo-app/src/inbox.js",
+          "status": "modified",
+          "provenance": {
+            "provider": "git"
+          }
+        }
+      ],
+      "commits": 1,
+      "claims": [
+        {
+          "text": "The empty inbox shows a \"No messages\" state instead of a blank list.",
+          "provenance": {
+            "provider": "cli",
+            "ref": "demo-claim"
+          }
+        }
+      ],
+      "provenance": [
+        {
+          "provider": "git"
+        },
+        {
+          "provider": "cli",
+          "ref": "demo-claim"
+        }
+      ]
+    },
+    "candidates": [
+      {
+        "id": "c1",
+        "text": "The empty inbox shows a \"No messages\" state instead of a blank list.",
+        "provenance": {
+          "provider": "cli",
+          "ref": "demo-claim"
+        }
+      }
+    ],
+    "checks": [
+      {
+        "name": "unit tests",
+        "status": "passed",
+        "provenance": {
+          "provider": "junit"
+        }
+      }
+    ],
+    "providers": [
+      {
+        "name": "git",
+        "status": "used"
+      },
+      {
+        "name": "cli",
+        "status": "used"
+      }
+    ],
+    "truncated": [],
+    "redactions": []
+  },
+  "claims": [
+    {
+      "id": "c1",
+      "text": "The empty inbox shows a \"No messages\" state instead of a blank list.",
+      "probability": 0.93,
+      "provenance": {
+        "provider": "cli",
+        "ref": "demo-claim"
+      }
+    }
+  ],
+  "assessment": {
+    "required": true,
+    "decidedBy": "classifier",
+    "surface": "browser_ui",
+    "claimStatus": "identified",
+    "perClaimProbabilities": [
+      {
+        "claimId": "c1",
+        "runtimeObservable": 0.91,
+        "checksAdequate": 0.22
+      }
+    ],
+    "questions": [
+      {
+        "idVersion": "claim.is_behavior@1",
+        "subjectId": "c1",
+        "probability": 0.93,
+        "probabilities": null
+      },
+      {
+        "idVersion": "assess.runtime_observable@1",
+        "subjectId": "c1",
+        "probability": 0.91,
+        "probabilities": null
+      },
+      {
+        "idVersion": "assess.checks_adequate@1",
+        "subjectId": "c1",
+        "probability": 0.22,
+        "probabilities": null
+      },
+      {
+        "idVersion": "assess.surface@1",
+        "subjectId": "c1",
+        "probability": null,
+        "probabilities": {
+          "browser_ui": 0.95,
+          "cli": 0.03,
+          "http_api": 0.02
+        }
+      }
+    ],
+    "settings": {
+      "claimThreshold": 0.6,
+      "observableThreshold": 0.6,
+      "adequateThreshold": 0.7,
+      "uncertaintyBand": 0.1,
+      "onUncertain": "evidence"
+    }
+  },
+  "subject": "http://localhost:4173",
+  "steps": [
+    {
+      "step": 0,
+      "url": "http://localhost:4173/",
+      "title": "Demo app",
+      "action": {
+        "kind": "click",
+        "description": "Click the \"Inbox\" link"
+      },
+      "executed": true,
+      "screenshot": "screenshots/step-0.png",
+      "probabilities": {
+        "link-inbox": 0.88,
+        "button-compose": 0.07,
+        "done": 0.05
+      },
+      "alternatives": [
+        {
+          "key": "link-inbox",
+          "description": "Click the \"Inbox\" link",
+          "probability": 0.88
+        },
+        {
+          "key": "button-compose",
+          "description": "Click the \"Compose\" button",
+          "probability": 0.07
+        },
+        {
+          "key": "done",
+          "description": "",
+          "probability": 0.05
+        }
+      ]
+    },
+    {
+      "step": 1,
+      "url": "http://localhost:4173/inbox",
+      "title": "Inbox",
+      "action": {
+        "kind": "done",
+        "description": ""
+      },
+      "executed": true,
+      "screenshot": "screenshots/step-1.png",
+      "probabilities": {
+        "done": 0.9,
+        "link-home": 0.1
+      },
+      "alternatives": [
+        {
+          "key": "done",
+          "description": "",
+          "probability": 0.9
+        },
+        {
+          "key": "link-home",
+          "description": "Click the \"Home\" link",
+          "probability": 0.1
+        }
+      ]
+    }
+  ],
+  "eventLog": [],
+  "finalImage": {
+    "model": "typesafe/jev-1.14-2026-01-01",
+    "error": null,
+    "screenshot": "screenshots/final.png",
+    "box": {
+      "x": 0.2,
+      "y": 0.3,
+      "width": 0.6,
+      "height": 0.4
+    },
+    "signals": {
+      "stateReachedDom": 0.84,
+      "stateReached": 0.9
+    }
+  },
+  "runtime": {
+    "stopReason": "done"
+  },
+  "finalState": "reached",
+  "error": null,
+  "artifacts": [
+    {
+      "path": "screenshots/step-0.png",
+      "kind": "screenshot"
+    },
+    {
+      "path": "screenshots/step-1.png",
+      "kind": "screenshot"
+    },
+    {
+      "path": "screenshots/final.png",
+      "kind": "screenshot"
+    },
+    {
+      "path": "jev-calls.jsonl",
+      "kind": "jev-calls"
+    }
+  ],
+  "timings": {
+    "startedAt": "2026-01-15T10:00:00.000Z",
+    "durationMs": 9400,
+    "stages": {
+      "config": 4,
+      "context": 38,
+      "assessment": 612,
+      "runtime": 8700
+    }
+  }
+}

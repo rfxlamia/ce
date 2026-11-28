@@ -17,8 +17,9 @@ import { StageError } from '../errors.js';
 import type { Stage } from '../errors.js';
 import { causeNameOf } from '../evidence/build.js';
 import type { PartialTrace } from '../evidence/build.js';
-import { writeBundle, writeMinimalBundle } from '../evidence/bundle.js';
+import { REPORT_HTML_FILE, writeBundle, writeMinimalBundle } from '../evidence/bundle.js';
 import type { BundleFs, WriteBundleInput, WriteBundleResult } from '../evidence/bundle.js';
+import { render, writeReportFile } from '../evidence/report/index.js';
 import { createJevGateway } from '../jev/gateway.js';
 import type { JevGateway } from '../jev/gateway.js';
 import { createJsonlCallLog } from '../jev/log.js';
@@ -225,6 +226,26 @@ function withBundle(
 }
 
 /**
+ * Renders and writes report.html after a successful bundle write. Never changes the Outcome, the
+ * exit code or run.json. On failure one stderr line names the cause constructor and the Report_Path
+ * stays the one the bundle writer computed (run.json). Skipped when the bundle was not written.
+ */
+async function attachReport(o: RunDefaults, runDir: string, written: WriteBundleResult): Promise<WriteBundleResult> {
+  if (!written.ok) return written;
+  try {
+    await writeReportFile(runDir, render(written.record), o.fs);
+    return { ...written, reportPath: path.join(runDir, REPORT_HTML_FILE) };
+  } catch (cause) {
+    try {
+      o.stderr.write(`report.html was not written (${causeNameOf(cause) ?? 'unknown'}).\n`);
+    } catch {
+      // stderr must never throw
+    }
+    return written;
+  }
+}
+
+/**
  * Resolves once, writes the bundle, and on a StageError('evidence') resolves a
  * second and last time and writes a Minimal_Bundle. Never throws.
  */
@@ -240,7 +261,7 @@ async function finishRunWithBundle(
   const runDir = st.runDir ?? defaultRunDir(o);
 
   const written = await writeBundle(bundleInput(o, st, first, input.error ?? null));
-  if (written.ok) return withBundle(o, st, first, runDir, written);
+  if (written.ok) return withBundle(o, st, first, runDir, await attachReport(o, runDir, written));
 
   const second = finishRun({ ...input, error: written.error, config, registry: o.capabilities });
   st.final = second;
@@ -249,7 +270,7 @@ async function finishRunWithBundle(
     ...(written.validationFailure === undefined ? {} : { validationFailure: written.validationFailure }),
   };
   const minimal = await writeMinimalBundle(minimalInput);
-  return withBundle(o, st, second, runDir, minimal);
+  return withBundle(o, st, second, runDir, await attachReport(o, runDir, minimal));
 }
 
 /**
@@ -270,7 +291,7 @@ async function configFailureWithBundle(
   st.final = result;
   st.runDir = runDir;
   const written = await writeMinimalBundle(bundleInput(o, st, result, error));
-  return withBundle(o, st, result, runDir, written);
+  return withBundle(o, st, result, runDir, await attachReport(o, runDir, written));
 }
 
 /** Value-free cause on purpose: failure objects hold raw config values, which can be secrets (Req 7.5). */
@@ -313,7 +334,7 @@ async function recover(o: RunDefaults, st: RunState, thrown: unknown): Promise<R
   }
   const runDir = st.runDir ?? defaultRunDir(o);
   const written = await writeMinimalBundle(bundleInput(o, st, result, result.error ?? error));
-  return withBundle(o, st, result, runDir, written);
+  return withBundle(o, st, result, runDir, await attachReport(o, runDir, written));
 }
 
 async function runStages(options: RunOptions, o: RunDefaults, st: RunState): Promise<ResolvedRunWithBundle> {

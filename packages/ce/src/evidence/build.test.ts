@@ -104,6 +104,7 @@ function runtimeResult(): RuntimeResult {
           action: { kind: 'click', description: 'button "Log in"' },
           executed: true,
           probabilities: { 'e1': 0.8 },
+          alternatives: [],
         },
       ],
       eventLog: [],
@@ -163,7 +164,13 @@ describe('buildRunRecord worked examples', () => {
     expect(r.steps).toHaveLength(1);
     expect(r.finalState).toBe('reached');
     expect(r.runtime).toEqual({ stopReason: 'reached' });
-    expect(r.finalImage).toEqual({ model: 'typesafe/jev-1.14-2026', error: null, screenshot: 'final.png' });
+    expect(r.finalImage).toEqual({
+      model: 'typesafe/jev-1.14-2026',
+      error: null,
+      screenshot: 'final.png',
+      box: null,
+      signals: { stateReachedDom: null, stateReached: null },
+    });
     expect(r.jevModels).toEqual(['typesafe/jev-1.14-2026']);
     expect(r.error).toBeNull();
   });
@@ -196,5 +203,108 @@ describe('buildRunRecord worked examples', () => {
     });
     expect(skipped.outcome).not.toBe(unsupported.outcome);
     expect(skipped.outcomeReason).not.toBe(unsupported.outcomeReason);
+  });
+});
+
+describe('buildRunRecord carry-through of alternatives, box and signals', () => {
+  const alternatives = [
+    { key: '0', description: 'button "Log in"', probability: 0.7 },
+    { key: 'done', description: 'done', probability: 0.2 },
+    { key: 'give_up', description: 'give up', probability: 0.1 },
+  ];
+  const finalBox = { x: 0.1, y: 0.2, width: 0.3, height: 0.4 };
+
+  function evidenced(mutate: (r: RuntimeResult) => void) {
+    const assessment = assessmentFor(true, 'browser_ui');
+    const runtime = runtimeResult();
+    mutate(runtime);
+    const resolution = resolveOutcome({ assessment, runtime });
+    return build({ ...base, resolution, assessment, runtime });
+  }
+
+  it('fromTrace copies alternatives, box and signals', () => {
+    const r = evidenced((rt) => {
+      rt.trace!.steps[0]!.alternatives = alternatives.map((a) => ({ ...a }));
+      rt.trace!.finalBox = { ...finalBox };
+      rt.trace!.finalSignals = { stateReachedDom: 0.4, stateReached: 0.9 };
+    });
+    expect(r.steps[0]?.alternatives).toEqual(alternatives);
+    expect(r.finalImage?.box).toEqual(finalBox);
+    expect(r.finalImage?.signals).toEqual({ stateReachedDom: 0.4, stateReached: 0.9 });
+  });
+
+  it('fromTrace copies a copy, not the trace objects', () => {
+    const r = evidenced((rt) => {
+      rt.trace!.steps[0]!.alternatives = alternatives.map((a) => ({ ...a }));
+      rt.trace!.finalBox = { ...finalBox };
+    });
+    expect(r.steps[0]?.alternatives[0]).not.toBe(alternatives[0]);
+    expect(r.finalImage?.box).not.toBe(finalBox);
+  });
+
+  it('finalImage.signals is never null: absent or partial signals become null fields', () => {
+    const none = evidenced(() => {});
+    expect(none.finalImage?.signals).toEqual({ stateReachedDom: null, stateReached: null });
+    expect(none.finalImage?.box).toBeNull();
+
+    const onlyDom = evidenced((rt) => {
+      rt.trace!.finalSignals = { stateReachedDom: 0.5 };
+    });
+    expect(onlyDom.finalImage?.signals).toEqual({ stateReachedDom: 0.5, stateReached: null });
+
+    const onlyImage = evidenced((rt) => {
+      rt.trace!.finalSignals = { stateReached: 0.8 };
+    });
+    expect(onlyImage.finalImage?.signals).toEqual({ stateReachedDom: null, stateReached: 0.8 });
+  });
+
+  it('fromEvidenceSummary gives alternatives: [] on every step', () => {
+    const r = evidenced((rt) => {
+      delete rt.trace;
+    });
+    expect(r.steps).toHaveLength(1);
+    for (const s of r.steps) expect(s.alternatives).toEqual([]);
+    expect(r.finalImage).toBeNull();
+  });
+
+  it('fromPartial gives alternatives: [] for steps and for observation-only steps', () => {
+    const observation = (step: number) => ({
+      step,
+      url: `http://localhost:3000/${step}`,
+      title: `Page ${step}`,
+      domDigest: 'd',
+      elements: [
+        {
+          ref: 'e1',
+          role: 'button',
+          name: 'Log in',
+          locator: 'button',
+          visible: true,
+          enabled: true,
+          fixtureKeys: [],
+        },
+      ],
+      navigation: [],
+      screenshot: `step-${step}.png`,
+    });
+    const partialTrace = {
+      observations: [observation(0), observation(1)],
+      steps: [
+        {
+          observation: observation(0),
+          action: { kind: 'click' as const, ref: 'e1' },
+          probabilities: { '0': 0.9 },
+          alternatives,
+          executed: true,
+        },
+      ],
+      eventLog: [],
+    } as unknown as NonNullable<BuildRunRecordInput['partialTrace']>;
+    const error = new StageError('runtime', new TypeError('x'));
+    const resolution = resolveOutcome({ error });
+    const r = build({ ...base, resolution, assessment: null, claims: [], error, partialTrace });
+    expect(r.steps.map((s) => s.step)).toEqual([0, 1]);
+    for (const s of r.steps) expect(s.alternatives).toEqual([]);
+    expect(r.finalImage).toBeNull();
   });
 });

@@ -1,4 +1,5 @@
 import { existsSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import * as fsPromises from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { inspect } from 'node:util';
@@ -402,8 +403,8 @@ describe('run() artifacts', () => {
   it('writes run.json but no call log in the computed run directory when a gateway is supplied', async () => {
     const result = await resolved(base({ gateway: scriptedGateway(NOT_REQUIRED) }));
     const dir = join(cwd, '.ce', 'runs', RUN_DIR_NAME);
-    expect(readdirSync(dir)).toEqual(['run.json']);
-    expect(result).toMatchObject({ runDir: dir, reportPath: join(dir, 'run.json'), bundleWritten: true });
+    expect(readdirSync(dir)).toEqual(['report.html', 'run.json']);
+    expect(result).toMatchObject({ runDir: dir, reportPath: join(dir, 'report.html'), bundleWritten: true });
   });
 
   it('writes jev-calls.jsonl and run.json in the run directory when it creates the gateway', async () => {
@@ -414,8 +415,28 @@ describe('run() artifacts', () => {
     const result = await resolved(base({ createGateway }));
     expect(result.outcome).toBe('SKIPPED');
     expect(readdirSync(join(cwd, '.ce', 'runs'))).toEqual([RUN_DIR_NAME]);
-    expect(readdirSync(join(cwd, '.ce', 'runs', RUN_DIR_NAME))).toEqual(['jev-calls.jsonl', 'run.json']);
+    expect(readdirSync(join(cwd, '.ce', 'runs', RUN_DIR_NAME))).toEqual(['jev-calls.jsonl', 'report.html', 'run.json']);
   });
 });
 
 type JevGatewayLike = JevGateway;
+
+describe('run() report.html step', () => {
+  it('keeps run.json as Report_Path and the Outcome when writing report.html fails', async () => {
+    const bundleFs = {
+      ...fsPromises,
+      writeFile: (file: string, ...rest: unknown[]) =>
+        String(file).endsWith('report.html.tmp')
+          ? Promise.reject(new RangeError('disk full'))
+          : (fsPromises.writeFile as (...a: unknown[]) => Promise<void>)(file, ...rest),
+    };
+    const result = await resolved(
+      base({ gateway: scriptedGateway(NOT_REQUIRED), bundleFs: bundleFs as never }),
+    );
+    const dir = join(cwd, '.ce', 'runs', RUN_DIR_NAME);
+    expect(result.outcome).toBe('SKIPPED');
+    expect(result).toMatchObject({ reportPath: join(dir, 'run.json'), bundleWritten: true });
+    expect(readdirSync(dir)).toEqual(['run.json']);
+    expect(err.join('')).toBe('report.html was not written (RangeError).\n');
+  });
+});

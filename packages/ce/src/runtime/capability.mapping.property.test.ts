@@ -137,7 +137,7 @@ describe('observe-decide-execute-loop Property 24: Loop_Result to RuntimeResult 
         const steps: StepLogEntry[] = s.observations.map((observation, i) => ({
           observation,
           action: s.actions[i] as DecidedAction,
-          probabilities: {},
+          probabilities: {}, alternatives: [],
           executed: true,
         }));
         const loopResult: LoopResult = {
@@ -224,7 +224,7 @@ describe('observe-decide-execute-loop Property 24: Loop_Result to RuntimeResult 
       loopResult: {
         finalState: 'not_reached',
         observations: [observation],
-        steps: [{ observation, action: { kind: 'click', ref: 'e9' }, probabilities: {}, executed: true }],
+        steps: [{ observation, action: { kind: 'click', ref: 'e9' }, probabilities: {}, alternatives: [], executed: true }],
         eventLog: [],
         finalSignals: {},
         stopReason: 'max-steps',
@@ -253,9 +253,9 @@ describe('observe-decide-execute-loop Property 24: Loop_Result to RuntimeResult 
         finalState: 'not_reached',
         observations: [observation],
         steps: [
-          { observation, action: { kind: 'click', ref: 'e9' }, probabilities: {} },
-          { observation, action: { kind: 'click', ref: 'e8' }, probabilities: {}, executed: false },
-          { observation, action: { kind: 'goto', url: 'http://localhost:4000/a' }, probabilities: {}, executed: true },
+          { observation, action: { kind: 'click', ref: 'e9' }, probabilities: {}, alternatives: [] },
+          { observation, action: { kind: 'click', ref: 'e8' }, probabilities: {}, alternatives: [], executed: false },
+          { observation, action: { kind: 'goto', url: 'http://localhost:4000/a' }, probabilities: {}, alternatives: [], executed: true },
         ],
         eventLog: [],
         finalSignals: {},

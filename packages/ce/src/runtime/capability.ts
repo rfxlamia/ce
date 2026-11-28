@@ -62,7 +62,7 @@ export interface MapLoopResultInput {
 
 /**
  * Requirement 13 criterion 8. Pure and total. `LoopResult.subjectBox` holds fractions of the
- * screenshot, not pixels; it is not part of the `RuntimeResult` and is not touched here.
+ * screenshot, not pixels; it is copied into `trace.finalBox` unchanged.
  */
 export function mapLoopResultToRuntimeResult(input: MapLoopResultInput): RuntimeResult {
   const { loopResult, selectedClaim, change, baseUrl, runDir } = input;
@@ -104,6 +104,7 @@ export function mapLoopResultToRuntimeResult(input: MapLoopResultInput): Runtime
       action: { kind: s.action.kind, description: describeAction(s, redact) },
       executed: s.executed === true,
       probabilities: { ...s.probabilities },
+      alternatives: s.alternatives.map((a) => ({ key: a.key, description: redact(a.description), probability: a.probability })),
     })),
     eventLog: loopResult.eventLog.map((e) => ({ step: e.step, kind: e.kind, detail: e.detail })),
     stopReason: loopResult.stopReason,
@@ -112,6 +113,8 @@ export function mapLoopResultToRuntimeResult(input: MapLoopResultInput): Runtime
   if (loopResult.finalScreenshot !== undefined) trace.finalScreenshot = loopResult.finalScreenshot;
   if (loopResult.finalImageModel !== undefined) trace.finalImageModel = loopResult.finalImageModel;
   if (loopResult.finalImageError !== undefined) trace.finalImageError = loopResult.finalImageError;
+  if (loopResult.subjectBox !== undefined) trace.finalBox = { ...loopResult.subjectBox };
+  trace.finalSignals = { ...loopResult.finalSignals };
 
   return {
     finalState: loopResult.finalState,

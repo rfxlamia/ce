@@ -39,6 +39,11 @@ describe('buildRunRecord finalImage', () => {
             model: trace.finalImageModel ?? null,
             error: trace.finalImageError ?? null,
             screenshot: trace.finalScreenshot ?? null,
+            box: trace.finalBox ?? null,
+            signals: {
+              stateReachedDom: trace.finalSignals?.stateReachedDom ?? null,
+              stateReached: trace.finalSignals?.stateReached ?? null,
+            },
           });
         }
 
