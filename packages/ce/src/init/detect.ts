@@ -33,23 +33,103 @@ export type Detection =
       ceInstalled: boolean;
     };
 
-const FRAMEWORK_PORTS: Record<string, number> = { vite: 5173 };
+const DEFAULT_PORT = 3000;
+
+interface FrameworkEntry {
+  name: string;
+  port: number;
+  /** Command tokens that identify this framework in a script. */
+  commands: readonly string[];
+  /** Dependency names that identify this framework. */
+  deps: readonly string[];
+}
+
+const FRAMEWORKS: readonly FrameworkEntry[] = [
+  { name: 'vite', port: 5173, commands: ['vite'], deps: ['vite'] },
+  { name: '@sveltejs/kit', port: 5173, commands: [], deps: ['@sveltejs/kit'] },
+  { name: 'next', port: 3000, commands: ['next'], deps: ['next'] },
+  { name: 'nuxt', port: 3000, commands: ['nuxt'], deps: ['nuxt'] },
+  { name: 'nuxi', port: 3000, commands: ['nuxi'], deps: ['nuxi'] },
+  { name: 'astro', port: 4321, commands: ['astro'], deps: ['astro'] },
+  { name: '@angular/cli', port: 4200, commands: ['ng'], deps: ['@angular/cli'] },
+  { name: 'react-scripts', port: 3000, commands: ['react-scripts'], deps: ['react-scripts'] },
+  { name: 'gatsby', port: 8000, commands: ['gatsby'], deps: ['gatsby'] },
+];
+
+const VALUE = '([^\\s;&|]+)';
+const PORT_PATTERNS: readonly RegExp[] = [
+  new RegExp(`(?:^|[\\s;&|])--port(?:=|\\s+)${VALUE}`, 'g'),
+  new RegExp(`(?:^|[\\s;&|])-p\\s+${VALUE}`, 'g'),
+  new RegExp(`(?:^|[\\s;&|])PORT=${VALUE}`, 'g'),
+];
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function validPort(raw: string): number | null {
+  if (!/^\d+$/.test(raw)) return null;
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= 1 && n <= 65535 ? n : null;
+}
+
+/** Earliest valid explicit port across all patterns; invalid matches are ignored. */
+function explicitPort(script: string): number | null {
+  const matches: { index: number; value: string }[] = [];
+  for (const pattern of PORT_PATTERNS) {
+    for (const m of script.matchAll(pattern)) {
+      matches.push({ index: m.index ?? 0, value: m[1] ?? '' });
+    }
+  }
+  matches.sort((a, b) => a.index - b.index);
+  for (const { value } of matches) {
+    const port = validPort(value);
+    if (port !== null) return port;
+  }
+  return null;
+}
+
+function scriptTokens(script: string): string[] {
+  return script
+    .split(/[\s;&|()]+/)
+    .filter(Boolean)
+    .map((t) => t.slice(t.lastIndexOf('/') + 1));
+}
+
+function detectFramework(script: string, depNames: ReadonlySet<string>): FrameworkEntry | null {
+  const tokens = new Set(scriptTokens(script));
+  return (
+    FRAMEWORKS.find((f) => f.commands.some((c) => tokens.has(c))) ??
+    FRAMEWORKS.find((f) => f.deps.some((d) => depNames.has(d))) ??
+    null
+  );
+}
 
 export function detectProject(input: DetectInput): Detection {
   const pkg = JSON.parse(input.packageJsonText ?? '{}') as Record<string, unknown>;
   const scripts = pkg.scripts as Record<string, string>;
-  const scriptText = scripts.dev;
-  const devDeps = pkg.devDependencies as Record<string, unknown>;
-  const framework = Object.keys(FRAMEWORK_PORTS).find((name) => name in devDeps) ?? null;
+  const scriptText = scripts.dev!;
+  const depNames = new Set([
+    ...Object.keys(isRecord(pkg.dependencies) ? pkg.dependencies : {}),
+    ...Object.keys(isRecord(pkg.devDependencies) ? pkg.devDependencies : {}),
+  ]);
+  const explicit = explicitPort(scriptText);
+  const fw = detectFramework(scriptText, depNames);
+  const port = explicit ?? fw?.port ?? DEFAULT_PORT;
+  const portSource = explicit !== null ? 'explicit' : fw ? 'framework' : 'unknown';
+  const hasLockfile = ['pnpm-lock.yaml', 'yarn.lock', 'bun.lock', 'bun.lockb', 'package-lock.json'].some((f) =>
+    input.files.has(f),
+  );
+  const pm: PackageManager = input.files.has('pnpm-lock.yaml') ? 'pnpm' : 'npm';
   return {
     status: 'detected',
-    pm: 'npm',
+    pm,
     pmMajor: null,
     script: 'dev',
-    port: framework ? FRAMEWORK_PORTS[framework]! : 3000,
-    portSource: framework ? 'framework' : 'unknown',
-    framework,
-    hasLockfile: input.files.has('package-lock.json'),
+    port,
+    portSource,
+    framework: fw?.name ?? null,
+    hasLockfile,
     ceInstalled: false,
     scriptText,
   };
