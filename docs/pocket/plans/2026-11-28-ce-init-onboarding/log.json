@@ -85,9 +85,10 @@
         {
           "id": "T7",
           "name": "OIDC release workflow",
-          "status": "WAITING",
+          "status": "DONE",
           "depends": "T6",
-          "file": "execution-plan/tasks/T7-oidc-release-workflow.md"
+          "file": "execution-plan/tasks/T7-oidc-release-workflow.md",
+          "done_sha": "818bc0b20cdcaa3e0b100eede097eaaf0e3c5fbf"
         },
         {
           "id": "T8",
