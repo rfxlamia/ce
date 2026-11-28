@@ -1,0 +1,89 @@
+{
+  "header": {
+    "plan_dir": "docs/pocket/plans/2026-11-28-ce-init-onboarding",
+    "plan_type": "phased",
+    "status": "IN_PROGRESS",
+    "date_started": "2026-11-28",
+    "date_completed": null,
+    "baseline_sha": "7c8d274cd112a12303698f9b5498d3fb80679394",
+    "pipeline": 5,
+    "plan_file": "execution-plan/index.md"
+  },
+  "phases": [
+    {
+      "order": 1,
+      "file": "execution-plan/phase-1.md",
+      "status": "WAITING",
+      "tasks": [
+        {
+          "id": "T1",
+          "name": "Lean, publishable package manifest",
+          "status": "WAITING",
+          "file": "execution-plan/tasks/T1-lean-publishable-package-manifest.md"
+        },
+        {
+          "id": "T2",
+          "name": "Project detection (package manager, script, port, framework)",
+          "status": "WAITING",
+          "file": "execution-plan/tasks/T2-project-detection-package-manager-script-port-framework.md"
+        },
+        {
+          "id": "T3",
+          "name": "Commented ce.yml template",
+          "status": "WAITING",
+          "depends": "T2",
+          "file": "execution-plan/tasks/T3-commented-ce-yml-template.md"
+        },
+        {
+          "id": "T4",
+          "name": "Next-steps text and workflow snippet",
+          "status": "WAITING",
+          "depends": "T2",
+          "file": "execution-plan/tasks/T4-next-steps-text-and-workflow-snippet.md"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "file": "execution-plan/phase-2.md",
+      "status": "WAITING",
+      "tasks": [
+        {
+          "id": "T5",
+          "name": "`ce init` command, overwrite guard and CLI wiring",
+          "status": "WAITING",
+          "depends": "T3, T4",
+          "file": "execution-plan/tasks/T5-ce-init-command-overwrite-guard-and-cli-wiring.md"
+        },
+        {
+          "id": "T6",
+          "name": "Tarball smoke test script and CI job",
+          "status": "WAITING",
+          "depends": "T1, T5",
+          "file": "execution-plan/tasks/T6-tarball-smoke-test-script-and-ci-job.md"
+        },
+        {
+          "id": "T7",
+          "name": "OIDC release workflow",
+          "status": "WAITING",
+          "depends": "T6",
+          "file": "execution-plan/tasks/T7-oidc-release-workflow.md"
+        },
+        {
+          "id": "T8",
+          "name": "README Quick start and Releasing runbook",
+          "status": "WAITING",
+          "depends": "T7",
+          "file": "execution-plan/tasks/T8-readme-quick-start-and-releasing-runbook.md"
+        },
+        {
+          "id": "T9",
+          "name": "Done-when verification (keyed live run and timing)",
+          "status": "WAITING",
+          "depends": "T6, T8",
+          "file": "execution-plan/tasks/T9-done-when-verification-keyed-live-run-and-timing.md"
+        }
+      ]
+    }
+  ]
+}
