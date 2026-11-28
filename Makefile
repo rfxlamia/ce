@@ -7,7 +7,7 @@ SEMVER_RE := ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$$
 
 .DEFAULT_GOAL := help
 .PHONY: help install build typecheck test bundle smoke check \
-	bump tag move-major release-status require-version
+	bump tag move-major gh-release release-status require-version
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | \
@@ -15,6 +15,7 @@ help: ## Show this help
 	@echo ""
 	@echo "Release flow: make bump VERSION=x.y.z -> PR -> merge -> make tag VERSION=x.y.z"
 	@echo "              -> wait for the Release workflow -> make move-major VERSION=x.y.z"
+	@echo "              -> make gh-release VERSION=x.y.z"
 
 # ---------------------------------------------------------------- daily dev
 
@@ -118,6 +119,24 @@ move-major: require-version ## Point the major tag (e.g. v0) at vX.Y.Z after a s
 		git push origin "refs/tags/$$major"; \
 	fi; \
 	echo "Moved $$major to $$tag."
+
+gh-release: require-version ## Create the GitHub Release for a published vX.Y.Z
+	@set -e; \
+	command -v gh >/dev/null || { echo "error: gh (GitHub CLI) is required" >&2; exit 1; }; \
+	tag="v$(VERSION)"; \
+	if [ -z "$$(git ls-remote --tags origin "refs/tags/$$tag")" ]; then echo "error: tag $$tag is not on origin" >&2; exit 1; fi; \
+	published="$$(npm view "$(PACKAGE)@$(VERSION)" version 2>/dev/null || true)"; \
+	if [ "$$published" != "$(VERSION)" ]; then \
+		echo "error: $(PACKAGE)@$(VERSION) is not on npm yet; wait for the Release workflow (make release-status) and retry" >&2; exit 1; \
+	fi; \
+	if view="$$(gh release view "$$tag" 2>&1)"; then echo "error: GitHub Release $$tag already exists" >&2; exit 1; fi; \
+	case "$$view" in *"not found"*) ;; *) echo "error: could not check GitHub Release $$tag: $$view" >&2; exit 1;; esac; \
+	case "$(VERSION)" in *-*) flags="--prerelease --latest=false";; *) flags="--latest";; esac; \
+	notes="npm: npm i -D $(PACKAGE)@$(VERSION) | Action: uses: rfxlamia/ce@$$tag"; \
+	echo "About to create GitHub Release $$tag ($$flags) with generated notes."; \
+	read -r -p "Create GitHub Release $$tag? [y/N] " answer; \
+	if [ "$$answer" != "y" ] && [ "$$answer" != "Y" ]; then echo "aborted"; exit 1; fi; \
+	gh release create "$$tag" --verify-tag --title "$$tag" --generate-notes --notes "$$notes" $$flags
 
 release-status: ## Show recent Release workflow runs and npm dist-tags
 	@command -v gh >/dev/null || { echo "error: gh (GitHub CLI) is required" >&2; exit 1; }
