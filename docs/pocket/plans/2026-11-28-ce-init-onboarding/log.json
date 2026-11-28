@@ -18,8 +18,9 @@
         {
           "id": "T1",
           "name": "Lean, publishable package manifest",
-          "status": "WAITING",
-          "file": "execution-plan/tasks/T1-lean-publishable-package-manifest.md"
+          "status": "DONE",
+          "file": "execution-plan/tasks/T1-lean-publishable-package-manifest.md",
+          "done_sha": "6b7fc3ffd61c9a953f9f8ad8cbccf2b64ba1e08d"
         },
         {
           "id": "T2",
