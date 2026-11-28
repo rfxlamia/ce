@@ -69,9 +69,10 @@
         {
           "id": "T5",
           "name": "`ce init` command, overwrite guard and CLI wiring",
-          "status": "WAITING",
+          "status": "DONE",
           "depends": "T3, T4",
-          "file": "execution-plan/tasks/T5-ce-init-command-overwrite-guard-and-cli-wiring.md"
+          "file": "execution-plan/tasks/T5-ce-init-command-overwrite-guard-and-cli-wiring.md",
+          "done_sha": "9d430dca6357faf179c05e37ce0a4dab7c189e4c"
         },
         {
           "id": "T6",

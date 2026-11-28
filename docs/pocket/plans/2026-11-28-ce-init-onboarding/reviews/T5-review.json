@@ -1,0 +1,59 @@
+{
+  "task_id": "T5",
+  "task_name": "`ce init` command, overwrite guard and CLI wiring",
+  "cycle": 2,
+  "timestamp": "2026-11-28T00:50:00Z",
+  "reviewer_mode": "read-only",
+  "reviewer_config": "standard",
+  "stage_1": {
+    "status": "PASS",
+    "issues": [],
+    "concerns_addressed": [
+      "Phase-1 carry-forward still holds: packageJsonUnreadable is true for non-ENOENT package.json read errors (command.ts:144,153) and the actually-written name is passed as configPath to renderNextSteps (command.ts:218-220).",
+      "Windows rename/EPERM: untestable here; a failed rename leaves the original intact, unlinks the temp and exits 1 with 'Cannot write <name>: EPERM'. Non-blocking.",
+      "Symlinked ce.yml under --force replaces the link, not its target: matches spec B3.",
+      "Dangling-symlink --force now has a dedicated test (command.test.ts)."
+    ]
+  },
+  "stage_2": {
+    "status": "PASS",
+    "strengths": [
+      "Function sizes now within limit: runInitCommand 194-232 (~39 lines); all other functions <= ~19 lines; file 232 lines.",
+      "Safety invariants unchanged: lstat guard before any non-force write, wx create, wx temp + rename under --force, temp unlinked on any failure, no success text on failure (writeConfig throws before stdout/notes).",
+      "Both-files note now printed only after a successful rename (command.ts:172).",
+      "lstat non-ENOENT errors now yield 'Cannot check <name>: <code>' exit 1 via ConfigCheckError; unknown errors still rethrown.",
+      "Directory lockfiles ignored via isFile check (command.ts:152).",
+      "No process.* in command.ts; detect/template/next-steps reused; init in cli.ts still does not load .env.",
+      "vitest src/init + cli.init.test: 118 passed; tsc --noEmit clean."
+    ],
+    "issues": [
+      {
+        "severity": "Minor",
+        "description": "Non-force create writes ce.yml directly with wx; a mid-write failure (e.g. ENOSPC) can leave a partial ce.yml that is not cleaned up (intentionally left as is by the fix round).",
+        "location": "packages/ce/src/init/command.ts:160"
+      },
+      {
+        "severity": "Minor",
+        "description": "InitFs still adds readdir beyond the packet's declared deps contract; lockfile detection silently degrades when readdir fails.",
+        "location": "packages/ce/src/init/command.ts:18,146-152"
+      },
+      {
+        "severity": "Minor",
+        "description": "ConfigCheckError and ConfigWriteError classes are declared after the functions that throw them (works at runtime since use is deferred, but reads out of order).",
+        "location": "packages/ce/src/init/command.ts:119,176"
+      }
+    ],
+    "assessment": "Approved"
+  },
+  "overall": "REVIEW_PASS",
+  "fix_instructions": "",
+  "loop_info": {
+    "recovery_window": 1,
+    "current_cycle": 2,
+    "max_cycles": 2,
+    "cycles_remaining": 1,
+    "strategies": ["round 1: extract helpers from runInitCommand; fix lstat EACCES, note ordering, dir lockfile; add dangling-symlink --force test"],
+    "prior_windows": []
+  },
+  "reviewed_sha": "9d430dca6357faf179c05e37ce0a4dab7c189e4c"
+}
