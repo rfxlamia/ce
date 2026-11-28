@@ -24,6 +24,7 @@ const stepSample = {
   executed: true,
   screenshot: 'step-0.png',
   probabilities: {},
+  alternatives: [],
 };
 const errorSample = { stage: 'runtime', reason: 'stage-error', causeName: null, fields: [] };
 
@@ -157,7 +158,13 @@ const mutations: Mutation[] = [
     violates: true,
     apply: (r) => {
       if (r.outcome !== 'SKIPPED' && r.outcome !== 'UNSUPPORTED') return undefined;
-      r.finalImage = { model: null, error: null, screenshot: null };
+      r.finalImage = {
+        model: null,
+        error: null,
+        screenshot: null,
+        box: null,
+        signals: { stateReachedDom: null, stateReached: null },
+      };
       return r;
     },
   },
@@ -188,7 +195,7 @@ const mutations: Mutation[] = [
       return r;
     },
   },
-  { name: 'wrong schemaVersion', violates: true, apply: set('schemaVersion', '2') },
+  { name: 'wrong schemaVersion', violates: true, apply: set('schemaVersion', '1') },
   { name: 'bundle-relative path escapes run dir', violates: true, apply: (r) => {
       const a = r.artifacts as Rec[];
       a.push({ path: '../outside.png', kind: 'screenshot' });
@@ -201,7 +208,157 @@ const mutations: Mutation[] = [
     } },
 ];
 
+const stepAlt = (r: Rec): Rec | undefined => {
+  const steps = r.steps as Rec[];
+  return steps.length === 0 ? undefined : steps[0]!;
+};
+const finalImageOf = (r: Rec): Rec | undefined =>
+  r.finalImage === null || r.finalImage === undefined ? undefined : (r.finalImage as Rec);
+
+/** Mutations of the fields added in schema version 2 (alternatives, box, signals). */
+const extendedMutations: Mutation[] = [
+  {
+    name: 'step without alternatives',
+    violates: true,
+    apply: (r) => {
+      const s = stepAlt(r);
+      if (!s) return undefined;
+      delete s.alternatives;
+      return r;
+    },
+  },
+  {
+    name: 'alternative probability above 1',
+    violates: true,
+    apply: (r) => {
+      const s = stepAlt(r);
+      if (!s) return undefined;
+      s.alternatives = [{ key: 'k', description: 'd', probability: 1.5 }];
+      return r;
+    },
+  },
+  {
+    name: 'alternative probability below 0',
+    violates: true,
+    apply: (r) => {
+      const s = stepAlt(r);
+      if (!s) return undefined;
+      s.alternatives = [{ key: 'k', description: 'd', probability: -0.1 }];
+      return r;
+    },
+  },
+  {
+    name: 'extra key in alternative',
+    violates: true,
+    apply: (r) => {
+      const s = stepAlt(r);
+      if (!s) return undefined;
+      s.alternatives = [{ key: 'k', description: 'd', probability: 0.5, extra: 1 }];
+      return r;
+    },
+  },
+  {
+    name: 'finalImage without signals',
+    violates: true,
+    apply: (r) => {
+      const f = finalImageOf(r);
+      if (!f) return undefined;
+      delete f.signals;
+      return r;
+    },
+  },
+  {
+    name: 'finalImage signals null',
+    violates: true,
+    apply: (r) => {
+      const f = finalImageOf(r);
+      if (!f) return undefined;
+      f.signals = null;
+      return r;
+    },
+  },
+  {
+    name: 'finalImage signal above 1',
+    violates: true,
+    apply: (r) => {
+      const f = finalImageOf(r);
+      if (!f) return undefined;
+      f.signals = { stateReachedDom: 2, stateReached: null };
+      return r;
+    },
+  },
+  {
+    name: 'finalImage box missing a coordinate',
+    violates: true,
+    apply: (r) => {
+      const f = finalImageOf(r);
+      if (!f) return undefined;
+      f.box = { x: 0, y: 0, width: 1 };
+      return r;
+    },
+  },
+  {
+    name: 'finalImage box with an extra key',
+    violates: true,
+    apply: (r) => {
+      const f = finalImageOf(r);
+      if (!f) return undefined;
+      f.box = { x: 0, y: 0, width: 1, height: 1, extra: 1 };
+      return r;
+    },
+  },
+  {
+    name: 'finalImage without box',
+    violates: true,
+    apply: (r) => {
+      const f = finalImageOf(r);
+      if (!f) return undefined;
+      delete f.box;
+      return r;
+    },
+  },
+];
+
 describe('Run_Schema and generated JSON Schema agree', () => {
+  // Feature: report-html-evidence-page, Property 13: The extended Run_Record shape round-trips and agrees with its JSON Schema
+  // **Validates: Requirements 12.5, 12.8**
+  it('Feature: report-html-evidence-page, Property 13: both validators accept generated alternatives, box and signals and agree on their mutations', () => {
+    let applied = 0;
+    fc.assert(
+      fc.property(
+        runRecordArb,
+        fc.integer({ min: 0, max: extendedMutations.length - 1 }),
+        (record, i) => {
+          const base = clone(record);
+          expect(RunRecordSchema.safeParse(base).success).toBe(true);
+          expect(validateJson(base), JSON.stringify(validateJson.errors)).toBe(true);
+          // The new fields are present in the serialized record.
+          for (const s of base.steps as Rec[]) expect(Array.isArray(s.alternatives)).toBe(true);
+          const f = finalImageOf(base);
+          if (f) {
+            expect('box' in f).toBe(true);
+            expect(f.signals).not.toBeNull();
+            expect(typeof f.signals).toBe('object');
+          }
+
+          const m = extendedMutations[i]!;
+          const mutated = m.apply(clone(record));
+          if (mutated === undefined) return;
+          applied++;
+          const zodOk = RunRecordSchema.safeParse(mutated).success;
+          const jsonOk = validateJson(mutated) as boolean;
+          expect(jsonOk, `${m.name}: ${JSON.stringify(validateJson.errors)}`).toBe(zodOk);
+          if (m.violates) {
+            expect(zodOk, m.name).toBe(false);
+            expect(jsonOk, m.name).toBe(false);
+          }
+        },
+      ),
+      { numRuns: 300 },
+    );
+    expect(applied).toBeGreaterThan(0);
+  }, 30000);
+
   // Feature: evidence-bundle, Property 5: The zod schema and the generated JSON Schema agree, including on mutated records
   // **Validates: Requirements 3.4, 3.7, 3.9, 3.10, 3.13**
   it('Feature: evidence-bundle, Property 5: The zod schema and the generated JSON Schema agree, including on mutated records', () => {

@@ -73322,6 +73322,13 @@ var CATALOG = {
     () => box("Where is the subject of `claim` in the screenshot?")
   )
 };
+function questionTextOf(e) {
+  const question = e.idVersion === CATALOG.runtimeNextAction.idVersion ? CATALOG.runtimeNextAction.build([]) : e.build();
+  return typeof question.instructions === "string" ? question.instructions : "";
+}
+var BY_ID_VERSION = new Map(
+  Object.values(CATALOG).map((e) => [e.idVersion, questionTextOf(e)])
+);
 
 // packages/ce/src/assessment/combine.ts
 var NON_OBSERVABLE_SURFACES = ["backend_internal", "non_runtime"];
@@ -98738,7 +98745,7 @@ var OUTCOMES = ["SKIPPED", "EVIDENCED", "UNSUPPORTED", "ERROR"];
 var V0_SUPPORTED_SURFACES = ["browser_ui"];
 
 // packages/ce/src/evidence/schema.ts
-var SCHEMA_VERSION = "1";
+var SCHEMA_VERSION = "2";
 var [SKIPPED_OUTCOME, EVIDENCED_OUTCOME, UNSUPPORTED_OUTCOME, ERROR_OUTCOME] = OUTCOMES;
 var BundleRelativePath = external_exports.string().regex(/^(?!\/)(?!(?:.*\/)?\.\.(?:\/|$))[^\n]+$/);
 var ARTIFACT_KINDS = ["screenshot", "log", "jev-calls"];
@@ -98826,17 +98833,36 @@ var StepRecord = external_exports.strictObject({
   action: external_exports.strictObject({ kind: external_exports.string(), description: external_exports.string() }),
   executed: external_exports.boolean(),
   screenshot: BundleRelativePath,
-  probabilities: external_exports.record(external_exports.string(), external_exports.number())
+  probabilities: external_exports.record(external_exports.string(), external_exports.number()),
+  alternatives: external_exports.array(
+    external_exports.strictObject({
+      key: external_exports.string(),
+      description: external_exports.string(),
+      probability: external_exports.number().min(0).max(1)
+    })
+  )
 });
 var EventLogRecord = external_exports.strictObject({
   step: external_exports.number().int().nonnegative(),
   kind: external_exports.enum(["dialog", "download", "popup", "settle", "refusal"]),
   detail: external_exports.string()
 });
+var FractionBox = external_exports.strictObject({
+  x: external_exports.number(),
+  y: external_exports.number(),
+  width: external_exports.number(),
+  height: external_exports.number()
+});
+var unitSignal = external_exports.number().min(0).max(1).nullable();
 var FinalImage = external_exports.strictObject({
   model: external_exports.string().nullable(),
   error: external_exports.string().nullable(),
-  screenshot: BundleRelativePath.nullable()
+  screenshot: BundleRelativePath.nullable(),
+  box: FractionBox.nullable(),
+  signals: external_exports.strictObject({
+    stateReachedDom: unitSignal,
+    stateReached: unitSignal
+  })
 });
 var RuntimeRecord = external_exports.strictObject({ stopReason: StopReasonSchema });
 var ContextRecord = external_exports.strictObject({
@@ -98985,6 +99011,188 @@ var RunRecordSchema = external_exports.discriminatedUnion("outcome", [
   UnsupportedVariant,
   ErrorVariant
 ]);
+
+// packages/ce/src/evidence/bundle.ts
+var REPORT_HTML_FILE = "report.html";
+
+// packages/ce/src/evidence/report/palette.ts
+var PALETTE = {
+  bg: "#0d1117",
+  surface: "#161b22",
+  surface2: "#1c232d",
+  border: "#3d4654",
+  text: "#e6edf3",
+  muted: "#a6b0bd",
+  link: "#79b8ff",
+  focus: "#ffd33d",
+  outcomeTones: {
+    SKIPPED: "#58a6ff",
+    EVIDENCED: "#3fb950",
+    UNSUPPORTED: "#e3b341",
+    ERROR: "#ff7b72"
+  },
+  bar: "#79b8ff",
+  barTrack: "#2a323d",
+  box: "#ff9bce",
+  /** Declared dominant color of the committed Logo_Asset. */
+  logoDominant: "#7490b8"
+};
+function blendSrgb(fg, bg, pct) {
+  const parse6 = (hex3) => [1, 3, 5].map((i) => parseInt(hex3.slice(i, i + 2), 16));
+  const a = parse6(fg);
+  const b = parse6(bg);
+  const w = pct / 100;
+  return "#" + a.map(
+    (c, i) => Math.round(c * w + b[i] * (1 - w)).toString(16).padStart(2, "0")
+  ).join("");
+}
+var BANNER_MIX = {
+  backgroundTonePct: 13,
+  borderTonePct: 55,
+  mutedTonePct: 28,
+  mutedBase: "#d4dbe3"
+};
+function bannerColors(tone, p = PALETTE) {
+  return {
+    background: blendSrgb(tone, p.surface, BANNER_MIX.backgroundTonePct),
+    border: blendSrgb(tone, p.border, BANNER_MIX.borderTonePct),
+    onToneMuted: blendSrgb(tone, BANNER_MIX.mutedBase, BANNER_MIX.mutedTonePct)
+  };
+}
+
+// packages/ce/src/evidence/report/sections/banner.ts
+var BANNER_CSS = (() => {
+  const base = bannerColors(PALETTE.outcomeTones.EVIDENCED);
+  const rules = Object.entries(PALETTE.outcomeTones).map(([name, tone]) => {
+    const c = bannerColors(tone);
+    return `.banner[data-outcome="${name}"]{--tone:${tone};--banner-bg:${c.background};--banner-border:${c.border};--on-tone-muted:${c.onToneMuted}}`;
+  });
+  void BANNER_MIX;
+  return [
+    `.banner{--tone:${PALETTE.outcomeTones.EVIDENCED};--banner-bg:${base.background};--banner-border:${base.border};--on-tone-muted:${base.onToneMuted};background:var(--banner-bg);border:1px solid var(--banner-border);border-radius:10px;padding:1.5rem 1.6rem 1.3rem;color:var(--text);overflow-wrap:anywhere}`,
+    ...rules,
+    `.banner .head{display:flex;align-items:center;gap:.8rem}`,
+    `.banner .head svg{flex:none;width:2.4rem;height:2.4rem;color:var(--tone)}`,
+    `.banner .outcome{font-size:2.4rem;line-height:1;font-weight:800;letter-spacing:.03em;color:var(--tone)}`,
+    `.banner .what{font-size:1.2rem;font-weight:600;margin:.55rem 0 0;color:var(--text)}`,
+    `.banner .why{margin:.3rem 0 0;color:var(--on-tone-muted);max-width:60ch}`,
+    `.banner hr{border:0;border-top:1px solid var(--banner-border);margin:1.2rem 0 1rem}`,
+    `.banner .lead-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(16rem,100%),1fr));gap:.9rem 2rem;margin:0}`,
+    `.banner .lead-facts dt,.banner .meta dt{color:var(--on-tone-muted);font-size:.82rem;font-weight:500}`,
+    `.banner .lead-facts dd{margin:.1rem 0 0;font-size:1.05rem;font-weight:600;overflow-wrap:anywhere}`,
+    `.banner .meta{display:flex;flex-wrap:wrap;gap:.6rem 2rem;margin:1.1rem 0 0;padding:0}`,
+    `.banner .meta div{min-width:0}`,
+    `.banner .meta dd{margin:0;font-size:.82rem;overflow-wrap:anywhere}`,
+    `.banner .fields{margin:.1rem 0 0;padding-left:1.1rem}`
+  ].join("\n");
+})();
+
+// packages/ce/src/evidence/report/document.ts
+var SECTION_CSS = [
+  // base
+  "*{box-sizing:border-box}",
+  "html{color-scheme:dark}",
+  'body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;overflow-wrap:break-word}',
+  "a{color:var(--link)}",
+  // type scale: h1 1.8rem > h2 1.44rem > h3 1.1rem > body 1rem
+  "h1{font-size:1.8rem;line-height:1.15;font-weight:700;margin:0}",
+  "h2{font-size:1.44rem;line-height:1.25;font-weight:700;margin:0 0 .75rem}",
+  "h3{font-size:1.1rem;line-height:1.3;font-weight:650;margin:0 0 .35rem}",
+  // focus
+  "a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:3px}",
+  // skip link
+  ".skip{position:absolute;left:-999px;top:0;background:var(--focus);color:#000;padding:.5rem 1rem;z-index:10}",
+  ".skip:focus{left:0}",
+  ".sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}",
+  // layout
+  ".wrap{max-width:62rem;margin:0 auto;padding:0 1rem 4rem}",
+  "header.top{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;padding:1.1rem 0 .2rem}",
+  "header.top img{width:7.5rem;max-width:100%;height:auto;flex:none}",
+  "header.top h1{min-width:0;flex:1 1 14rem}",
+  "header.top h1 span{display:block;font-size:.88rem;font-weight:400;color:var(--muted);margin-top:.15rem}",
+  "main>section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.25rem;margin:1.1rem 0;min-width:0}",
+  "main>section.banner{margin:1.1rem 0}",
+  ".muted{color:var(--muted)}",
+  ".mono,code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.88rem}",
+  ".mono{overflow-wrap:anywhere}",
+  // note and nav
+  ".note{border:1px dashed var(--border);border-radius:8px;padding:.7rem 1rem;color:var(--muted);margin:1.1rem 0;max-width:75ch}",
+  ".note strong{color:var(--text)}",
+  "nav ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}",
+  "nav a{display:inline-block;padding:.25rem .7rem;border:1px solid var(--border);border-radius:999px;text-decoration:none}",
+  "nav a:hover{background:var(--surface-2)}",
+  // chips and signal tags
+  ".chip{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:0 .6rem;font-size:.8rem;color:var(--text);background:var(--surface-2);margin-right:.35rem;overflow-wrap:anywhere}",
+  ".chip b{color:var(--link);font-weight:600}",
+  ".tag-signal{display:inline-block;font-size:.72rem;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--bar);border:1px solid var(--bar);border-radius:4px;padding:0 .35rem;margin-left:.4rem;white-space:nowrap}",
+  // claims
+  ".claim{border-bottom:1px solid var(--border);padding:.75rem 0}",
+  ".claim-text{margin:.1rem 0 .4rem;max-width:75ch}",
+  ".claim-declared,.no-claim,.context-reduction,.context-null{margin:.4rem 0}",
+  ".candidates{margin:.6rem 0}",
+  ".candidates .claim:last-child{border-bottom:0}",
+  // bars
+  ".bar{display:grid;grid-template-columns:minmax(8rem,16rem) 1fr 3.2rem;gap:.6rem;align-items:center;margin:.2rem 0}",
+  ".bar .lbl{min-width:0;overflow-wrap:anywhere}",
+  ".bar .track{height:.7rem;background:var(--bar-track);border-radius:99px;overflow:hidden;border:1px solid var(--border)}",
+  ".bar .fill{height:100%;background:var(--bar)}",
+  ".bar .val{text-align:right;font-variant-numeric:tabular-nums}",
+  ".bar.chosen .fill{background:var(--tone-evidenced)}",
+  ".bar.no-answer{grid-template-columns:minmax(8rem,16rem) 1fr}",
+  ".bar.no-answer .val{text-align:left;color:var(--muted)}",
+  // assessment
+  ".q{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem;margin:.7rem 0}",
+  ".q blockquote,.q-text{margin:.3rem 0 .7rem;padding:.55rem .8rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text)}",
+  ".q-noanswer{margin:.3rem 0}",
+  // tables
+  "table{border-collapse:collapse;width:100%}",
+  "th,td{text-align:left;padding:.3rem .6rem;border-bottom:1px solid var(--border);vertical-align:top;overflow-wrap:anywhere}",
+  "th{color:var(--muted);font-weight:600;font-size:.85rem}",
+  ".files,.checks,.per-claim,.assessment-summary,.event-log{margin:.5rem 0}",
+  // timeline
+  "ol.steps{list-style:none;margin:0;padding:0}",
+  "ol.steps>li{display:grid;grid-template-columns:15rem minmax(0,1fr);gap:1rem;padding:1rem 0;border-bottom:1px solid var(--border)}",
+  "ol.steps>li:last-child{border-bottom:0}",
+  ".shot{display:block;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:var(--surface-2);line-height:0}",
+  ".shot img{display:block;width:100%;max-width:100%;height:auto}",
+  ".step-body{min-width:0}",
+  ".step-body p{margin:.1rem 0}",
+  ".stepno{display:inline-block;min-width:1.8rem;text-align:center;background:var(--bar);color:#000;border-radius:5px;font-weight:700;margin-right:.4rem}",
+  ".exec-yes{color:var(--tone-evidenced)}",
+  ".exec-no{color:var(--tone-error)}",
+  ".refusal{margin:.3rem 0}",
+  ".alt{display:flex;flex-wrap:wrap;align-items:center;gap:.2rem .6rem}",
+  ".alt .bar{flex:1 1 20rem}",
+  ".taken-mark{color:var(--tone-evidenced);font-weight:600}",
+  ".no-alternatives,.empty,.no-final,.no-events,.no-log-artifacts{color:var(--muted);margin:.4rem 0}",
+  "details{margin:.4rem 0}",
+  "summary{cursor:pointer;color:var(--link)}",
+  // final
+  ".final{position:relative;display:block;max-width:34rem;border:1px solid var(--border);border-radius:6px;overflow:hidden;line-height:0}",
+  ".final img{display:block;width:100%;max-width:100%;height:auto}",
+  ".box{position:absolute;border:3px solid var(--box);box-shadow:0 0 0 1px #000;pointer-events:none}",
+  ".box-coords,.no-box{margin:.5rem 0}",
+  ".final-error{border:1px solid var(--tone-error);border-radius:6px;padding:.5rem .8rem;margin:.5rem 0}",
+  // logs
+  ".stop-reason,.jev-calls-note,.stage-durations,.jev-config,.settings{margin:.5rem 0}",
+  ".log-artifacts{padding-left:1.2rem;margin:.5rem 0}",
+  ".artifact-note{color:var(--muted)}",
+  ".jev-models ul{margin:.2rem 0;padding-left:1.2rem}",
+  // raw
+  "pre{background:#010409;border:1px solid var(--border);border-radius:8px;padding:1rem;overflow:auto;max-height:26rem;margin:.5rem 0 0;max-width:100%}",
+  "button{background:var(--surface-2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:.3rem .8rem;font:inherit;cursor:pointer}",
+  // small viewports and motion
+  "@media (max-width:640px){",
+  "  ol.steps>li{grid-template-columns:minmax(0,1fr)}",
+  "  .bar{grid-template-columns:minmax(0,1fr) 3.2rem}",
+  "  .bar .track{grid-column:1/-1;grid-row:2}",
+  "  .bar.no-answer{grid-template-columns:minmax(0,1fr)}",
+  "}",
+  "@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}"
+].join("\n");
+
+// packages/ce/src/evidence/report/write.ts
+var REPORT_HTML_TMP_FILE = `${REPORT_HTML_FILE}.tmp`;
 
 // packages/ce/src/jev/log.ts
 var Stage = external_exports.enum(["config", "context", "assessment", "runtime", "evidence"]);

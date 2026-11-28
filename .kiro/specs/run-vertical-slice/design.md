@@ -311,7 +311,7 @@ The module comment describes the implemented slice and names the Runtime_Hook as
 | Fake capability, valid evidence | `EVIDENCED` | `evidence-collected` | `finalState`, `surface`, `capability`, `exitCode: 0` |
 | Config or credential failure | none | none | `ERROR`, `errorStage` `config`, `exitCode: 1` |
 
-Run directory: `<cwd>/<output.dir ?? '.ce/runs'>/run-<iso>/jev-calls.jsonl`, where `<iso>` is `now().toISOString()` with every `:` and `.` replaced by `-`. The slice writes this one file through `createJsonlCallLog` and writes no `run.json` or `report.html` (Requirement 11.4).
+Run directory: `<cwd>/<output.dir ?? '.ce/runs'>/run-<iso>/jev-calls.jsonl`, where `<iso>` is `now().toISOString()` with every `:` and `.` replaced by `-`. The slice itself writes this one file through `createJsonlCallLog`. `run.json` is written by the Bundle_Writer, and `report.html` is written through the Report_Generator after `run.json` (Requirement 11.4; see spec `report-html-evidence-page`).
 
 ## Correctness Properties
 

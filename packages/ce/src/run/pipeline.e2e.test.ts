@@ -115,7 +115,7 @@ afterAll(async () => {
 
 describe('run() with the default capability registry on the demo-app', () => {
   it(
-    'resolves a required browser_ui Assessment to EVIDENCED with screenshots, one run.json and no report.html',
+    'resolves a required browser_ui Assessment to EVIDENCED with screenshots, one run.json and a report.html',
     async () => {
       const text = new FakeJevGateway(JSON.parse(await readFile(FIXTURE_PATH, 'utf8')) as Recording[]);
       const gateway = new GatewayTestSupport({
@@ -146,7 +146,7 @@ describe('run() with the default capability registry on the demo-app', () => {
       expect(result.capability).toBe('browser_ui');
       expect(result.exitCode).toBe(0);
 
-      // The run directory holds the screenshots and nothing CE-report shaped.
+      // The run directory holds the screenshots and report.html.
       const runDir = join(cwd, '.ce', 'runs', 'run-2026-01-02T03-04-05-678Z');
       expect(existsSync(runDir)).toBe(true);
       const files = await readdir(runDir, { recursive: true });
@@ -157,7 +157,7 @@ describe('run() with the default capability registry on the demo-app', () => {
         expect([...bytes.subarray(0, 8)]).toEqual(PNG_SIGNATURE);
       }
       expect(files.filter((f) => /(^|\/)run\.json$/.test(f))).toEqual(['run.json']);
-      expect(files.some((f) => /(^|\/)report\.html$/.test(f))).toBe(false);
+      expect(files.filter((f) => /(^|\/)report\.html$/.test(f))).toEqual(['report.html']);
       expect(existsSync(join(cwd, '.ce', 'runs', 'run-2026-01-02T03-04-05-678Z', 'jev-calls.jsonl'))).toBe(false);
 
       // One combined image request; runtime step requests carried no image.

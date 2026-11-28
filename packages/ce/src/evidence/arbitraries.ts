@@ -216,6 +216,7 @@ const step = fc.record({
   executed: fc.boolean(),
   screenshot: bundlePath,
   probabilities: fc.dictionary(key, num, { maxKeys: 3 }),
+  alternatives: fc.array(fc.record({ key, description: text, probability: prob }), { maxLength: 3 }),
 });
 
 const eventLogEntry = fc.record({
@@ -228,6 +229,11 @@ const finalImage = fc.record({
   model: fc.option(text, { nil: null }),
   error: fc.option(text, { nil: null }),
   screenshot: fc.option(bundlePath, { nil: null }),
+  box: fc.option(fc.record({ x: num, y: num, width: num, height: num }), { nil: null }),
+  signals: fc.record({
+    stateReachedDom: fc.option(prob, { nil: null }),
+    stateReached: fc.option(prob, { nil: null }),
+  }),
 });
 
 const runtime = fc.record({
@@ -245,7 +251,7 @@ const reason = fc.constantFrom(
 );
 
 const head = {
-  schemaVersion: fc.constant('1' as const),
+  schemaVersion: fc.constant('2' as const),
   ceVersion: text,
   jevModels: fc.array(text, { maxLength: 3 }),
   outcomeReason: reason,
@@ -385,6 +391,7 @@ const traceStep = fc.record({
   action: fc.record({ kind: text, description: text }),
   executed: fc.boolean(),
   probabilities: fc.dictionary(key, num, { maxKeys: 3 }),
+  alternatives: fc.array(fc.record({ key, description: text, probability: prob }), { maxLength: 3 }),
 });
 
 const traceEvent = fc.record({
@@ -400,6 +407,8 @@ export const runtimeTraceArb: fc.Arbitrary<RuntimeTrace> = optionalKeys(
     finalScreenshot: bundlePath,
     finalImageModel: text,
     finalImageError: text,
+    finalBox: fc.record({ x: num, y: num, width: num, height: num }),
+    finalSignals: optionalKeys({ stateReachedDom: prob, stateReached: prob }, []),
     stopReason: fc.constantFrom('done', 'reached', 'give_up', 'max-steps', 'time-budget', 'aborted'),
     modelIds: fc.array(text, { maxLength: 3 }),
   },

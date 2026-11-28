@@ -6,7 +6,7 @@
       "properties": {
         "schemaVersion": {
           "type": "string",
-          "const": "1"
+          "const": "2"
         },
         "ceVersion": {
           "type": "string"
@@ -836,6 +836,31 @@
                 "additionalProperties": {
                   "type": "number"
                 }
+              },
+              "alternatives": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "probability": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "description",
+                    "probability"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
@@ -845,7 +870,8 @@
               "action",
               "executed",
               "screenshot",
-              "probabilities"
+              "probabilities",
+              "alternatives"
             ],
             "additionalProperties": false
           }
@@ -1024,7 +1050,7 @@
       "properties": {
         "schemaVersion": {
           "type": "string",
-          "const": "1"
+          "const": "2"
         },
         "ceVersion": {
           "type": "string"
@@ -1854,6 +1880,31 @@
                 "additionalProperties": {
                   "type": "number"
                 }
+              },
+              "alternatives": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "probability": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "description",
+                    "probability"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
@@ -1863,7 +1914,8 @@
               "action",
               "executed",
               "screenshot",
-              "probabilities"
+              "probabilities",
+              "alternatives"
             ],
             "additionalProperties": false
           }
@@ -1927,12 +1979,79 @@
                       "type": "null"
                     }
                   ]
+                },
+                "box": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "x": {
+                          "type": "number"
+                        },
+                        "y": {
+                          "type": "number"
+                        },
+                        "width": {
+                          "type": "number"
+                        },
+                        "height": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "x",
+                        "y",
+                        "width",
+                        "height"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "signals": {
+                  "type": "object",
+                  "properties": {
+                    "stateReachedDom": {
+                      "anyOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "stateReached": {
+                      "anyOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "stateReachedDom",
+                    "stateReached"
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [
                 "model",
                 "error",
-                "screenshot"
+                "screenshot",
+                "box",
+                "signals"
               ],
               "additionalProperties": false
             },
@@ -2107,7 +2226,7 @@
       "properties": {
         "schemaVersion": {
           "type": "string",
-          "const": "1"
+          "const": "2"
         },
         "ceVersion": {
           "type": "string"
@@ -2937,6 +3056,31 @@
                 "additionalProperties": {
                   "type": "number"
                 }
+              },
+              "alternatives": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "probability": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "description",
+                    "probability"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
@@ -2946,7 +3090,8 @@
               "action",
               "executed",
               "screenshot",
-              "probabilities"
+              "probabilities",
+              "alternatives"
             ],
             "additionalProperties": false
           }
@@ -3125,7 +3270,7 @@
       "properties": {
         "schemaVersion": {
           "type": "string",
-          "const": "1"
+          "const": "2"
         },
         "ceVersion": {
           "type": "string"
@@ -3978,6 +4123,31 @@
                 "additionalProperties": {
                   "type": "number"
                 }
+              },
+              "alternatives": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "probability": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "description",
+                    "probability"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
@@ -3987,7 +4157,8 @@
               "action",
               "executed",
               "screenshot",
-              "probabilities"
+              "probabilities",
+              "alternatives"
             ],
             "additionalProperties": false
           }
@@ -4051,12 +4222,79 @@
                       "type": "null"
                     }
                   ]
+                },
+                "box": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "x": {
+                          "type": "number"
+                        },
+                        "y": {
+                          "type": "number"
+                        },
+                        "width": {
+                          "type": "number"
+                        },
+                        "height": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "x",
+                        "y",
+                        "width",
+                        "height"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "signals": {
+                  "type": "object",
+                  "properties": {
+                    "stateReachedDom": {
+                      "anyOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "stateReached": {
+                      "anyOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "stateReachedDom",
+                    "stateReached"
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [
                 "model",
                 "error",
-                "screenshot"
+                "screenshot",
+                "box",
+                "signals"
               ],
               "additionalProperties": false
             },

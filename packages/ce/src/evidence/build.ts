@@ -211,12 +211,18 @@ function fromTrace(trace: RuntimeTrace, subject: string | null): RuntimePart {
       executed: s.executed,
       screenshot: s.screenshot,
       probabilities: { ...s.probabilities },
+      alternatives: s.alternatives.map((a) => ({ key: a.key, description: a.description, probability: a.probability })),
     })),
     eventLog: trace.eventLog.map((e) => ({ step: e.step, kind: e.kind, detail: e.detail })),
     finalImage: {
       model: trace.finalImageModel ?? null,
       error: trace.finalImageError ?? null,
       screenshot: trace.finalScreenshot ?? null,
+      box: trace.finalBox === undefined ? null : { ...trace.finalBox },
+      signals: {
+        stateReachedDom: trace.finalSignals?.stateReachedDom ?? null,
+        stateReached: trace.finalSignals?.stateReached ?? null,
+      },
     },
     runtime: { stopReason: trace.stopReason },
   };
@@ -234,6 +240,7 @@ function fromEvidenceSummary(result: RuntimeResult): RuntimePart {
       executed: false,
       screenshot: o.screenshot,
       probabilities: {},
+      alternatives: [],
     })),
     eventLog: [],
     finalImage: null,
@@ -265,6 +272,7 @@ function fromPartial(partial: PartialTrace): RuntimePart {
       executed: s.executed === true,
       screenshot: s.observation.screenshot,
       probabilities: { ...s.probabilities },
+      alternatives: [],
     };
   });
   const covered = new Set(steps.map((s) => s.step));
@@ -279,6 +287,7 @@ function fromPartial(partial: PartialTrace): RuntimePart {
       executed: false,
       screenshot: o.screenshot,
       probabilities: {},
+      alternatives: [],
     });
   }
   steps.sort((x, y) => x.step - y.step);
@@ -334,7 +343,7 @@ export function buildRunRecord(input: BuildRunRecordInput): RunRecord {
   const claims = !isError || input.assessment !== null ? buildClaims(input.claims) : [];
 
   const record = {
-    schemaVersion: '1' satisfies typeof SCHEMA_VERSION,
+    schemaVersion: '2' satisfies typeof SCHEMA_VERSION,
     ceVersion: input.ceVersion ?? VERSION,
     jevModels: dedupInOrder(
       input.assessment?.record.modelIds,
@@ -382,7 +391,7 @@ export function buildValidationFailureRunRecord(input: {
 }): RunRecord {
   const { resolution } = input;
   const record = {
-    schemaVersion: '1' satisfies typeof SCHEMA_VERSION,
+    schemaVersion: '2' satisfies typeof SCHEMA_VERSION,
     ceVersion: input.ceVersion ?? VERSION,
     jevModels: [],
     outcome: resolution.outcome,
