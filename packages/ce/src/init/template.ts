@@ -21,15 +21,39 @@ function header(): string[] {
   ];
 }
 
-function targetBlock(d: Detected): string[] {
+const DEFAULT_PORT = 3000;
+
+const FALLBACK_REASONS: Record<Extract<Detection, { status: 'fallback' }>['reason'], string> = {
+  missing: 'package.json was not found',
+  unparseable: 'package.json could not be parsed',
+  'not-object': 'package.json is not an object',
+  'no-script': 'package.json has no dev or start script',
+};
+
+function targetLines(start: string, port: number, indent: string): string[] {
   return [
-    `# Detected: ${d.framework ?? 'no known framework'} (script "${d.script}")`,
-    'target:',
-    `  start: ${d.pm} run ${d.script}`,
-    `  url: http://localhost:${d.port}`,
-    '  ready:',
-    '    path: /',
-    `    # timeout: ${READY_TIMEOUT_EXAMPLE}`,
+    `${indent}target:`,
+    `${indent}  start: ${start}`,
+    `${indent}  url: http://localhost:${port}`,
+    `${indent}  ready:`,
+    `${indent}    path: /`,
+    `${indent}    # timeout: ${READY_TIMEOUT_EXAMPLE}`,
+  ];
+}
+
+function targetBlock(d: Detected): string[] {
+  const lines = [`# Detected: ${d.framework ?? 'no known framework'} (script "${d.script}")`];
+  if (d.portSource === 'unknown') {
+    lines.push('# Dev server port not detected; check the url below and change it if needed.');
+  }
+  return [...lines, ...targetLines(`${d.pm} run ${d.script}`, d.port, ''), ''];
+}
+
+function fallbackTargetBlock(d: Extract<Detection, { status: 'fallback' }>): string[] {
+  return [
+    `# Target not detected: ${FALLBACK_REASONS[d.reason]}.`,
+    '# Uncomment and adjust this block to tell ce how to start your app:',
+    ...targetLines(`${d.pm} run dev`, DEFAULT_PORT, '# '),
     '',
   ];
 }
@@ -67,6 +91,6 @@ function optionalExamples(): string[] {
 }
 
 export function renderConfig(detection: Detection): string {
-  if (detection.status !== 'detected') throw new Error('fallback rendering not implemented');
-  return [...header(), ...targetBlock(detection), ...optionalExamples()].join('\n');
+  const target = detection.status === 'detected' ? targetBlock(detection) : fallbackTargetBlock(detection);
+  return [...header(), ...target, ...optionalExamples()].join('\n');
 }

@@ -69,3 +69,29 @@ describe('renderConfig detected project', () => {
     }
   });
 });
+
+describe('renderConfig unknown port and fallback', () => {
+  it('writes 3000 with a check comment when the port is not detected', () => {
+    const text = renderConfig(detected({ port: 3000, portSource: 'unknown', framework: null }));
+    const cfg = readRendered(text) as { target: { url: string } };
+    expect(cfg.target.url).toBe('http://localhost:3000');
+    const comment = text.split('\n').find((l) => l.startsWith('#') && l.includes('port not detected'));
+    expect(comment).toBeDefined();
+    expect(comment).toContain('check');
+  });
+
+  it.each([
+    ['missing', /not found|missing/],
+    ['unparseable', /could not be parsed/],
+    ['no-script', /no dev or start script/],
+    ['not-object', /not an object|not a JSON object/],
+  ] as const)('fallback %s: valid file, target commented out with a reason', (reason, pattern) => {
+    const text = renderConfig(fallback(reason));
+    const cfg = readRendered(text);
+    expect(cfg).not.toHaveProperty('target');
+    const lines = text.split('\n');
+    expect(lines).toContain('# target:');
+    expect(lines.some((l) => l.startsWith('#   start:'))).toBe(true);
+    expect(lines.some((l) => l.startsWith('#') && pattern.test(l))).toBe(true);
+  });
+});
