@@ -41,7 +41,9 @@ describe('packages/ce package manifest', () => {
   });
 
   it('keeps the ce bin pointing at dist/cli.js', () => {
-    expect(pkg.bin).toEqual({ ce: './dist/cli.js' });
+    // No "./" prefix: npm 11 publish rewrites "./dist/cli.js" to "dist/cli.js"
+    // and warns that the bin entry "was invalid and removed".
+    expect(pkg.bin).toEqual({ ce: 'dist/cli.js' });
   });
 
   it('builds with the lean build config', () => {

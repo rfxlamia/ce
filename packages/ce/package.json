@@ -22,7 +22,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "ce": "./dist/cli.js"
+    "ce": "dist/cli.js"
   },
   "files": [
     "dist"
