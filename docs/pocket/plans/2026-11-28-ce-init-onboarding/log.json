@@ -13,7 +13,7 @@
     {
       "order": 1,
       "file": "execution-plan/phase-1.md",
-      "status": "WAITING",
+      "status": "REVIEW",
       "tasks": [
         {
           "id": "T1",
@@ -44,6 +44,20 @@
           "depends": "T2",
           "file": "execution-plan/tasks/T4-next-steps-text-and-workflow-snippet.md",
           "done_sha": "4c33a4720d4376c383c979c3aa8d69864132870a"
+        }
+      ],
+      "corrections": [
+        {
+          "sha": "60ccbaf023b4c33db8a3ecca5a4dd14fc261c520",
+          "files": [
+            "packages/ce/src/init/detect.test.ts",
+            "packages/ce/src/init/detect.ts",
+            "packages/ce/src/init/next-steps.test.ts",
+            "packages/ce/src/init/next-steps.ts",
+            "packages/ce/src/init/template.test.ts",
+            "packages/ce/src/init/template.ts"
+          ],
+          "for_task": "T2"
         }
       ]
     },

@@ -1,0 +1,50 @@
+{
+  "phase_key": "phase-1",
+  "phase_file": "execution-plan/phase-1.md",
+  "timestamp": "2026-11-28T00:34:57Z",
+  "reviewer_mode": "read-only",
+  "findings": [
+    {
+      "id": "P1-F1",
+      "severity": "Important",
+      "tasks": ["T2", "T3"],
+      "file": "packages/ce/src/init/detect.ts",
+      "line": 145,
+      "summary": "A missing package.json and an unreadable one both produced reason 'missing', so ce.yml said 'package.json was not found' for a file that exists but could not be read. Spec A8 treats the two cases separately.",
+      "fix": "Add packageJsonUnreadable to DetectInput, an 'unreadable' fallback reason, and a FALLBACK_REASONS entry.",
+      "resolved_by": "60ccbaf023b4c33db8a3ecca5a4dd14fc261c520",
+      "resolution_note": "Resolved. DetectInput.packageJsonUnreadable makes detectProject return reason 'unreadable', and the template now writes 'package.json could not be read'. Carry-forward: T5 must set packageJsonUnreadable for non-ENOENT read errors (the controller will put this in the T5 packet)."
+    },
+    {
+      "id": "P1-F2",
+      "severity": "Minor",
+      "tasks": ["T4", "T3"],
+      "file": "packages/ce/src/init/next-steps.ts",
+      "line": 100,
+      "summary": "The fallback next step hardcoded 'ce.yml' and ignored configPath.",
+      "fix": "Interpolate basename(configPath).",
+      "resolved_by": "60ccbaf023b4c33db8a3ecca5a4dd14fc261c520",
+      "resolution_note": "Resolved. The step now uses basename(configPath), so the default case still contains the C1 text 'edit target in ce.yml'."
+    },
+    {
+      "id": "P1-F3",
+      "severity": "Minor",
+      "tasks": ["T2", "T3"],
+      "file": "packages/ce/src/init/template.ts",
+      "line": 24,
+      "summary": "DEFAULT_PORT was defined in both detect.ts and template.ts.",
+      "fix": "Export DEFAULT_PORT from detect.ts and import it in template.ts.",
+      "resolved_by": "60ccbaf023b4c33db8a3ecca5a4dd14fc261c520",
+      "resolution_note": "Resolved. detect.ts exports DEFAULT_PORT and template.ts imports it."
+    }
+  ],
+  "loop_info": {
+    "recovery_window": 1,
+    "current_cycle": 2,
+    "max_cycles": 2,
+    "cycles_remaining": 1,
+    "strategies": ["round 1: single correction commit 60ccbaf fixing P1-F1..F3"],
+    "prior_windows": []
+  },
+  "status": "PHASE_PASS_RESOLVED"
+}
