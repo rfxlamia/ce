@@ -183,6 +183,7 @@ describe('README Releasing runbook', () => {
 
   it('documents moving the v0 major tag to the release', () => {
     expect(releasing()).toContain('make move-major VERSION=X.Y.Z');
+    expect(releasing()).toContain('make gh-release VERSION=X.Y.Z');
     expect(releasing()).toContain('git tag -f -a v0');
     expect(releasing()).toContain('--force-with-lease=refs/tags/v0:');
   });

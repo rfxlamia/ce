@@ -272,7 +272,14 @@ Action users pin `rfxlamia/ce@v0`, so the `v0` major tag must also move (step 5)
    git push --force-with-lease=refs/tags/v0:<old v0 sha> origin refs/tags/v0
    ```
 
-6. Optionally, in the package settings on npmjs.com, select "Require 2FA and disallow tokens".
+6. Create the GitHub Release for the tag, with generated notes. Prereleases
+   are marked as prereleases and not as the latest release.
+
+   ```sh
+   make gh-release VERSION=X.Y.Z
+   ```
+
+7. Optionally, in the package settings on npmjs.com, select "Require 2FA and disallow tokens".
 
 Pushing a tag runs `.github/workflows/release.yml`. It publishes with OIDC trusted publishing, so the repository stores no npm token. Stable versions go to the `latest` dist-tag. Prerelease versions (for example `0.2.0-rc.1`) go to the `next` dist-tag.
 
