@@ -101,9 +101,10 @@
         {
           "id": "T9",
           "name": "Done-when verification (keyed live run and timing)",
-          "status": "WAITING",
+          "status": "DONE",
           "depends": "T6, T8",
-          "file": "execution-plan/tasks/T9-done-when-verification-keyed-live-run-and-timing.md"
+          "file": "execution-plan/tasks/T9-done-when-verification-keyed-live-run-and-timing.md",
+          "done_sha": "4b02781743f84d3b5b14b30f40f3b5dce6b863d8"
         }
       ]
     }

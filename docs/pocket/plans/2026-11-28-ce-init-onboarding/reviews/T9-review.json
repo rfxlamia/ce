@@ -1,0 +1,58 @@
+{
+  "task_id": "T9",
+  "task_name": "Done-when verification (keyed live run and timing)",
+  "cycle": 1,
+  "timestamp": "2026-11-28T01:08:43Z",
+  "reviewer_mode": "read-only",
+  "reviewer_config": "batch-parallel",
+  "stage_1": {
+    "status": "PASS",
+    "issues": [],
+    "concerns_addressed": [
+      "Chromium cache caveat: reported honestly as an estimate (cache hit, cold download not measured, 30-90 s spec estimate, 45-105 s derived). Total is 15 s, so the packet 'Uncertain when: total exceeds 2 minutes' condition is not triggered; the caveat is adequate.",
+      "Outcome EVIDENCED with 'final state not_reached after 2 steps': verified against run.json (outcome EVIDENCED, outcomeReason evidence-collected, finalState not_reached, 2 steps, error null, runtime.stopReason give_up). The doc quotes CLI output verbatim and does not misreport it.",
+      "Readiness on localhost:5173: target.log shows 'VITE v6.4.6 ready in 699 ms', Local http://localhost:5173/; steps executed against http://localhost:5173/. No listener left on 5173 (lsof empty).",
+      "ce.yml summary matches scratch ce.yml (version 0, vite comment, start npm run dev, url localhost:5173, ready.path /, commented optional sections).",
+      "Timings consistent with run.json timings.durationMs 10115 (doc says 11 s wall incl. process start); sum 3+1+<1+11 ~ 15 s.",
+      "Scope: diff touches only verification.md; no code changes; no .ce/ files tracked (git ls-files | grep .ce/ = 0); .ce/ is gitignored in scratch app; key string absent (controller confirmed)."
+    ]
+  },
+  "stage_2": {
+    "status": "PASS",
+    "strengths": [
+      "Honest separation of measured vs estimated time and explicit statement that cold download was not measured",
+      "Pre-step (15 s app npm i) disclosed rather than hidden",
+      "Evidence references (run.json error null, target.log) are verifiable and accurate",
+      "Key handling stated without leaking the key"
+    ],
+    "issues": [
+      {
+        "severity": "Minor",
+        "description": "Doc does not state that the agent stopped with stopReason give_up and that the 'Sign up' claim was therefore not confirmed reached; 'EVIDENCED' next to 'not_reached' could read as the claim being verified. The doc's wording is accurate to the CLI output but a one-line note that this is evidence-collected, not claim-confirmed, would prevent misreading in the PR body.",
+        "location": "docs/pocket/plans/2026-11-28-ce-init-onboarding/verification.md:29"
+      },
+      {
+        "severity": "Minor",
+        "description": "Total of 15 s excludes the 15 s app-own npm i; if 'fresh repo' is read to include it, total is ~30 s. Disclosed in the table, but the 'Total' row and line 21 do not say the pre-step is excluded.",
+        "location": "docs/pocket/plans/2026-11-28-ce-init-onboarding/verification.md:19"
+      },
+      {
+        "severity": "Minor",
+        "description": "Per-step times (3 s, 1 s, 11 s) have no retained timing log in scratch; only run.json durationMs (10.1 s) is independently verifiable. Also the doc does not record that explicit user approval was obtained for the key (packet step 1).",
+        "location": "docs/pocket/plans/2026-11-28-ce-init-onboarding/verification.md:12"
+      }
+    ],
+    "assessment": "Approved"
+  },
+  "overall": "REVIEW_PASS",
+  "fix_instructions": "",
+  "loop_info": {
+    "recovery_window": 1,
+    "current_cycle": 1,
+    "max_cycles": 2,
+    "cycles_remaining": 2,
+    "strategies": [],
+    "prior_windows": []
+  },
+  "reviewed_sha": "4b02781743f84d3b5b14b30f40f3b5dce6b863d8"
+}
