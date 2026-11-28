@@ -99649,13 +99649,16 @@ function planImages(input2) {
   let dropped = 0;
   let finalUrl;
   const thumbs = [];
+  let stepIndex = 0;
   result.imageUrls.forEach((url4, i) => {
+    const isFinal = result.finalIncluded && i === 0;
+    const k = isFinal ? 0 : result.stepNumbers[stepIndex++] ?? stepIndex;
     if (!valid(url4)) {
       dropped += 1;
-    } else if (i === 0) {
+    } else if (isFinal) {
       finalUrl = url4;
     } else {
-      thumbs.push({ k: i, url: url4 });
+      thumbs.push({ k, url: url4 });
     }
   });
   return { finalUrl, thumbs, baseMore: Math.max(0, result.skippedCount) + dropped, note: void 0 };
@@ -165042,7 +165045,9 @@ async function publish(options) {
         file: image2.publishedName
       })
     );
-    return { kind: "published", sha: localSha, imageUrls, skippedCount: capped.skippedCount };
+    const finalIncluded = images.some((image2) => image2.origin.kind === "final");
+    const stepNumbers = images.flatMap((image2) => image2.origin.kind === "step" ? [image2.origin.index + 1] : []);
+    return { kind: "published", sha: localSha, imageUrls, finalIncluded, stepNumbers, skippedCount: capped.skippedCount };
   } catch (error63) {
     if (error63 instanceof FallbackSignal) return fail(error63.reason);
     options.onGitError?.(error63);

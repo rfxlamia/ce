@@ -19,14 +19,35 @@ const url = (file: string, runId = 'run-1'): string =>
 const render = (publishResult?: PublishResult): string =>
   renderPrComment({ record, artifactLink: ARTIFACT, secrets: [], publishResult, ...base });
 
-const published = (imageUrls: string[], skippedCount = 0): PublishResult => ({
+const published = (imageUrls: string[], skippedCount = 0, finalIncluded = true, stepNumbers?: number[]): PublishResult => ({
   kind: 'published',
   sha: SHA,
   imageUrls,
+  finalIncluded,
+  stepNumbers: stepNumbers ?? Array.from({ length: imageUrls.length - (finalIncluded ? 1 : 0) }, (_, i) => i + 1),
   skippedCount,
 });
 
 const imgTags = (body: string): string[] => body.match(/<img [^>]*>/g) ?? [];
+
+describe('published without a final screenshot', () => {
+  it('renders no final line and labels every image as a step', () => {
+    const urls = [url('step-1.png'), url('step-3.png')];
+    const body = render(published(urls, 1, false, [2, 4]));
+    expect(body).not.toContain('Final screenshot');
+    expect(body).not.toContain('final screenshot');
+    expect(imgTags(body)).toEqual([
+      `<img src="${urls[0]}" alt="step 2 screenshot" width="160">`,
+      `<img src="${urls[1]}" alt="step 4 screenshot" width="160">`,
+    ]);
+    expect(body).toContain('(+1 more screenshots in the artifact)');
+  });
+
+  it('keeps the step label when a leading step URL fails re-validation', () => {
+    const body = render(published(['https://evil.example/x.png', url('step-1.png')], 0, false, [1, 2]));
+    expect(imgTags(body)).toEqual([`<img src="${url('step-1.png')}" alt="step 2 screenshot" width="160">`]);
+  });
+});
 
 describe('published', () => {
   it('shows the final screenshot inline between the rationale and the artifact link', () => {

@@ -242,7 +242,9 @@ export async function publish(options: PublishOptions): Promise<PublishResult> {
         file: image.publishedName,
       }),
     );
-    return { kind: 'published', sha: localSha, imageUrls, skippedCount: capped.skippedCount };
+    const finalIncluded = images.some((image) => image.origin.kind === 'final');
+    const stepNumbers = images.flatMap((image) => (image.origin.kind === 'step' ? [image.origin.index + 1] : []));
+    return { kind: 'published', sha: localSha, imageUrls, finalIncluded, stepNumbers, skippedCount: capped.skippedCount };
   } catch (error) {
     if (error instanceof FallbackSignal) return fail(error.reason);
     options.onGitError?.(error);

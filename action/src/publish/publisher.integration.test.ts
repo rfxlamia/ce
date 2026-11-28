@@ -322,9 +322,34 @@ describe('Publisher against a Fake_Remote', () => {
     if (result.kind !== 'published') return;
     expect(result.sha).toBe(remoteTip());
     expect(result.imageUrls).toHaveLength(3);
+    expect(result.finalIncluded).toBe(true);
+    expect(result.stepNumbers).toEqual([1, 2]);
     for (const url of result.imageUrls) {
       expect(url.startsWith(`${SERVER}/octo/demo/raw/${result.sha}/pr-7/run-a/`)).toBe(true);
     }
     expect(existsSync(join(tmpBase))).toBe(true);
+  });
+
+  it('reports finalIncluded false and step numbers when the final is over the byte cap', async () => {
+    const { record, listing } = makeRun();
+    const sized = listing.map((e) => (e.relativePath === 'final.png' ? { ...e, sizeBytes: 1000 } : { ...e, sizeBytes: 10 }));
+    const result = await publish(options(harness(), { record, listing: sized, byteCapBytes: 100 }));
+    expect(result.kind).toBe('published');
+    if (result.kind !== 'published') return;
+    expect(result.finalIncluded).toBe(false);
+    expect(result.imageUrls).toHaveLength(2);
+    expect(result.stepNumbers).toEqual([1, 2]);
+    expect(result.skippedCount).toBe(1);
+  });
+
+  it('reports finalIncluded false when the record has no final screenshot, and keeps late step numbers under the cap', async () => {
+    const { record, listing } = makeRun();
+    const noFinal = { ...record, finalImage: { screenshot: null } } as unknown as RunRecord;
+    const result = await publish(options(harness(), { record: noFinal, listing, imageCap: 1 }));
+    expect(result.kind).toBe('published');
+    if (result.kind !== 'published') return;
+    expect(result.finalIncluded).toBe(false);
+    expect(result.imageUrls).toHaveLength(1);
+    expect(result.stepNumbers).toEqual([2]);
   });
 });

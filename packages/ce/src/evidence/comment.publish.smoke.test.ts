@@ -19,6 +19,8 @@ describe('renderPrComment publishResult', () => {
       kind: 'published',
       sha: SHA,
       imageUrls: [url('step-2-final.png'), url('step-0.png'), url('step-1.png')],
+      finalIncluded: true,
+      stepNumbers: [1, 2],
       skippedCount: 2,
     });
     expect(body).toContain(`![final screenshot](${url('step-2-final.png')})`);
@@ -29,7 +31,7 @@ describe('renderPrComment publishResult', () => {
   });
 
   it('drops URLs that do not match the repository and counts them', () => {
-    const body = render({ kind: 'published', sha: SHA, imageUrls: [url('f.png'), 'https://evil.example/x.png'], skippedCount: 0 });
+    const body = render({ kind: 'published', sha: SHA, imageUrls: [url('f.png'), 'https://evil.example/x.png'], finalIncluded: true, stepNumbers: [1], skippedCount: 0 });
     expect(body).not.toContain('evil.example');
     expect(body).toContain('(+1 more screenshots in the artifact)');
   });

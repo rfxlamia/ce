@@ -387,7 +387,7 @@ Tests inject a fake `GitRunner` that records every `GitInvocation` (argv and env
 
 ```ts
 export type PublishResult =
-  | { kind: 'published'; sha: string; imageUrls: string[]; skippedCount: number }
+  | { kind: 'published'; sha: string; imageUrls: string[]; finalIncluded: boolean; stepNumbers: number[]; skippedCount: number }
   | { kind: 'fallback'; reason: FallbackReason }
   | { kind: 'not-attempted' };
 
@@ -419,7 +419,7 @@ The sequence inside `publish`, each step wrapped so a thrown error from any Git 
 5. Build the commit: an orphan root commit (no parent) when the branch did not exist, or a new commit on top of the fetched tip otherwise (Requirement 5.2) — author/email fixed (not read from any Git config), message `ce: evidence for PR #<n> (<run-id>)` with no Claim, diff, or secret text (Requirement 5.5). Copy each kept image to `pr-<n>/<run-id>/<published-name>.png`.
 6. Push with the credential env vars from `credentialEnv` and `fixedGitEnv()` merged in, argv carrying no token (Requirement 5.6). On a non-fast-forward rejection: fetch again, re-create the commit on the new tip (same tree, same message, new parent), push again; repeat up to 3 times after the first attempt (Requirement 5.7). After the 3rd retry still rejected → `{ kind: 'fallback', reason: 'push-conflict-exhausted' }` (Requirement 5.8). Any other rejection → `classifyGitError` → `token-lacks-write`, `push-blocked`, or `git-error`.
 7. On a successful push: `git ls-remote <remote-url> refs/heads/ce-evidence`, confirm the pushed commit's SHA is the tip (or reachable from it); on failure to confirm → `{ kind: 'fallback', reason: 'git-error' }` (Requirement 5.12). On success, that SHA is the Confirmed_SHA.
-8. Build one `buildImageUrl` per kept image from the Confirmed_SHA, `owner`/`repo`/`serverUrl`/`prNumber`/`runId`/published file name → `{ kind: 'published', sha, imageUrls, skippedCount }`.
+8. Build one `buildImageUrl` per kept image from the Confirmed_SHA, `owner`/`repo`/`serverUrl`/`prNumber`/`runId`/published file name → `{ kind: 'published', sha, imageUrls, finalIncluded, stepNumbers, skippedCount }`. `finalIncluded` is true when a final-origin image survived the caps, and `stepNumbers` holds the 1-based Step number of each step URL.
 
 `index.ts` calls `publish` only on `decidePrePublisher`'s `{ kind: 'proceed' }` result; every other decision (`not-attempted`, or a `fallback` reason already known without touching Git) is returned directly as the `PublishResult` without calling `publish` at all (Requirement 2.8, 2.9, 2.3, 10.1).
 
@@ -427,7 +427,7 @@ The sequence inside `publish`, each step wrapped so a thrown error from any Git 
 
 ```ts
 export type PublishResult =
-  | { kind: 'published'; sha: string; imageUrls: string[]; skippedCount: number }
+  | { kind: 'published'; sha: string; imageUrls: string[]; finalIncluded: boolean; stepNumbers: number[]; skippedCount: number }
   | { kind: 'fallback'; reason: FallbackReason }
   | { kind: 'not-attempted' };
 
@@ -447,7 +447,7 @@ export interface CommentInput {
 
 `renderPrComment`'s new behavior, inserted between the existing Rationale_Line and the existing Artifact_Link line:
 
-- `publishResult.kind === 'published'`: re-validate each `imageUrls[0]` (the final screenshot, always first per the Publisher's own ordering) with `parseImageUrl` against `repository`/`serverUrl`/`prNumber`; drop any URL that does not match. Render the surviving final-screenshot URL as an inline Markdown image. Render the remaining `imageUrls` (step thumbnails) inside one `<details><summary>...</summary>...</details>` block, each as an `<img src="..." alt="..." width="160">` with every attribute value HTML-escaped (`&`, `<`, `>`, `"`, `'`) and `alt` drawn only from the fixed vocabulary `final screenshot` / `step <k> screenshot` (Requirement 9.2, 9.4). If `skippedCount > 0` or a URL was dropped by re-validation, append `(+N more screenshots in the artifact)` after the `<details>` block (or after the final image when there is no `<details>` block), with `N` = `skippedCount` plus the dropped-URL count (Requirement 9.8).
+- `publishResult.kind === 'published'`: re-validate each of `imageUrls` (when `finalIncluded`, `imageUrls[0]` is the final screenshot; otherwise every URL is a step) with `parseImageUrl` against `repository`/`serverUrl`/`prNumber`; drop any URL that does not match. Render the surviving final-screenshot URL as an inline Markdown image. Render the remaining `imageUrls` (step thumbnails) inside one `<details><summary>...</summary>...</details>` block, each as an `<img src="..." alt="..." width="160">` with every attribute value HTML-escaped (`&`, `<`, `>`, `"`, `'`) and `alt` drawn only from the fixed vocabulary `final screenshot` / `step <k> screenshot`, where `k` comes from `stepNumbers` (Requirement 9.2, 9.4). When `finalIncluded` is false, no final line is rendered and every valid URL is a step thumbnail. If `skippedCount > 0` or a URL was dropped by re-validation, append `(+N more screenshots in the artifact)` after the `<details>` block (or after the final image when there is no `<details>` block), with `N` = `skippedCount` plus the dropped-URL count (Requirement 9.8).
 - `publishResult.kind === 'fallback'`: no image markup, no `<details>` block; append the fixed `fallbackNote(reason)` line; keep the Artifact_Link (Requirement 9.6).
 - `publishResult.kind === 'not-attempted'`: render exactly as the existing (pre-feature) renderer did — no image reference, no note (Requirement 9.11, 3.2).
 

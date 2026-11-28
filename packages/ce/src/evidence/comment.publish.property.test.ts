@@ -45,7 +45,17 @@ const publishResultArb: fc.Arbitrary<PublishResult> = fc.oneof(
       imageUrls: fc.array(fc.oneof(validUrlArb, hostileUrlArb), { maxLength: 8 }),
       skippedCount: fc.integer({ min: 0, max: 20 }),
     })
-    .map((r): PublishResult => ({ kind: 'published', sha: SHA, ...r })),
+    .chain((r) =>
+      fc.boolean().map(
+        (finalIncluded): PublishResult => ({
+          kind: 'published',
+          sha: SHA,
+          ...r,
+          finalIncluded,
+          stepNumbers: Array.from({ length: Math.max(0, r.imageUrls.length - (finalIncluded ? 1 : 0)) }, (_, i) => i + 1),
+        }),
+      ),
+    ),
 );
 
 const inputArb: fc.Arbitrary<CommentInput> = fc

@@ -66,8 +66,8 @@ describe('action.yml manifest', () => {
     expect(manifest.inputs?.['default-token']?.default).toBe('${{ github.token }}');
   });
 
-  it('declares publish with default none, and the two cap inputs (inline-screenshot Req 1.1, 8.2, 8.3)', () => {
-    expect(manifest.inputs?.publish?.default).toBe('none');
+  it('declares publish with an empty default (effective default none), and the two cap inputs (inline-screenshot Req 1.1, 8.2, 8.3)', () => {
+    expect(manifest.inputs?.publish?.default).toBe('');
     expect(inputNames).toContain('publish-max-images');
     expect(inputNames).toContain('publish-max-image-bytes');
   });

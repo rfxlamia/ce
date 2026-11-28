@@ -144,9 +144,9 @@ inputs:
     required: false
     default: ''
   publish:
-    description: 'Evidence publishing mode: none or branch.'
+    description: 'Evidence publishing mode: none or branch. Empty means none unless ce.yml sets publish (the effective default is none).'
     required: false
-    default: 'none'
+    default: ''
   publish-max-images:
     description: 'publish-max-images: maximum screenshots published per run.'
     required: false

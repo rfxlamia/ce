@@ -203,7 +203,7 @@ default applies. List inputs are split at `,`.
 | `comment` | `'true'` | Post the pull request comment. Set to `false` to skip it. |
 | `comment-author` | `'github-actions[bot]'` | Login of the account that owns the CE comment. |
 | `artifact-name` | `''` | Artifact name. Empty builds a unique name per invocation. |
-| `publish` | `'none'` | Evidence publishing mode: `none` or `branch`. The `ce.yml` key is `publish`. See [Publishing screenshots](#publishing-screenshots-publish-branch). |
+| `publish` | `''` (none) | Evidence publishing mode: `none` or `branch`. Empty defers to `ce.yml`, and the effective default is `none`. The `ce.yml` key is `publish`. See [Publishing screenshots](#publishing-screenshots-publish-branch). |
 | `publish-max-images` | `''` (6) | `publish-max-images`: most screenshots published per run (1 to 50). Empty means 6. |
 | `publish-max-image-bytes` | `''` (5242880) | `publish-max-image-bytes`: largest published screenshot in bytes (5 MiB by default, at most 20 MiB). |
 

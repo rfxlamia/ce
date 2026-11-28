@@ -23,7 +23,12 @@ export type PublishResult =
       kind: 'published';
       /** Confirmed_SHA of the Evidence_Commit; the only SHA used in Image_URLs. */
       sha: string;
+      /** The final screenshot first when `finalIncluded`, then step screenshots in Step order. */
       imageUrls: string[];
+      /** True when `imageUrls[0]` is the final screenshot (it survived selection and the caps). */
+      finalIncluded: boolean;
+      /** 1-based Step number of each step URL, parallel to `imageUrls` without the final. */
+      stepNumbers: number[];
       skippedCount: number;
     }
   | { kind: 'fallback'; reason: FallbackReason }

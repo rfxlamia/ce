@@ -26,7 +26,7 @@ The github-action-pr-comment spec deferred this feature (its D8) and fixed three
 
 | Issue item | Requirements |
 | --- | --- |
-| Input `publish: none \| branch`, default `none`, mirrored in `ce.yml` | 1 |
+| Input `publish: none \| branch`, effective default `none` (empty input), mirrored in `ce.yml` | 1 |
 | Copy final screenshot and steps referenced by claims to orphan branch `ce-evidence` at `pr-<n>/<run-id>/`, commit, push | 3, 4, 5, 8 |
 | Image URLs from the evidence commit SHA, immutable (private-repo render check: DEFERRED to a tracked follow-up, D13) | 6, 15 |
 | Upsert `<!-- ce:report -->` with the final screenshot inline and step thumbnails in `<details>` | 9 |
@@ -118,7 +118,7 @@ The github-action-pr-comment spec deferred this feature (its D8) and fixed three
 
 #### Acceptance Criteria
 
-1. THE Action_Manifest SHALL declare the input `publish` with the default `none`, accepting `none` and `branch`.
+1. THE Action_Manifest SHALL declare the input `publish` with an empty default (the effective default is `none`, so `ce.yml` can enable `branch`), accepting `none` and `branch`.
 2. THE ConfigSchema SHALL accept an optional top-level key `publish` with the values `none` and `branch`, THE Action SHALL map the input `publish` to `CE_PUBLISH`, and THE Action SHALL read the effective Publish_Mode through the config loader with the precedence input and environment, then `ce.yml`, then `none` (no flag exists for this key).
 3. THE Action_Manifest SHALL declare the input `token` with the default empty string, SHALL declare the input `github-token` with the default empty string, and SHALL declare the internal input `default-token` with the default `${{ github.token }}` (D7).
 4. THE Action SHALL resolve the Run_Token in this order: the input `token` WHEN it is non-empty, otherwise the input `github-token` WHEN it is non-empty, otherwise the input `default-token`. A workflow that sets only `github-token: ${{ secrets.APP_TOKEN }}` SHALL therefore use that value.

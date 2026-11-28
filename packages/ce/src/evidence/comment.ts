@@ -186,7 +186,8 @@ interface ImagePlan {
 /**
  * Plans the image section. Image_URLs are accepted only when they match the
  * canonical URL for this repository and PR (Requirement 9.5); the first URL of
- * a `published` result is the final screenshot, the rest are steps in order.
+ * a `published` result is the final screenshot only when `finalIncluded`; the
+ * other URLs are steps, labeled by `stepNumbers`.
  */
 function planImages(input: CommentInput): ImagePlan {
   const result = input.publishResult ?? { kind: 'not-attempted' as const };
@@ -205,13 +206,16 @@ function planImages(input: CommentInput): ImagePlan {
   let dropped = 0;
   let finalUrl: string | undefined;
   const thumbs: { k: number; url: string }[] = [];
+  let stepIndex = 0;
   result.imageUrls.forEach((url, i) => {
+    const isFinal = result.finalIncluded && i === 0;
+    const k = isFinal ? 0 : (result.stepNumbers[stepIndex++] ?? stepIndex);
     if (!valid(url)) {
       dropped += 1;
-    } else if (i === 0) {
+    } else if (isFinal) {
       finalUrl = url;
     } else {
-      thumbs.push({ k: i, url });
+      thumbs.push({ k, url });
     }
   });
   return { finalUrl, thumbs, baseMore: Math.max(0, result.skippedCount) + dropped, note: undefined };

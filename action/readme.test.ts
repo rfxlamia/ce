@@ -124,7 +124,7 @@ describe('README publish: branch (Req 14)', () => {
   });
 
   it('lists the publish and token inputs with defaults in the inputs table (Req 14.2)', () => {
-    expect(readme).toMatch(/^\| `publish` \| `'none'` \|/m);
+    expect(readme).toMatch(/^\| `publish` \| `''` \(none\) \|/m);
     expect(readme).toMatch(/^\| `publish-max-images` \| `''` \(6\) \|/m);
     expect(readme).toMatch(/^\| `publish-max-image-bytes` \| `''` \(5242880\) \|/m);
     expect(readme).toMatch(/^\| `token` \| `''` \|/m);
