@@ -35,8 +35,8 @@ describe('packages/ce package manifest', () => {
     expect((pkg.keywords as unknown[]).length).toBeGreaterThan(0);
   });
 
-  it('keeps version 0.1.0 and ships only dist', () => {
-    expect(pkg.version).toBe('0.1.0');
+  // The version itself is checked against VERSION by version.staleness.test.ts.
+  it('ships only dist', () => {
     expect(pkg.files).toEqual(['dist']);
   });
 

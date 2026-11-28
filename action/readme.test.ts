@@ -173,6 +173,8 @@ describe('README Releasing runbook', () => {
   it('documents the vX.Y.Z tag matching packages/ce/package.json', () => {
     expect(releasing()).toContain('vX.Y.Z');
     expect(releasing()).toContain('packages/ce/package.json');
+    expect(releasing()).toContain('make bump VERSION=X.Y.Z');
+    expect(releasing()).toContain('make tag VERSION=X.Y.Z');
   });
 
   it('states that one tag releases the Action and npm together', () => {
@@ -180,8 +182,9 @@ describe('README Releasing runbook', () => {
   });
 
   it('documents moving the v0 major tag to the release', () => {
-    expect(releasing()).toContain('git tag -f v0');
-    expect(releasing()).toContain('git push -f origin v0');
+    expect(releasing()).toContain('make move-major VERSION=X.Y.Z');
+    expect(releasing()).toContain('git tag -f -a v0');
+    expect(releasing()).toContain('--force-with-lease=refs/tags/v0:');
   });
 
   it('documents prerelease versions on the next dist-tag', () => {
