@@ -25,6 +25,12 @@ dist/
 .agents/
 skills-lock.json
 agent/
+.codex/
+.github/skills/
+.github/hooks/
+.github/agents/
+.kiro/skills/
+
 # Understand-Anything knowledge graph (local)
 .ua/
 # Vitest output
