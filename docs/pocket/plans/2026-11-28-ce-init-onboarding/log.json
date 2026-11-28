@@ -64,7 +64,7 @@
     {
       "order": 2,
       "file": "execution-plan/phase-2.md",
-      "status": "WAITING",
+      "status": "REVIEW",
       "tasks": [
         {
           "id": "T5",
@@ -105,6 +105,23 @@
           "depends": "T6, T8",
           "file": "execution-plan/tasks/T9-done-when-verification-keyed-live-run-and-timing.md",
           "done_sha": "4b02781743f84d3b5b14b30f40f3b5dce6b863d8"
+        }
+      ],
+      "corrections": [
+        {
+          "sha": "b3f63fb1044b999b7a3e0dfb6671f0bc1c265606",
+          "files": [
+            "action/dist/ce-cli.js"
+          ],
+          "for_task": "T5"
+        },
+        {
+          "sha": "a1dc69d2f9b3e8a236a0afa5a6c11541558fc262",
+          "files": [
+            "README.md",
+            "action/readme.test.ts"
+          ],
+          "for_task": "T8"
         }
       ]
     }

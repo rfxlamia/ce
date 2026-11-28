@@ -1,0 +1,71 @@
+{
+  "phase_key": "phase-2",
+  "phase_file": "execution-plan/phase-2.md",
+  "timestamp": "2026-11-28T01:19:33Z",
+  "reviewer_mode": "read-only",
+  "findings": [
+    {
+      "id": "P2-F1",
+      "severity": "Important",
+      "tasks": [
+        "T5",
+        "T6",
+        "T7"
+      ],
+      "file": "action/dist/ce-cli.js",
+      "line": 1,
+      "summary": "Cross-file regression T5 -> action bundle. T5 changed packages/ce/src/cli.ts (848a733: import runInitCommand, route 'init'), which scripts/build-action.mjs bundles as the 'ce-cli' entry (scripts/build-action.mjs:103), but action/dist/ce-cli.js was not regenerated. A fresh rebuild differs from the committed file: it includes the init module, and esbuild renames colliding identifiers (yaml's local `header` becomes `header2` because template.ts declares `header`), 523 changed lines in total. As a result, action/bundle.test.ts 'equals a fresh rebuild (Requirement 2.5)' fails, root `npm test` exits 1, the ci.yml verify job (all 3 Node versions) fails on the PR, and release.yml step 'Test' (line 65-66, `npm test`) would fail before Build/Smoke/Publish, so the T7 release workflow cannot publish from this tree. Spec architecture constraint says the action/ bundle behaviour must not change. Adding an `init` subcommand to the bundled CLI is additive, but the committed bundle must still match its source.",
+      "fix": "Run `npm run build:action` from the repo root and commit only the regenerated action/dist/ce-cli.js (plus any other action/dist file the build changes). Then confirm `cd action && npx vitest run bundle.test.ts` and root `npm test` both exit 0. Record the commit as a --correction for T5.",
+      "resolved_by": "b3f63fb1044b999b7a3e0dfb6671f0bc1c265606",
+      "resolution_note": "action/dist/ce-cli.js regenerated (only file touched by b3f63fb). action/bundle.test.ts \"equals a fresh rebuild\" now passes; root npm test exits 0 (20 files, 163 tests); node scripts/smoke-pack.mjs prints SMOKE OK, so the release.yml Test/Build/Smoke path is unblocked."
+    },
+    {
+      "id": "P2-F2",
+      "severity": "Minor",
+      "tasks": [
+        "T7",
+        "T8"
+      ],
+      "file": "README.md",
+      "line": 235,
+      "summary": "The Releasing runbook says 'Pushing one tag releases the GitHub Action and the npm package together'. release.yml (T7) only publishes npm. The Action is released only in the sense that the new `vX.Y.Z` git ref exists. Users who follow the README and next-steps snippet (`uses: rfxlamia/ce@v0`) get no new Action code until the floating `v0` tag is moved, and no workflow or document in the repo says to move it.",
+      "fix": "Optional: add a runbook sentence such as 'then move the floating v0 tag to the release commit (git tag -f v0 vX.Y.Z && git push -f origin v0)', or soften the claim to 'the same tag versions both'. This does not block the phase.",
+      "resolved_by": "a1dc69d2f9b3e8a236a0afa5a6c11541558fc262",
+      "resolution_note": "README Releasing adds step 5 (git tag -f v0 vX.Y.Z && git push -f origin v0) plus a sentence that v0 must move; optional 2FA step renumbered to 6 with no stale step references elsewhere. action/readme.test.ts asserts both commands. Pushing v0 does not trigger release.yml (tag filter v[0-9]+.[0-9]+.[0-9]+*), so the step does not conflict with the T7 workflow."
+    },
+    {
+      "id": "P2-F3",
+      "severity": "Minor",
+      "tasks": [
+        "T9"
+      ],
+      "file": "docs/pocket/plans/2026-11-28-ce-init-onboarding/verification.md",
+      "line": 24,
+      "summary": "The issue #13 'Done when' check (under 2 minutes) was measured at 15 s with a warm Chromium cache. The cold-download cost (about 30-90 s) is an estimate, not a measurement. verification.md says this openly, and the estimate still fits the budget.",
+      "fix": "none required"
+    },
+    {
+      "id": "P2-F4",
+      "severity": "Minor",
+      "tasks": [
+        "T7",
+        "T8"
+      ],
+      "file": "README.md",
+      "line": 253,
+      "summary": "Releasing step 5 moves v0 right after step 4 pushes vX.Y.Z. It does not say to wait for the release workflow to succeed first, or to skip moving v0 for prerelease tags (e.g. v0.2.0-rc.1, which release.yml publishes to the npm next dist-tag). The intro line 'Pushing one tag releases the GitHub Action and the npm package together' also sits a little awkwardly next to the new sentence that a second tag must move.",
+      "fix": "none required"
+    }
+  ],
+  "loop_info": {
+    "recovery_window": 1,
+    "current_cycle": 2,
+    "max_cycles": 2,
+    "cycles_remaining": 1,
+    "strategies": [
+      "round 1: two correction commits b3f63fb (bundle rebuild, T5) and a1dc69d (README v0 step, T8)"
+    ],
+    "prior_windows": []
+  },
+  "status": "PHASE_PASS_RESOLVED"
+}
