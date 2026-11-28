@@ -8,11 +8,12 @@
     "state": {
       "approval": "APPROVED",
       "phase_status": {
-        "phase-1": "COMPLETE"
+        "phase-1": "COMPLETE",
+        "phase-2": "COMPLETE"
       },
       "status": "IN_PROGRESS"
     },
-    "revision": 2
+    "revision": 3
   },
   "events": [
     {
@@ -54,6 +55,29 @@
         }
       ],
       "payload_hash": "00bf3ac7cd2e8d80fd8ecd6f5b07b14c3b14261229688ccb6240ab286ddbfb55",
+      "proof_ref": null,
+      "proof_hash": null,
+      "delivery": {
+        "status": "pending",
+        "attempts": 0
+      }
+    },
+    {
+      "event_id": "2026-11-28-ce-init-onboarding:phase-complete:r3",
+      "plan_id": "2026-11-28-ce-init-onboarding",
+      "type": "phase-complete",
+      "revision": 3,
+      "occurred_at": "2026-11-28T01:20:21.657Z",
+      "artifact_refs": [
+        {
+          "root": "plan",
+          "kind": "phase-evidence",
+          "path": "execution-plan/phase-2.md",
+          "sha256": "9221b10b04862633b69fe996a0f085dae4bf08d0490a520051f1d02dccb91d35",
+          "revision": 1
+        }
+      ],
+      "payload_hash": "9885c157eebfead88122fd0cf29ecfac0fd9bfc4e91da3712a6a8c1bc7334739",
       "proof_ref": null,
       "proof_hash": null,
       "delivery": {
