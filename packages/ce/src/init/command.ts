@@ -42,6 +42,22 @@ const defaultFs: InitFs = {
   unlink: (p) => nodeFs.unlinkSync(p),
 };
 
+const USAGE = `Usage: ce init [--force]
+
+Options:
+  --force   Overwrite an existing ce.yml (or .ce.yml)
+`;
+
+/** Returns null for an unknown flag or any positional argument. */
+function parseInitArgs(argv: readonly string[]): { force: boolean } | null {
+  let force = false;
+  for (const arg of argv) {
+    if (arg !== '--force') return null;
+    force = true;
+  }
+  return { force };
+}
+
 function errorCode(error: unknown): string {
   const code = (error as { code?: unknown } | null)?.code;
   return typeof code === 'string' ? code : 'UNKNOWN';
@@ -100,7 +116,13 @@ function firstExistingConfig(fs: InitFs, cwd: string): string | null {
 export async function runInitCommand(argv: readonly string[], deps: InitCommandDeps): Promise<number> {
   const { cwd, env, stdout, stderr } = deps;
   const fs = deps.fs ?? defaultFs;
-  const force = argv.includes('--force');
+
+  const args = parseInitArgs(argv);
+  if (args === null) {
+    stderr.write(USAGE);
+    return 1;
+  }
+  const { force } = args;
 
   if (!force) {
     const existing = firstExistingConfig(fs, cwd);
@@ -110,11 +132,30 @@ export async function runInitCommand(argv: readonly string[], deps: InitCommandD
     }
   }
 
-  const packageJsonText = fs.readFile(join(cwd, 'package.json'), 'utf8');
-  const entries = new Set(fs.readdir(cwd));
+  const notes: string[] = [];
+  let packageJsonText: string | null = null;
+  let packageJsonUnreadable = false;
+  try {
+    packageJsonText = fs.readFile(join(cwd, 'package.json'), 'utf8');
+  } catch (error) {
+    const code = errorCode(error);
+    if (code !== 'ENOENT') {
+      packageJsonUnreadable = true;
+      notes.push(`package.json could not be read (${code})\n`);
+    }
+  }
+  let entries = new Set<string>();
+  try {
+    entries = new Set(fs.readdir(cwd));
+  } catch {
+    // Lockfile detection is best effort.
+  }
   const files = new Set(LOCKFILES.filter((f) => entries.has(f)));
 
-  const detection = detectProject({ packageJsonText, files });
+  const detection = detectProject({ packageJsonText, packageJsonUnreadable, files });
+  if (detection.status === 'fallback' && detection.reason === 'unparseable') {
+    notes.push('package.json could not be parsed\n');
+  }
   const text = renderConfig(detection);
 
   let name = 'ce.yml';
@@ -133,6 +174,7 @@ export async function runInitCommand(argv: readonly string[], deps: InitCommandD
     return 1;
   }
 
+  for (const note of notes) stderr.write(note);
   stdout.write(renderNextSteps({ detection, configPath: name, env }));
   return 0;
 }

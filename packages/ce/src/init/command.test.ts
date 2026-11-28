@@ -246,3 +246,56 @@ describe('runInitCommand force', () => {
     expect(r.out).toBe('');
   });
 });
+
+describe('runInitCommand argv and fallbacks', () => {
+  it('prints usage and writes nothing for an unknown flag', async () => {
+    write('package.json', VITE_PKG);
+    const r = await init(['--bogus']);
+    expect(r.code).toBe(1);
+    expect(r.err).toContain('Usage: ce init [--force]');
+    expect(r.out).toBe('');
+    expect(entries()).toEqual(['package.json']);
+  });
+
+  it('prints usage and writes nothing for a positional argument', async () => {
+    write('package.json', VITE_PKG);
+    const r = await init(['foo']);
+    expect(r.code).toBe(1);
+    expect(r.err).toContain('Usage: ce init [--force]');
+    expect(entries()).toEqual(['package.json']);
+  });
+
+  it('writes the fallback template in an empty directory', async () => {
+    const r = await init([]);
+    expect(r.code).toBe(0);
+    expect(read('ce.yml')).toContain('# Target not detected');
+    expect(r.out).toContain('Please edit target in ce.yml');
+    expect(r.err).toBe('');
+  });
+
+  it('notes an unparseable package.json and still writes the template', async () => {
+    write('package.json', '{ not json');
+    const r = await init([]);
+    expect(r.code).toBe(0);
+    expect(r.err).toContain('package.json could not be parsed');
+    expect(r.out).toContain('Next steps:');
+    expect(exists('ce.yml')).toBe(true);
+  });
+
+  it('notes an unreadable package.json (a directory) and still writes the template', async () => {
+    realFs.mkdirSync(path.join(cwd, 'package.json'));
+    const r = await init([]);
+    expect(r.code).toBe(0);
+    expect(r.err).toContain('package.json could not be read (EISDIR)');
+    expect(read('ce.yml')).toContain('package.json could not be read');
+    expect(r.out).toContain('Please edit target in ce.yml');
+  });
+
+  it('never prints the API key value', async () => {
+    write('package.json', VITE_PKG);
+    const r = await init([], { OPENROUTER_API_KEY: 'sk-test-123' });
+    expect(r.code).toBe(0);
+    expect(r.out).toContain('already set');
+    expect(r.out + r.err).not.toContain('sk-test-123');
+  });
+});
