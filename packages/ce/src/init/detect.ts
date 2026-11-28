@@ -105,32 +105,58 @@ function detectFramework(script: string, depNames: ReadonlySet<string>): Framewo
   );
 }
 
+const PM_NAMES: readonly PackageManager[] = ['npm', 'pnpm', 'yarn', 'bun'];
+
+function usableScript(value: unknown): value is string {
+  return typeof value === 'string' && value.trim() !== '';
+}
+
+function packageManagerField(value: unknown): { pm: PackageManager; pmMajor: number | null } | null {
+  if (typeof value !== 'string') return null;
+  const m = /^([a-z]+)(?:@(.*))?$/.exec(value);
+  const name = PM_NAMES.find((n) => n === m?.[1]);
+  if (!name) return null;
+  const major = /^(\d+)/.exec(m?.[2] ?? '');
+  return { pm: name, pmMajor: major ? Number(major[1]) : null };
+}
+
+function pmFromLockfiles(files: ReadonlySet<string>): PackageManager {
+  if (files.has('pnpm-lock.yaml')) return 'pnpm';
+  if (files.has('yarn.lock')) return 'yarn';
+  if (files.has('bun.lock') || files.has('bun.lockb')) return 'bun';
+  return 'npm';
+}
+
+const LOCKFILES = ['pnpm-lock.yaml', 'yarn.lock', 'bun.lock', 'bun.lockb', 'package-lock.json'];
+
 export function detectProject(input: DetectInput): Detection {
   const pkg = JSON.parse(input.packageJsonText ?? '{}') as Record<string, unknown>;
-  const scripts = pkg.scripts as Record<string, string>;
-  const scriptText = scripts.dev!;
-  const depNames = new Set([
-    ...Object.keys(isRecord(pkg.dependencies) ? pkg.dependencies : {}),
-    ...Object.keys(isRecord(pkg.devDependencies) ? pkg.devDependencies : {}),
-  ]);
+  const scripts = (isRecord(pkg.scripts) ? pkg.scripts : {}) as Record<string, unknown>;
+  const dev = scripts.dev;
+  const start = scripts.start;
+  const script: 'dev' | 'start' = usableScript(dev) ? 'dev' : 'start';
+  const scriptText = (usableScript(dev) ? dev : start) as string;
+
+  const deps = isRecord(pkg.dependencies) ? pkg.dependencies : {};
+  const devDeps = isRecord(pkg.devDependencies) ? pkg.devDependencies : {};
+  const depNames = new Set([...Object.keys(deps), ...Object.keys(devDeps)]);
+
   const explicit = explicitPort(scriptText);
   const fw = detectFramework(scriptText, depNames);
   const port = explicit ?? fw?.port ?? DEFAULT_PORT;
   const portSource = explicit !== null ? 'explicit' : fw ? 'framework' : 'unknown';
-  const hasLockfile = ['pnpm-lock.yaml', 'yarn.lock', 'bun.lock', 'bun.lockb', 'package-lock.json'].some((f) =>
-    input.files.has(f),
-  );
-  const pm: PackageManager = input.files.has('pnpm-lock.yaml') ? 'pnpm' : 'npm';
+  const declared = packageManagerField(pkg.packageManager);
+
   return {
     status: 'detected',
-    pm,
-    pmMajor: null,
-    script: 'dev',
+    pm: declared?.pm ?? pmFromLockfiles(input.files),
+    pmMajor: declared?.pmMajor ?? null,
+    script,
     port,
     portSource,
     framework: fw?.name ?? null,
-    hasLockfile,
-    ceInstalled: false,
+    hasLockfile: LOCKFILES.some((f) => input.files.has(f)),
+    ceInstalled: depNames.has('continuous-evidence'),
     scriptText,
   };
 }

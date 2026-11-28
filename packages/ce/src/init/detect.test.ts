@@ -94,3 +94,83 @@ describe('detectProject: explicit ports and earliest-match rule', () => {
     });
   });
 });
+
+describe('detectProject: selection of script and package manager', () => {
+  it('falls back to start when only start exists', () => {
+    expect(detect({ scripts: { start: 'react-scripts start' } })).toMatchObject({
+      script: 'start',
+      port: 3000,
+      framework: 'react-scripts',
+      scriptText: 'react-scripts start',
+    });
+  });
+
+  it('treats whitespace-only dev as absent', () => {
+    expect(detect({ scripts: { dev: '  ', start: 'vite' } })).toMatchObject({ script: 'start', scriptText: 'vite' });
+  });
+
+  it('treats non-string dev as absent', () => {
+    expect(detect({ scripts: { dev: 5, start: 'vite' } })).toMatchObject({ script: 'start' });
+  });
+
+  it('prefers dev over start', () => {
+    expect(detect({ scripts: { dev: 'vite', start: 'node a.js' } })).toMatchObject({ script: 'dev' });
+  });
+
+  it('reports unknown port for a plain node server', () => {
+    expect(detect({ scripts: { dev: 'node server.js' } })).toMatchObject({
+      port: 3000,
+      portSource: 'unknown',
+      framework: null,
+    });
+  });
+
+  it('packageManager field wins over lockfile and yields pmMajor', () => {
+    expect(detect({ scripts: { dev: 'vite' }, packageManager: 'yarn@4.1.0' }, ['package-lock.json'])).toMatchObject({
+      pm: 'yarn',
+      pmMajor: 4,
+      hasLockfile: true,
+    });
+  });
+
+  it('packageManager without a version gives null pmMajor; unknown prefix is ignored', () => {
+    expect(detect({ scripts: { dev: 'vite' }, packageManager: 'pnpm' })).toMatchObject({ pm: 'pnpm', pmMajor: null });
+    expect(detect({ scripts: { dev: 'vite' }, packageManager: 'deno@2.0.0' }, ['yarn.lock'])).toMatchObject({
+      pm: 'yarn',
+      pmMajor: null,
+    });
+  });
+
+  it('ignores a non-string packageManager', () => {
+    expect(detect({ scripts: { dev: 'vite' }, packageManager: 42 }, ['pnpm-lock.yaml'])).toMatchObject({ pm: 'pnpm' });
+  });
+
+  it.each([
+    [['yarn.lock'], 'yarn', true],
+    [['bun.lock'], 'bun', true],
+    [['bun.lockb'], 'bun', true],
+    [['package-lock.json'], 'npm', true],
+    [[], 'npm', false],
+    [['yarn.lock', 'pnpm-lock.yaml'], 'pnpm', true],
+    [['bun.lock', 'yarn.lock'], 'yarn', true],
+  ] as const)('lockfiles %j give pm %s (hasLockfile %s)', (files, pm, hasLockfile) => {
+    expect(detect({ scripts: { dev: 'vite' } }, [...files])).toMatchObject({ pm, pmMajor: null, hasLockfile });
+  });
+
+  it('detects continuous-evidence in devDependencies or dependencies', () => {
+    expect(detect({ scripts: { dev: 'vite' }, devDependencies: { 'continuous-evidence': '^0.1.0' } })).toMatchObject({
+      ceInstalled: true,
+    });
+    expect(detect({ scripts: { dev: 'vite' }, dependencies: { 'continuous-evidence': '^0.1.0' } })).toMatchObject({
+      ceInstalled: true,
+    });
+  });
+
+  it('treats non-object dependencies as empty without throwing', () => {
+    expect(detect({ scripts: { dev: 'vite' }, dependencies: 'x', devDependencies: ['vite'] })).toMatchObject({
+      status: 'detected',
+      ceInstalled: false,
+      framework: 'vite',
+    });
+  });
+});
