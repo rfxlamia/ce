@@ -83,6 +83,7 @@ describe('renderConfig unknown port and fallback', () => {
   it.each([
     ['missing', /not found|missing/],
     ['unparseable', /could not be parsed/],
+    ['unreadable', /could not be read/],
     ['no-script', /no dev or start script/],
     ['not-object', /not an object|not a JSON object/],
   ] as const)('fallback %s: valid file, target commented out with a reason', (reason, pattern) => {

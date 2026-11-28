@@ -6,6 +6,8 @@ export type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'bun';
 export interface DetectInput {
   /** Raw package.json text, or null when it is missing or unreadable. */
   packageJsonText: string | null;
+  /** With a null text: true when the file exists but could not be read (not ENOENT). */
+  packageJsonUnreadable?: boolean;
   /** Entry names in the cwd that matter (lockfiles). */
   files: ReadonlySet<string>;
 }
@@ -26,14 +28,14 @@ export type Detection =
     }
   | {
       status: 'fallback';
-      reason: 'missing' | 'unparseable' | 'not-object' | 'no-script';
+      reason: 'missing' | 'unreadable' | 'unparseable' | 'not-object' | 'no-script';
       pm: PackageManager;
       pmMajor: number | null;
       hasLockfile: boolean;
       ceInstalled: boolean;
     };
 
-const DEFAULT_PORT = 3000;
+export const DEFAULT_PORT = 3000;
 
 interface FrameworkEntry {
   name: string;
@@ -142,7 +144,9 @@ export function detectProject(input: DetectInput): Detection {
   const hasLockfile = LOCKFILES.some((f) => input.files.has(f));
   const bare = { pm: lockfilePm, pmMajor: null, hasLockfile, ceInstalled: false } as const;
 
-  if (input.packageJsonText === null) return { status: 'fallback', reason: 'missing', ...bare };
+  if (input.packageJsonText === null) {
+    return { status: 'fallback', reason: input.packageJsonUnreadable === true ? 'unreadable' : 'missing', ...bare };
+  }
   const parsed = parseJson(input.packageJsonText);
   if (!parsed.ok) return { status: 'fallback', reason: 'unparseable', ...bare };
   const pkg = parsed.value;

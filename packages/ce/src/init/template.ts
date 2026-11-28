@@ -3,7 +3,7 @@
 // Raw script text may only appear inside a sanitised single-line comment.
 
 import { ConfigDefaults } from '../config/defaults.js';
-import type { Detection } from './detect.js';
+import { DEFAULT_PORT, type Detection } from './detect.js';
 
 type Detected = Extract<Detection, { status: 'detected' }>;
 
@@ -21,7 +21,6 @@ function header(): string[] {
   ];
 }
 
-const DEFAULT_PORT = 3000;
 /** Maximum length of a generated comment's text after the leading "# ". */
 const COMMENT_TEXT_MAX = 120;
 
@@ -52,6 +51,7 @@ function detectedHint(d: Detected): string {
 
 const FALLBACK_REASONS: Record<Extract<Detection, { status: 'fallback' }>['reason'], string> = {
   missing: 'package.json was not found',
+  unreadable: 'package.json could not be read',
   unparseable: 'package.json could not be parsed',
   'not-object': 'package.json is not an object',
   'no-script': 'package.json has no dev or start script',

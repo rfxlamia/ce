@@ -201,6 +201,18 @@ describe('detectProject: fallback cases and BOM', () => {
     });
   });
 
+  it('reports unreadable only when the caller flags it', () => {
+    expect(detectProject({ packageJsonText: null, packageJsonUnreadable: true, files })).toMatchObject({
+      status: 'fallback',
+      reason: 'unreadable',
+      pm: 'yarn',
+    });
+    expect(detectProject({ packageJsonText: null, packageJsonUnreadable: false, files })).toMatchObject({
+      reason: 'missing',
+    });
+    expect(detectProject({ packageJsonText: null, files })).toMatchObject({ reason: 'missing' });
+  });
+
   it('keeps pm and ceInstalled information in the fallback', () => {
     const d = detect({ packageManager: 'pnpm@9.1.0', devDependencies: { 'continuous-evidence': '^0.1.0' } });
     expect(d).toMatchObject({ status: 'fallback', reason: 'no-script', pm: 'pnpm', pmMajor: 9, ceInstalled: true });

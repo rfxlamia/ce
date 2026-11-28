@@ -1,6 +1,7 @@
 // Onboarding text printed after `ce init` writes ce.yml.
 // Pure renderer: reads only the passed env object, never echoes a value from it.
 
+import { basename } from 'node:path';
 import type { Detection } from './detect.js';
 
 export interface NextStepsInput {
@@ -96,7 +97,7 @@ export function renderNextSteps(input: NextStepsInput): string {
   const { detection } = input;
   const steps: string[][] = [];
   if (detection.status === 'fallback') {
-    steps.push(['Please edit target in ce.yml: we could not detect how to start your app.']);
+    steps.push([`Please edit target in ${basename(input.configPath)}: we could not detect how to start your app.`]);
   }
   const keyIsSet = (input.env.OPENROUTER_API_KEY ?? '') !== '';
   steps.push([

@@ -228,6 +228,11 @@ describe('not installed', () => {
     expect(edit).toBeGreaterThan(out.indexOf('/work/ce.yml'));
     expect(edit).toBeLessThan(out.indexOf('OPENROUTER_API_KEY'));
   });
+
+  it('names the actual config file in the edit-target step', () => {
+    expect(render(fallback(), {}, '/work/.ce.yml')).toContain('edit target in .ce.yml');
+    expect(render(fallback())).toContain('edit target in ce.yml');
+  });
 });
 
 describe('key never echoed', () => {
