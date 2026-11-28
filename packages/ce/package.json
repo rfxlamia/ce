@@ -1,6 +1,6 @@
 {
   "name": "continuous-evidence",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Continuous Evidence core and CLI (v0 implementation spike). See SPEC.md at the repository root.",
   "keywords": [
     "verification",

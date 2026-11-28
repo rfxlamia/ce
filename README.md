@@ -245,17 +245,31 @@ Action users pin `rfxlamia/ce@v0`, so the `v0` major tag must also move (step 5)
 
 3. On npmjs.com, add a trusted publisher to the package: publisher GitHub
    Actions, repository `rfxlamia/ce`, workflow filename `release.yml`.
-4. Set the version in `packages/ce/package.json` to the next release, merge
-   it, and push the semver tag `vX.Y.Z` that matches it (for example
-   `v0.1.1`). Push the tag soon after step 3, because a trusted publisher
-   configuration may expire if it goes unused. The release workflow fails
-   when the tag and the package version differ.
-5. Move the `v0` major tag to the same release so `rfxlamia/ce@v0` users get
-   it:
+4. Bump the version, open a PR and merge it. Then tag `main` with the semver
+   tag `vX.Y.Z` (for example `v0.1.1`). Push the tag soon after step 3,
+   because a trusted publisher configuration may expire if it goes unused.
+   The release workflow fails when the tag and the version in
+   `packages/ce/package.json` differ.
 
    ```sh
-   git tag -f v0 vX.Y.Z
-   git push -f origin v0
+   make bump VERSION=X.Y.Z   # updates package.json, version.ts, action/dist
+   make check
+   # commit, open a PR, merge it, then on an up-to-date main:
+   make tag VERSION=X.Y.Z    # asks before pushing vX.Y.Z
+   ```
+
+5. After the Release workflow succeeds, move the `v0` major tag to the same
+   release so `rfxlamia/ce@v0` users get it. Skip this for prereleases.
+
+   ```sh
+   make move-major VERSION=X.Y.Z
+   ```
+
+   Without make, the equivalent is:
+
+   ```sh
+   git tag -f -a v0 -m "v0: moving major tag (currently vX.Y.Z)" "vX.Y.Z^{}"
+   git push --force-with-lease=refs/tags/v0:<old v0 sha> origin refs/tags/v0
    ```
 
 6. Optionally, in the package settings on npmjs.com, select "Require 2FA and disallow tokens".
