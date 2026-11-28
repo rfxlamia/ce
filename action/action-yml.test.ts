@@ -54,12 +54,45 @@ describe('action.yml manifest', () => {
   it('declares no input that carries a credential (Req 3.9)', () => {
     const credential = /api-?key|secret|password/i;
     expect(inputNames.filter((n) => credential.test(n))).toEqual([]);
-    // github-token is the Run_Token input and is allowed.
+    // token and github-token are the Run_Token inputs, and default-token carries github.token.
+    expect(inputNames).toContain('token');
     expect(inputNames).toContain('github-token');
+    expect(inputNames).toContain('default-token');
+  });
+
+  it('declares token and github-token with an empty default, and default-token with github.token (inline-screenshot Req 1.3)', () => {
+    expect(manifest.inputs?.token?.default).toBe('');
+    expect(manifest.inputs?.['github-token']?.default).toBe('');
+    expect(manifest.inputs?.['default-token']?.default).toBe('${{ github.token }}');
+  });
+
+  it('declares publish with an empty default (effective default none), and the two cap inputs (inline-screenshot Req 1.1, 8.2, 8.3)', () => {
+    expect(manifest.inputs?.publish?.default).toBe('');
+    expect(inputNames).toContain('publish-max-images');
+    expect(inputNames).toContain('publish-max-image-bytes');
+  });
+
+  it('does not describe publish: branch as not implemented (inline-screenshot Req 2.1)', () => {
+    expect(readFileSync(manifestPath, 'utf8')).not.toMatch(/not implemented/i);
+  });
+
+  it('declares an input of the same name for every scalar top-level ConfigSchema key, including publish (inline-screenshot Req 1.8)', () => {
+    const schema = JSON.parse(readFileSync(resolve(repoRoot, 'schemas/ce.schema.json'), 'utf8')) as {
+      properties: Record<string, { type?: string }>;
+    };
+    const scalarKeys = Object.entries(schema.properties)
+      .filter(([key, value]) => key !== 'version' && value.type !== 'object')
+      .map(([key]) => key);
+    expect(scalarKeys).toContain('publish');
+    expect(inputNames.filter((n) => scalarKeys.includes(n)).sort()).toEqual([...scalarKeys].sort());
   });
 
   it('declares an input for every ENV_KEY_MAP key except version (Req 3.1, 3.8)', () => {
-    const mappedBack = new Set(inputNames.map((n) => envNameForPath(n)));
+    // default-token is internal and is not a ConfigSchema key (inline-screenshot Req 1.8).
+    const internalExemptions = new Set(['default-token']);
+    const mappedBack = new Set(
+      inputNames.filter((n) => !internalExemptions.has(n)).map((n) => envNameForPath(n)),
+    );
     const missing: string[] = [];
     for (const [envName, path] of ENV_KEY_MAP) {
       if (path === 'version' || path === 'runtime.fixtures') continue;

@@ -33257,8 +33257,8 @@ var require_readdir_glob = __commonJS({
           useStat = true;
         }
         const filename = dir + "/" + name;
-        const relative3 = filename.slice(1);
-        const absolute = path16 + "/" + relative3;
+        const relative4 = filename.slice(1);
+        const absolute = path16 + "/" + relative4;
         let stats = null;
         if (useStat || followSymlinks) {
           stats = await stat2(absolute, followSymlinks);
@@ -33270,12 +33270,12 @@ var require_readdir_glob = __commonJS({
           stats = { isDirectory: () => false };
         }
         if (stats.isDirectory()) {
-          if (!shouldSkip(relative3)) {
-            yield { relative: relative3, absolute, stats };
+          if (!shouldSkip(relative4)) {
+            yield { relative: relative4, absolute, stats };
             yield* exploreWalkAsync(filename, path16, followSymlinks, useStat, shouldSkip, false);
           }
         } else {
-          yield { relative: relative3, absolute, stats };
+          yield { relative: relative4, absolute, stats };
         }
       }
     }
@@ -33345,11 +33345,11 @@ var require_readdir_glob = __commonJS({
         }
         setTimeout(() => this._next(), 0);
       }
-      _shouldSkipDirectory(relative3) {
-        return this.skipMatchers.some((m) => m.match(relative3));
+      _shouldSkipDirectory(relative4) {
+        return this.skipMatchers.some((m) => m.match(relative4));
       }
-      _fileMatches(relative3, isDirectory2) {
-        const file2 = relative3 + (isDirectory2 ? "/" : "");
+      _fileMatches(relative4, isDirectory2) {
+        const file2 = relative4 + (isDirectory2 ? "/" : "");
         return (this.matchers.length === 0 || this.matchers.some((m) => m.match(file2))) && !this.ignoreMatchers.some((m) => m.match(file2)) && (!this.options.nodir || !isDirectory2);
       }
       _next() {
@@ -33358,16 +33358,16 @@ var require_readdir_glob = __commonJS({
             if (!obj.done) {
               const isDirectory2 = obj.value.stats.isDirectory();
               if (this._fileMatches(obj.value.relative, isDirectory2)) {
-                let relative3 = obj.value.relative;
+                let relative4 = obj.value.relative;
                 let absolute = obj.value.absolute;
                 if (this.options.mark && isDirectory2) {
-                  relative3 += "/";
+                  relative4 += "/";
                   absolute += "/";
                 }
                 if (this.options.stat) {
-                  this.emit("match", { relative: relative3, absolute, stat: obj.value.stats });
+                  this.emit("match", { relative: relative4, absolute, stat: obj.value.stats });
                 } else {
-                  this.emit("match", { relative: relative3, absolute });
+                  this.emit("match", { relative: relative4, absolute });
                 }
               }
               this._next(this.iterator);
@@ -35811,8 +35811,8 @@ var require_graceful_fs = __commonJS({
       }
       var fs$copyFile = fs15.copyFile;
       if (fs$copyFile)
-        fs15.copyFile = copyFile2;
-      function copyFile2(src, dest, flags, cb) {
+        fs15.copyFile = copyFile3;
+      function copyFile3(src, dest, flags, cb) {
         if (typeof flags === "function") {
           cb = flags;
           flags = 0;
@@ -36337,7 +36337,7 @@ var require_BufferList = __commonJS({
         this.head = this.tail = null;
         this.length = 0;
       };
-      BufferList.prototype.join = function join12(s) {
+      BufferList.prototype.join = function join13(s) {
         if (this.length === 0) return "";
         var p = this.head;
         var ret = "" + p.data;
@@ -52448,10 +52448,10 @@ var require_ignore = __commonJS({
       ignored(p) {
         const fullpath = p.fullpath();
         const fullpaths = `${fullpath}/`;
-        const relative3 = p.relative() || ".";
-        const relatives = `${relative3}/`;
+        const relative4 = p.relative() || ".";
+        const relatives = `${relative4}/`;
         for (const m of this.relative) {
-          if (m.match(relative3) || m.match(relatives))
+          if (m.match(relative4) || m.match(relatives))
             return true;
         }
         for (const m of this.absolute) {
@@ -52462,9 +52462,9 @@ var require_ignore = __commonJS({
       }
       childrenIgnored(p) {
         const fullpath = p.fullpath() + "/";
-        const relative3 = (p.relative() || ".") + "/";
+        const relative4 = (p.relative() || ".") + "/";
         for (const m of this.relativeChildren) {
-          if (m.match(relative3))
+          if (m.match(relative4))
             return true;
         }
         for (const m of this.absoluteChildren) {
@@ -93173,7 +93173,10 @@ var ConfigSchema = strict({
   output: strict({
     dir: external_exports.string().optional(),
     "fail-on": external_exports.array(external_exports.enum(["error", "unsupported", "evidenced-not-reached"])).optional()
-  }).optional()
+  }).optional(),
+  publish: external_exports.enum(["none", "branch"]).optional(),
+  "publish-max-images": external_exports.number().int().min(1).max(50).optional(),
+  "publish-max-image-bytes": external_exports.number().int().min(1).max(20971520).optional()
 });
 
 // packages/ce/src/config/errors.ts
@@ -99449,6 +99452,87 @@ function rationaleLine(f) {
   return clamp(`Why: ${text}`);
 }
 
+// packages/ce/src/evidence/image-url.ts
+var SHA_PATTERN = /^[0-9a-f]{40}$/;
+var ALLOWED_URL_CHARS = /^[A-Za-z0-9._~%/:-]+$/;
+var CONTROL_CHARS = /[\u0000-\u001f\u007f-\u009f]/;
+function isSafeSegment(segment) {
+  return segment !== "" && segment !== "." && !segment.includes("/") && !segment.includes("..") && !CONTROL_CHARS.test(segment);
+}
+function encodeSegment(segment) {
+  return encodeURIComponent(segment).replace(
+    /[!'()*]/g,
+    (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`
+  );
+}
+function trimServerUrl(serverUrl) {
+  return serverUrl.replace(/\/+$/, "");
+}
+function buildImageUrl(parts) {
+  if (!SHA_PATTERN.test(parts.sha)) {
+    throw new Error("Image URL: sha must be 40 lowercase hexadecimal characters.");
+  }
+  if (!Number.isInteger(parts.prNumber) || parts.prNumber <= 0) {
+    throw new Error("Image URL: pull request number must be a positive integer.");
+  }
+  if (!isSafeSegment(parts.runId)) {
+    throw new Error("Image URL: run id is not a valid path segment.");
+  }
+  if (!isSafeSegment(parts.file)) {
+    throw new Error("Image URL: file name is not a valid path segment.");
+  }
+  return `${trimServerUrl(parts.serverUrl)}/${parts.owner}/${parts.repo}/raw/${parts.sha}/pr-${parts.prNumber}/${encodeSegment(parts.runId)}/${encodeSegment(parts.file)}`;
+}
+function parseImageUrl(url4, expected) {
+  if (typeof url4 !== "string" || !ALLOWED_URL_CHARS.test(url4)) return void 0;
+  if (!Number.isInteger(expected.prNumber) || expected.prNumber <= 0) return void 0;
+  const prefix3 = `${trimServerUrl(expected.serverUrl)}/${expected.owner}/${expected.repo}/raw/`;
+  if (!url4.startsWith(prefix3)) return void 0;
+  const segments = url4.slice(prefix3.length).split("/");
+  if (segments.length !== 4) return void 0;
+  const [sha, prSegment, encodedRunId, encodedFile] = segments;
+  if (!SHA_PATTERN.test(sha)) return void 0;
+  if (prSegment !== `pr-${expected.prNumber}`) return void 0;
+  let runId;
+  let file2;
+  try {
+    runId = decodeURIComponent(encodedRunId);
+    file2 = decodeURIComponent(encodedFile);
+  } catch {
+    return void 0;
+  }
+  let rebuilt;
+  try {
+    rebuilt = buildImageUrl({ ...expected, sha, runId, file: file2 });
+  } catch {
+    return void 0;
+  }
+  if (rebuilt !== url4) return void 0;
+  return { sha, runId, file: file2 };
+}
+
+// packages/ce/src/evidence/publish-types.ts
+function fallbackNote(reason) {
+  switch (reason) {
+    case "fork-pr":
+      return "publish skipped: fork PR";
+    case "no-pr-number":
+      return "publish skipped: not a pull request event";
+    case "no-images":
+      return "publish skipped: no screenshots in this run";
+    case "token-lacks-write":
+      return "publish skipped: the token cannot push (needs contents: write)";
+    case "push-blocked":
+      return "publish skipped: push to the ce-evidence branch was blocked by branch protection or a ruleset";
+    case "push-conflict-exhausted":
+      return "publish skipped: the ce-evidence branch kept changing, gave up after 3 retries";
+    case "ref-guard":
+      return "publish skipped: CE does not publish for the ce-evidence branch";
+    case "git-error":
+      return "publish skipped: a Git error occurred (see the workflow log)";
+  }
+}
+
 // packages/ce/src/evidence/comment.ts
 var [SKIPPED_O, EVIDENCED_O, UNSUPPORTED_O, ERROR_O] = OUTCOMES;
 var COMMENT_MARKER = "<!-- ce:report -->";
@@ -99549,6 +99633,60 @@ function artifactLine(link, secrets) {
   if (SAFE_URL.test(url4) && redactSecretValues(url4, secrets) === url4) return `Artifact: ${url4}`;
   return `Artifact: ${inert(url4, secrets)}`;
 }
+var THUMB_WIDTH = 160;
+function escapeAttr2(value) {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+function planImages(input2) {
+  const result = input2.publishResult ?? { kind: "not-attempted" };
+  const empty = { finalUrl: void 0, thumbs: [], baseMore: 0, note: void 0 };
+  if (result.kind === "not-attempted") return empty;
+  if (result.kind === "fallback") return { ...empty, note: fallbackNote(result.reason) };
+  const [owner, repo, ...rest] = (input2.repository ?? "").split("/");
+  const prNumber = input2.prNumber;
+  const context5 = owner !== void 0 && owner !== "" && repo !== void 0 && repo !== "" && rest.length === 0 && prNumber !== void 0 ? { serverUrl: input2.serverUrl ?? "https://github.com", owner, repo, prNumber } : void 0;
+  const valid = (url4) => context5 !== void 0 && parseImageUrl(url4, context5) !== void 0;
+  let dropped = 0;
+  let finalUrl;
+  const thumbs = [];
+  let stepIndex = 0;
+  result.imageUrls.forEach((url4, i) => {
+    const isFinal = result.finalIncluded && i === 0;
+    const k = isFinal ? 0 : result.stepNumbers[stepIndex++] ?? stepIndex;
+    if (!valid(url4)) {
+      dropped += 1;
+    } else if (isFinal) {
+      finalUrl = url4;
+    } else {
+      thumbs.push({ k, url: url4 });
+    }
+  });
+  return { finalUrl, thumbs, baseMore: Math.max(0, result.skippedCount) + dropped, note: void 0 };
+}
+function imageSection(plan, shownThumbs) {
+  const lines = [];
+  if (plan.note !== void 0) return [plan.note];
+  if (plan.finalUrl !== void 0) {
+    lines.push("Final screenshot (an observation of the final state):", `![final screenshot](${plan.finalUrl})`);
+  }
+  const shown = plan.thumbs.slice(0, shownThumbs);
+  if (shown.length > 0) {
+    lines.push(
+      "",
+      "<details>",
+      "<summary>Step screenshots (observations)</summary>",
+      "",
+      ...shown.map(
+        (t) => `<img src="${escapeAttr2(t.url)}" alt="${escapeAttr2(`step ${t.k} screenshot`)}" width="${THUMB_WIDTH}">`
+      ),
+      ""
+    );
+  }
+  const more = plan.baseMore + (plan.thumbs.length - shown.length);
+  if (more > 0) lines.push(`(+${more} more screenshots in the artifact)`);
+  if (shown.length > 0) lines.push("</details>");
+  return lines;
+}
 function assemble(head, claims, more, tail) {
   const claimBlock = more > 0 ? [...claims, `(+${more} more claims)`] : claims;
   return [...head, "", ...claimBlock, "", ...tail].join("\n");
@@ -99570,18 +99708,50 @@ function renderPrComment(input2) {
     claims = ["No claim was identified."];
     tail = ["Why: no run record was available", "", `CE exit code: ${code}`];
   }
-  tail = [...tail, "", artifactLine(input2.artifactLink, secrets)];
+  const plan = planImages(input2);
+  const artifact = ["", artifactLine(input2.artifactLink, secrets)];
   const listed = totalClaims === 0 ? 0 : claims.length - 1;
   let shown = listed;
-  const build = () => assemble([outcomeLine], claims.slice(0, totalClaims === 0 ? claims.length : shown + 1), totalClaims - shown, tail);
-  let body3 = build();
-  while (body3.length > MAX_BODY && shown > 0) {
-    shown -= 1;
-    body3 = build();
+  let thumbsShown = plan.thumbs.length;
+  const build = () => {
+    const images = imageSection(plan, thumbsShown);
+    const fullTail = [...tail, ...images.length > 0 ? ["", ...images] : [], ...artifact];
+    return assemble(
+      [outcomeLine],
+      claims.slice(0, totalClaims === 0 ? claims.length : shown + 1),
+      totalClaims - shown,
+      fullTail
+    );
+  };
+  const prefix3 = `${COMMENT_MARKER}
+`;
+  const render2 = () => redactSecretValues(build(), secrets);
+  const fits = (body4) => prefix3.length + body4.length <= MAX_BODY;
+  const shed = (max, set2) => {
+    set2(max);
+    let body4 = render2();
+    if (fits(body4) || max === 0) return body4;
+    let lo = 0;
+    let hi = max;
+    while (hi - lo > 1) {
+      const mid = lo + hi >> 1;
+      set2(mid);
+      if (fits(render2())) lo = mid;
+      else hi = mid;
+    }
+    set2(lo);
+    body4 = render2();
+    return body4;
+  };
+  let body3 = shed(thumbsShown, (n) => {
+    thumbsShown = n;
+  });
+  if (!fits(body3)) {
+    body3 = shed(shown, (n) => {
+      shown = n;
+    });
   }
-  const rest = redactSecretValues(body3, secrets);
-  return `${COMMENT_MARKER}
-${rest}`;
+  return `${prefix3}${body3}`;
 }
 function stripCommentMarker(body3) {
   const lines = body3.split("\n");
@@ -99591,8 +99761,8 @@ function stripCommentMarker(body3) {
 
 // action/src/index.ts
 import { spawn as spawn3 } from "node:child_process";
-import { readFileSync as readFileSync3 } from "node:fs";
-import { dirname as dirname6, join as join11, resolve as resolve6 } from "node:path";
+import { readFileSync as readFileSync3, statSync as statSync5 } from "node:fs";
+import { dirname as dirname7, join as join12, relative as relative3, resolve as resolve6 } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 // action/src/artifact.ts
@@ -164488,20 +164658,411 @@ function buildChildInvocation(inputs, entries = buildMirrorEntries()) {
 // action/src/publish.ts
 function validatePublishMode(raw) {
   if (raw === "" || raw === "none") return "none";
-  if (raw === "branch") {
-    throw new Error(
-      "publish: branch is not implemented in this release. See the follow-up issue for `publish: branch` (rfxlamia/ce)."
-    );
+  if (raw === "branch") return "branch";
+  throw new Error(`publish: invalid value. Allowed values are "none" and "branch".`);
+}
+var DEFAULT_PUBLISH_MAX_IMAGES = 6;
+var DEFAULT_PUBLISH_MAX_IMAGE_BYTES = 5242880;
+function resolvePublishSettings(options, inputMode) {
+  try {
+    const loaded = loadConfig(options);
+    if (loaded.ok) {
+      return {
+        mode: loaded.config.publish ?? "none",
+        maxImages: loaded.config["publish-max-images"] ?? DEFAULT_PUBLISH_MAX_IMAGES,
+        maxImageBytes: loaded.config["publish-max-image-bytes"] ?? DEFAULT_PUBLISH_MAX_IMAGE_BYTES
+      };
+    }
+  } catch {
   }
-  throw new Error(
-    `publish: invalid value. Allowed values are "none" and "branch".`
-  );
+  return {
+    mode: inputMode,
+    maxImages: DEFAULT_PUBLISH_MAX_IMAGES,
+    maxImageBytes: DEFAULT_PUBLISH_MAX_IMAGE_BYTES
+  };
+}
+
+// action/src/token.ts
+function resolveRunToken(token, githubToken, defaultToken) {
+  if (token !== "") return token;
+  if (githubToken !== "") return githubToken;
+  return defaultToken;
+}
+function credentialMaskValues(runToken) {
+  if (runToken === "") return [];
+  const b64 = Buffer.from(`x-access-token:${runToken}`).toString("base64");
+  return [runToken, b64, `AUTHORIZATION: basic ${b64}`];
+}
+
+// action/src/evidence-branch-guard.ts
+var EVIDENCE_BRANCH = "ce-evidence";
+var EVIDENCE_REF = `refs/heads/${EVIDENCE_BRANCH}`;
+function isEvidenceBranchRef(ref) {
+  return ref === EVIDENCE_BRANCH || ref === EVIDENCE_REF;
+}
+function isEvidenceBranchRun(env) {
+  return isEvidenceBranchRef(env["GITHUB_REF"]) || isEvidenceBranchRef(env["GITHUB_HEAD_REF"]) || isEvidenceBranchRef(env["GITHUB_BASE_REF"]);
+}
+
+// action/src/publish/decision.ts
+function decidePrePublisher(ctx) {
+  if (!ctx.commentEnabled) return { kind: "not-attempted" };
+  if (ctx.outcome === "SKIPPED" || ctx.outcome === "UNSUPPORTED") {
+    return { kind: "not-attempted" };
+  }
+  if (!ctx.isPullRequestEvent) return { kind: "fallback", reason: "no-pr-number" };
+  if (ctx.isForkPr) return { kind: "fallback", reason: "fork-pr" };
+  if (ctx.isEvidenceBranchRef) return { kind: "fallback", reason: "ref-guard" };
+  return { kind: "proceed" };
+}
+function repoFullName(side) {
+  if (typeof side !== "object" || side === null) return void 0;
+  const repo = side.repo;
+  if (typeof repo !== "object" || repo === null) return void 0;
+  const name = repo.full_name;
+  return typeof name === "string" && name !== "" ? name : void 0;
+}
+function isForkPullRequest(payload) {
+  if (typeof payload !== "object" || payload === null) return true;
+  const pr = payload.pull_request;
+  if (typeof pr !== "object" || pr === null) return true;
+  const head = repoFullName(pr.head);
+  const base = repoFullName(pr.base);
+  if (head === void 0 || base === void 0) return true;
+  return head !== base;
+}
+
+// action/src/publish/fallback.ts
+function collectText(error63) {
+  try {
+    if (typeof error63 === "string") return error63;
+    if (error63 === null || typeof error63 !== "object") return "";
+    const parts = [];
+    const record2 = error63;
+    for (const key of ["message", "stderr", "stdout"]) {
+      const value = record2[key];
+      if (typeof value === "string") parts.push(value);
+    }
+    const result = record2["result"];
+    if (result !== null && typeof result === "object") {
+      const r = result;
+      for (const key of ["stderr", "stdout"]) {
+        const value = r[key];
+        if (typeof value === "string") parts.push(value);
+      }
+    }
+    return parts.join("\n");
+  } catch {
+    return "";
+  }
+}
+var BLOCKED = /protected branch|\bGH006\b|\bGH013\b|repository rule violations|rule violations|ruleset|hook declined|pre-receive hook|\[remote rejected\]/i;
+var NO_WRITE = /permission denied|\b403\b|permission to .* denied/i;
+function classifyGitError(error63) {
+  try {
+    const text = collectText(error63);
+    if (BLOCKED.test(text)) return "push-blocked";
+    if (NO_WRITE.test(text)) return "token-lacks-write";
+    return "git-error";
+  } catch {
+    return "git-error";
+  }
+}
+
+// action/src/publish/git-runner.ts
+import { execFile } from "node:child_process";
+var GitCommandError = class extends Error {
+  result;
+  constructor(result) {
+    super(`git exited with code ${result.exitCode}`);
+    this.name = "GitCommandError";
+    this.result = result;
+  }
+};
+var MAX_BUFFER_BYTES = 16 * 1024 * 1024;
+function fixedGitEnv() {
+  return {
+    LC_ALL: "C",
+    GIT_TERMINAL_PROMPT: "0",
+    GIT_CONFIG_GLOBAL: "/dev/null",
+    GIT_CONFIG_NOSYSTEM: "1"
+  };
+}
+function credentialEnv(runToken, host) {
+  const header = `AUTHORIZATION: basic ${Buffer.from(`x-access-token:${runToken}`).toString("base64")}`;
+  const scope = /^[a-z][a-z0-9+.-]*:\/\//i.test(host) ? host : `https://${host}`;
+  return {
+    GIT_CONFIG_COUNT: "1",
+    GIT_CONFIG_KEY_0: `http.${scope}.extraheader`,
+    GIT_CONFIG_VALUE_0: header
+  };
+}
+function createGitRunner() {
+  return (invocation) => new Promise((resolve7, reject) => {
+    const base = {};
+    const path16 = process.env["PATH"];
+    if (path16 !== void 0) base["PATH"] = path16;
+    const env = { ...base, ...invocation.env };
+    execFile(
+      "git",
+      invocation.args,
+      { cwd: invocation.cwd, env, maxBuffer: MAX_BUFFER_BYTES, windowsHide: true },
+      (error63, stdout, stderr) => {
+        if (error63 === null) {
+          resolve7({ exitCode: 0, stdout, stderr });
+          return;
+        }
+        const code = error63.code;
+        const exitCode = typeof code === "number" ? code : 1;
+        const detail = typeof code === "string" && stderr === "" ? `${code}: ${error63.message}` : stderr;
+        reject(new GitCommandError({ exitCode, stdout, stderr: detail }));
+      }
+    );
+  });
+}
+
+// action/src/publish/publisher.ts
+import { copyFile as copyFile2, mkdir as mkdir2, mkdtemp, rm as rm2 } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname as dirname6, join as join10 } from "node:path";
+
+// action/src/publish/cap.ts
+function applyCaps(images, imageCap, byteCapBytes) {
+  const withinBytes = images.filter((image2) => image2.sizeBytes <= byteCapBytes);
+  const finals = withinBytes.filter((image2) => image2.origin.kind === "final");
+  const steps = withinBytes.filter((image2) => image2.origin.kind === "step");
+  const cap = Math.max(0, Math.floor(imageCap));
+  const keptFinals = finals.slice(0, cap);
+  const stepSlots = cap - keptFinals.length;
+  const keptSteps = stepSlots > 0 ? steps.slice(-stepSlots) : [];
+  const keptSet = /* @__PURE__ */ new Set([...keptFinals, ...keptSteps]);
+  const kept = images.filter((image2) => keptSet.has(image2));
+  return { kept, skippedCount: images.length - kept.length };
+}
+
+// action/src/publish/select.ts
+import { isAbsolute as isAbsolute2 } from "node:path";
+function isBundleRelativePath(path16) {
+  if (path16 === "" || path16.includes("\0")) return false;
+  if (isAbsolute2(path16) || path16.startsWith("/") || path16.startsWith("\\")) return false;
+  if (/^[A-Za-z]:/.test(path16)) return false;
+  return !path16.split(/[\\/]/).some((segment) => segment === "..");
+}
+function selectImagesDetailed(record2, listing) {
+  if (record2 === void 0) return { selected: [], dropped: [] };
+  const byPath = /* @__PURE__ */ new Map();
+  for (const entry3 of listing) byPath.set(entry3.relativePath, entry3);
+  const candidates = [];
+  const finalPath = record2.finalImage?.screenshot ?? null;
+  if (finalPath !== null) candidates.push({ relativePath: finalPath, origin: { kind: "final" } });
+  record2.steps.forEach((step, index) => {
+    if (step.executed) candidates.push({ relativePath: step.screenshot, origin: { kind: "step", index } });
+  });
+  const seen = /* @__PURE__ */ new Set();
+  const selected = [];
+  const dropped = [];
+  for (const candidate of candidates) {
+    const path16 = candidate.relativePath;
+    if (!isBundleRelativePath(path16)) {
+      dropped.push({ origin: candidate.origin });
+      continue;
+    }
+    if (seen.has(path16)) continue;
+    const entry3 = byPath.get(path16);
+    if (entry3 === void 0 || !entry3.isFile || !/\.png$/i.test(path16)) continue;
+    seen.add(path16);
+    selected.push(candidate);
+  }
+  return { selected, dropped };
+}
+function baseName(path16) {
+  const parts = path16.split(/[\\/]/);
+  return parts[parts.length - 1] ?? path16;
+}
+function assignPublishedNames(images) {
+  const used = /* @__PURE__ */ new Set();
+  return images.map((image2, position) => {
+    let name = baseName(image2.relativePath);
+    while (used.has(name)) name = `${position}-${name}`;
+    used.add(name);
+    return { ...image2, publishedName: name };
+  });
+}
+
+// action/src/publish/publisher.ts
+var MAX_PUSH_RETRIES = 3;
+var AUTHOR_NAME = "Continuous Evidence";
+var AUTHOR_EMAIL = "ce-evidence@users.noreply.github.com";
+var BRANCH_REF = `refs/heads/${EVIDENCE_BRANCH}`;
+var TRACKING_REF = `refs/remotes/origin/${EVIDENCE_BRANCH}`;
+function buildCommitMessage(prNumber, runId) {
+  const safeRunId = runId.replace(/[\u0000-\u001f\u007f-\u009f]/g, " ");
+  return `ce: evidence for PR #${prNumber} (${safeRunId})`;
+}
+function fail(reason) {
+  return { kind: "fallback", reason };
+}
+function errorText(error63) {
+  if (error63 === null || typeof error63 !== "object") return typeof error63 === "string" ? error63 : "";
+  const r = error63.result;
+  const own2 = error63;
+  return [r?.stderr, r?.stdout, own2.stderr, own2.message].filter((v) => typeof v === "string").join("\n");
+}
+function isNonFastForward(error63) {
+  return /non-fast-forward|fetch first|stale info|tip of your current branch is behind/i.test(errorText(error63));
+}
+function isRefRace(error63) {
+  return /cannot lock ref|reference already exists|failed to update ref|already exists/i.test(errorText(error63));
+}
+function isMissingRemoteBranch(error63) {
+  return /couldn't find remote ref/i.test(errorText(error63));
+}
+function isSafeSegment2(value) {
+  return value !== "" && value !== "." && !value.includes("/") && !value.includes("\\") && !value.includes("..") && !/[\u0000-\u001f\u007f-\u009f]/.test(value);
+}
+var FallbackSignal = class extends Error {
+  constructor(reason) {
+    super(reason);
+    this.reason = reason;
+  }
+};
+async function publish(options) {
+  let tempDir;
+  try {
+    const selection = selectImagesDetailed(options.record, options.listing);
+    for (const dropped of selection.dropped) {
+      if (dropped.origin.kind === "step") {
+        options.warn?.(`publish: skipped the screenshot of step ${dropped.origin.index + 1} (path outside the run directory)`);
+      } else {
+        options.warn?.("publish: skipped the final screenshot (path outside the run directory)");
+      }
+    }
+    const sizes = new Map(options.listing.map((e) => [e.relativePath, e.sizeBytes]));
+    const sized = selection.selected.map((image2) => ({
+      ...image2,
+      sizeBytes: sizes.get(image2.relativePath) ?? 0
+    }));
+    const capped = applyCaps(sized, options.imageCap, options.byteCapBytes);
+    if (capped.kept.length === 0) return fail("no-images");
+    if ((options.refs ?? []).some((ref) => isEvidenceBranchRef(ref))) return fail("ref-guard");
+    if (!Number.isInteger(options.prNumber) || options.prNumber <= 0) return fail("no-pr-number");
+    if (!isSafeSegment2(options.runId)) return fail("git-error");
+    const images = assignPublishedNames(capped.kept);
+    const evidencePath = `pr-${options.prNumber}/${options.runId}`;
+    const remote = options.remoteUrl ?? `${options.serverUrl.replace(/\/+$/, "")}/${options.owner}/${options.repo}.git`;
+    const base = options.tmpBase !== void 0 && options.tmpBase !== "" ? options.tmpBase : tmpdir();
+    tempDir = await mkdtemp(join10(base, "ce-publish-"));
+    const work = join10(tempDir, "repo");
+    await mkdir2(work, { mode: 448 });
+    const localEnv = {
+      ...fixedGitEnv(),
+      GIT_AUTHOR_NAME: AUTHOR_NAME,
+      GIT_AUTHOR_EMAIL: AUTHOR_EMAIL,
+      GIT_COMMITTER_NAME: AUTHOR_NAME,
+      GIT_COMMITTER_EMAIL: AUTHOR_EMAIL
+    };
+    const remoteEnv = { ...localEnv, ...credentialEnv(options.runToken, options.serverUrl) };
+    const git = (args, remoteCommand = false) => options.runner({ args, cwd: work, env: remoteCommand ? remoteEnv : localEnv });
+    const guarded = async (step) => {
+      try {
+        return await step();
+      } catch (error63) {
+        options.onGitError?.(error63);
+        throw new FallbackSignal(classifyGitError(error63));
+      }
+    };
+    await guarded(() => git(["init", "-q", "--template="]));
+    const fetchTip = async () => {
+      try {
+        await git(
+          ["fetch", "--depth", "1", "--no-tags", remote, `+${BRANCH_REF}:${TRACKING_REF}`],
+          true
+        );
+        return true;
+      } catch (error63) {
+        if (isMissingRemoteBranch(error63)) return false;
+        options.onGitError?.(error63);
+        throw new FallbackSignal(classifyGitError(error63));
+      }
+    };
+    const commitOnTip = async (tipExists2) => {
+      if (tipExists2) {
+        await guarded(() => git(["checkout", "-q", "-f", "-B", EVIDENCE_BRANCH, TRACKING_REF]));
+      } else {
+        await guarded(() => git(["symbolic-ref", "HEAD", BRANCH_REF]));
+      }
+      for (const image2 of images) {
+        const target = join10(work, evidencePath, image2.publishedName);
+        await mkdir2(dirname6(target), { recursive: true });
+        await copyFile2(join10(options.runDir, image2.relativePath), target);
+      }
+      await guarded(() => git(["add", "--", evidencePath]));
+      await guarded(
+        () => git([
+          "commit",
+          "-q",
+          "--allow-empty",
+          "--no-verify",
+          "--no-gpg-sign",
+          "-m",
+          buildCommitMessage(options.prNumber, options.runId)
+        ])
+      );
+      const head = await guarded(() => git(["rev-parse", "HEAD"]));
+      return head.stdout.trim();
+    };
+    let tipExists = await fetchTip();
+    let localSha = await commitOnTip(tipExists);
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        await git(["push", "-q", remote, `HEAD:${BRANCH_REF}`], true);
+        break;
+      } catch (error63) {
+        options.onGitError?.(error63);
+        const reason = classifyGitError(error63);
+        const retryable = isRefRace(error63) || reason === "git-error" && isNonFastForward(error63);
+        if (!retryable) return fail(reason);
+        if (attempt >= MAX_PUSH_RETRIES) return fail("push-conflict-exhausted");
+        tipExists = await fetchTip();
+        localSha = await commitOnTip(tipExists);
+      }
+    }
+    const listed = await guarded(() => git(["ls-remote", remote, BRANCH_REF], true));
+    const tip = listed.stdout.trim().split(/\s+/)[0] ?? "";
+    if (!/^[0-9a-f]{40}$/.test(tip)) return fail("git-error");
+    if (tip !== localSha) {
+      await guarded(() => git(["fetch", "--depth", "100", "--no-tags", remote, `+${BRANCH_REF}:${TRACKING_REF}`], true));
+      await guarded(() => git(["merge-base", "--is-ancestor", localSha, TRACKING_REF]));
+    }
+    const imageUrls = images.map(
+      (image2) => buildImageUrl({
+        serverUrl: options.serverUrl,
+        owner: options.owner,
+        repo: options.repo,
+        sha: localSha,
+        prNumber: options.prNumber,
+        runId: options.runId,
+        file: image2.publishedName
+      })
+    );
+    const finalIncluded = images.some((image2) => image2.origin.kind === "final");
+    const stepNumbers = images.flatMap((image2) => image2.origin.kind === "step" ? [image2.origin.index + 1] : []);
+    return { kind: "published", sha: localSha, imageUrls, finalIncluded, stepNumbers, skippedCount: capped.skippedCount };
+  } catch (error63) {
+    if (error63 instanceof FallbackSignal) return fail(error63.reason);
+    options.onGitError?.(error63);
+    return fail(classifyGitError(error63));
+  } finally {
+    if (tempDir !== void 0) {
+      await rm2(tempDir, { recursive: true, force: true }).catch(() => void 0);
+    }
+  }
 }
 
 // action/src/run-dir.ts
 import { readdirSync as readdirSync2, statSync as statSync4 } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { isAbsolute as isAbsolute2, join as join10, resolve as resolve5 } from "node:path";
+import { isAbsolute as isAbsolute3, join as join11, resolve as resolve5 } from "node:path";
 function resolveEffectiveOutputDir(options) {
   try {
     const loaded = loadConfig(options);
@@ -164530,19 +165091,19 @@ function pickNewRunDir(dir, before, after) {
   const known = new Set(before);
   const added = [...new Set(after)].filter((name) => !known.has(name));
   if (added.length === 0) return void 0;
-  const ranked = added.map((name) => ({ name, time: mtimeMs(join10(dir, name)) })).sort((a, b) => b.time - a.time || (a.name < b.name ? 1 : a.name > b.name ? -1 : 0));
-  return join10(dir, ranked[0].name);
+  const ranked = added.map((name) => ({ name, time: mtimeMs(join11(dir, name)) })).sort((a, b) => b.time - a.time || (a.name < b.name ? 1 : a.name > b.name ? -1 : 0));
+  return join11(dir, ranked[0].name);
 }
-function isBundleRelativePath(path16) {
+function isBundleRelativePath2(path16) {
   if (path16 === "" || path16.includes("\0")) return false;
-  if (isAbsolute2(path16) || path16.startsWith("/") || path16.startsWith("\\")) return false;
+  if (isAbsolute3(path16) || path16.startsWith("/") || path16.startsWith("\\")) return false;
   if (/^[A-Za-z]:/.test(path16)) return false;
   return !path16.split(/[\\/]/).some((segment) => segment === "..");
 }
 async function readRunRecord(runDir) {
   let text;
   try {
-    text = await readFile(join10(runDir, "run.json"), "utf8");
+    text = await readFile(join11(runDir, "run.json"), "utf8");
   } catch {
     return void 0;
   }
@@ -164555,7 +165116,7 @@ async function readRunRecord(runDir) {
   const parsed = RunRecordSchema.safeParse(json2);
   if (!parsed.success) return void 0;
   const record2 = parsed.data;
-  return { ...record2, artifacts: record2.artifacts.filter((a) => isBundleRelativePath(a.path)) };
+  return { ...record2, artifacts: record2.artifacts.filter((a) => isBundleRelativePath2(a.path)) };
 }
 
 // action/src/upsert.ts
@@ -164588,6 +165149,25 @@ function extractStatus(error63) {
 }
 
 // action/src/index.ts
+function listRunDirEntries(runDir) {
+  const entries = [];
+  for (const full of listFilesRecursive(runDir)) {
+    try {
+      entries.push({
+        relativePath: relative3(runDir, full).split(/[\\/]/).join("/"),
+        isFile: true,
+        sizeBytes: statSync5(full).size
+      });
+    } catch {
+    }
+  }
+  return entries;
+}
+function gitErrorText(error63) {
+  if (error63 === null || typeof error63 !== "object") return String(error63);
+  const e = error63;
+  return [e.result?.stderr, e.stderr, e.message].filter((v) => typeof v === "string" && v !== "").join("\n");
+}
 function readPullRequestContext(deps) {
   const path16 = deps.env["GITHUB_EVENT_PATH"];
   if (path16 === void 0 || path16 === "") return void 0;
@@ -164600,7 +165180,14 @@ function readPullRequestContext(deps) {
       return typeof full === "string" && full !== "" ? full : void 0;
     };
     const number4 = pr["number"];
+    const ref = (side) => {
+      const r = side?.ref;
+      return typeof r === "string" && r !== "" ? r : void 0;
+    };
     return {
+      payload,
+      headRef: ref(pr["head"]),
+      baseRef: ref(pr["base"]),
       number: typeof number4 === "number" && Number.isInteger(number4) && number4 > 0 ? number4 : void 0,
       headRepo: name(pr["head"]),
       baseRepo: name(pr["base"])
@@ -164615,18 +165202,35 @@ function isPullRequestEvent(name) {
 function message(error63) {
   return error63 instanceof Error ? error63.message : String(error63);
 }
+function skipEvidenceBranchRun(log2, outputs) {
+  log2.info(
+    "notice: CE does not run on the ce-evidence branch. No CLI run, publish, artifact or comment was made."
+  );
+  outputs.set("outcome", "");
+  outputs.set("exit-code", "0");
+}
 async function runAction(deps) {
   const { adapters, env } = deps;
   const log2 = adapters.log;
+  if (isEvidenceBranchRun(env)) {
+    skipEvidenceBranchRun(log2, adapters.outputs);
+    return 0;
+  }
   const publishRaw = deps.getInput("publish").trim();
+  let publishInputMode;
   try {
-    validatePublishMode(publishRaw);
+    publishInputMode = validatePublishMode(publishRaw);
   } catch (error63) {
     log2.error(message(error63));
     return 1;
   }
-  const token = deps.getInput("github-token").trim();
-  log2.mask(token);
+  const token = resolveRunToken(
+    deps.getInput("token").trim(),
+    deps.getInput("github-token").trim(),
+    deps.getInput("default-token").trim()
+  );
+  const maskedValues = credentialMaskValues(token);
+  for (const value of maskedValues) log2.mask(value);
   const commentEnabled = deps.getInput("comment").trim().toLowerCase() !== "false";
   const commentAuthor = deps.getInput("comment-author").trim() || "github-actions[bot]";
   const workingDirectory = deps.getInput("working-directory").trim();
@@ -164667,6 +165271,12 @@ async function runAction(deps) {
   const flags = {};
   if (configIndex >= 0) flags["config"] = invocation.argv[configIndex + 1];
   const outputDir = resolveEffectiveOutputDir({ cwd, flags, env: childEnv });
+  const publishSettings = resolvePublishSettings({ cwd, flags, env: childEnv }, publishInputMode);
+  if (publishSettings.mode === "branch") {
+    log2.info(
+      `publish: branch (at most ${publishSettings.maxImages} images, ${publishSettings.maxImageBytes} bytes each)`
+    );
+  }
   const before = outputDir === void 0 ? [] : deps.listEntries(outputDir);
   const result = await deps.spawnCli({ args: ["run", ...invocation.argv], env: childEnv, cwd });
   let failed = false;
@@ -164712,7 +165322,57 @@ async function runAction(deps) {
     runId: env["GITHUB_RUN_ID"] ?? "",
     upload
   });
-  const secrets = [...collectSecretValues(env), ...token ? [token] : []];
+  const secrets = [...collectSecretValues(env), ...maskedValues];
+  const pr = isPullRequestEvent(env["GITHUB_EVENT_NAME"]) ? readPullRequestContext(deps) : void 0;
+  const repository = env["GITHUB_REPOSITORY"] ?? "";
+  const serverUrl = env["GITHUB_SERVER_URL"] ?? "https://github.com";
+  let publishResult = { kind: "not-attempted" };
+  if (publishSettings.mode === "branch") {
+    if (!commentEnabled) {
+      log2.info('notice: publish is "branch" but comment is false, so nothing is published.');
+    }
+    const decision = decidePrePublisher({
+      publishMode: publishSettings.mode,
+      commentEnabled,
+      outcome: record2?.outcome,
+      isPullRequestEvent: pr?.number !== void 0,
+      isForkPr: isForkPullRequest(pr?.payload),
+      isEvidenceBranchRef: [pr?.headRef, pr?.baseRef, env["GITHUB_HEAD_REF"], env["GITHUB_BASE_REF"]].some(
+        (ref) => isEvidenceBranchRef(ref)
+      )
+    });
+    if (decision.kind === "proceed") {
+      const [owner = "", repo = ""] = repository.split("/");
+      try {
+        publishResult = await publish({
+          runner: deps.gitRunner ?? createGitRunner(),
+          runToken: token,
+          record: record2,
+          runDir: runDir ?? "",
+          listing: runDir === void 0 ? [] : (deps.listRunFiles ?? listRunDirEntries)(runDir),
+          prNumber: pr?.number ?? 0,
+          runId: runDir === void 0 ? "" : runDir.split(/[\\/]/).pop() ?? "",
+          owner,
+          repo,
+          serverUrl,
+          imageCap: publishSettings.maxImages,
+          byteCapBytes: publishSettings.maxImageBytes,
+          tmpBase: env["RUNNER_TEMP"],
+          refs: [pr?.headRef, pr?.baseRef],
+          warn: (m) => log2.warning(redactSecretValues(m, secrets)),
+          onGitError: (e) => log2.info(redactSecretValues(gitErrorText(e), secrets))
+        });
+      } catch (error63) {
+        log2.info(redactSecretValues(message(error63), secrets));
+        publishResult = { kind: "fallback", reason: "git-error" };
+      }
+    } else if (decision.kind === "fallback") {
+      publishResult = decision;
+    }
+    if (publishResult.kind === "fallback" && publishResult.reason !== "no-images" && publishResult.reason !== "no-pr-number") {
+      log2.warning(redactSecretValues(fallbackNote(publishResult.reason), secrets));
+    }
+  }
   const unavailable = {
     kind: "unavailable",
     exitCode: exitCode ?? Number.NaN
@@ -164720,12 +165380,15 @@ async function runAction(deps) {
   const rendered = renderPrComment({
     record: record2 ?? unavailable,
     artifactLink,
-    secrets
+    secrets,
+    publishResult,
+    repository,
+    serverUrl,
+    prNumber: pr?.number
   });
   const body3 = redactSecretValues(rendered, secrets);
   let commentUrl = "";
   let posted = false;
-  const pr = isPullRequestEvent(env["GITHUB_EVENT_NAME"]) ? readPullRequestContext(deps) : void 0;
   if (!commentEnabled) {
     log2.info("comment is false: the report is written to the job summary.");
   } else if (pr === void 0 || pr.number === void 0) {
@@ -164764,7 +165427,7 @@ async function runAction(deps) {
   return exitCode ?? 1;
 }
 function resolveCeCli(from = import.meta.url) {
-  return join11(dirname6(fileURLToPath(from)), "ce-cli.js");
+  return join12(dirname7(fileURLToPath(from)), "ce-cli.js");
 }
 function spawnCeCli(request2) {
   return new Promise((resolvePromise) => {
@@ -164791,10 +165454,17 @@ function createRealDeps() {
     playwrightVersion: () => readPlaywrightVersion(),
     listEntries,
     readRunRecord,
-    readEventFile: (path16) => readFileSync3(path16, "utf8")
+    readEventFile: (path16) => readFileSync3(path16, "utf8"),
+    gitRunner: createGitRunner(),
+    listRunFiles: listRunDirEntries
   };
 }
 async function main() {
+  if (isEvidenceBranchRun(process.env)) {
+    skipEvidenceBranchRun(createLogger2(), createOutputSetter());
+    process.exitCode = 0;
+    return;
+  }
   const code = await runAction(createRealDeps());
   process.exitCode = code;
 }
@@ -164806,6 +165476,7 @@ if (entry2 !== void 0 && import.meta.url === pathToFileURL(entry2).href) {
 }
 export {
   createRealDeps,
+  listRunDirEntries,
   resolveCeCli,
   runAction
 };

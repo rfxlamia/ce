@@ -216,6 +216,23 @@
                 }
               },
               "additionalProperties": false
+            },
+            "publish": {
+              "type": "string",
+              "enum": [
+                "none",
+                "branch"
+              ]
+            },
+            "publish-max-images": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "publish-max-image-bytes": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20971520
             }
           },
           "additionalProperties": false
@@ -1260,6 +1277,23 @@
                 }
               },
               "additionalProperties": false
+            },
+            "publish": {
+              "type": "string",
+              "enum": [
+                "none",
+                "branch"
+              ]
+            },
+            "publish-max-images": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "publish-max-image-bytes": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20971520
             }
           },
           "additionalProperties": false
@@ -2436,6 +2470,23 @@
                 }
               },
               "additionalProperties": false
+            },
+            "publish": {
+              "type": "string",
+              "enum": [
+                "none",
+                "branch"
+              ]
+            },
+            "publish-max-images": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "publish-max-image-bytes": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20971520
             }
           },
           "additionalProperties": false
@@ -3482,6 +3533,23 @@
                     }
                   },
                   "additionalProperties": false
+                },
+                "publish": {
+                  "type": "string",
+                  "enum": [
+                    "none",
+                    "branch"
+                  ]
+                },
+                "publish-max-images": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 50
+                },
+                "publish-max-image-bytes": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 20971520
                 }
               },
               "additionalProperties": false

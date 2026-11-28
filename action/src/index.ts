@@ -11,18 +11,29 @@ import {
   renderPrComment,
   stripCommentMarker,
 } from 'continuous-evidence';
-import type { RunRecord, UnavailableRecord } from 'continuous-evidence';
+import type { PublishResult, RunRecord, UnavailableRecord } from 'continuous-evidence';
 import { spawn } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { readFileSync, statSync } from 'node:fs';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { buildArtifactLink, buildArtifactName } from './artifact.js';
 import { buildCacheKey, readPlaywrightVersion, resolveBrowsersPath } from './cache.js';
 import { sanitizeChildEnv } from './env.js';
-import { createGithubAdapters } from './github.js';
+import { createGithubAdapters, listFilesRecursive } from './github.js';
 import type { GithubAdapters } from './github.js';
 import { buildChildInvocation } from './inputs.js';
-import { validatePublishMode } from './publish.js';
+import { validatePublishMode, resolvePublishSettings } from './publish.js';
+import type { PublishMode } from './publish.js';
+import { credentialMaskValues, resolveRunToken } from './token.js';
+import { isEvidenceBranchRef, isEvidenceBranchRun } from './evidence-branch-guard.js';
+import { decidePrePublisher, isForkPullRequest } from './publish/decision.js';
+import { fallbackNote } from './publish/fallback.js';
+import { createGitRunner } from './publish/git-runner.js';
+import type { GitRunner } from './publish/git-runner.js';
+import { publish } from './publish/publisher.js';
+import type { DirectoryEntry } from './publish/select.js';
+import { createLogger, createOutputSetter } from './github.js';
+import type { Logger, OutputSetter } from './github.js';
 import {
   listEntries,
   pickNewRunDir,
@@ -65,12 +76,46 @@ export interface ActionDeps {
   readRunRecord(runDir: string): Promise<RunRecord | undefined>;
   /** Reads the Event_Payload file as text. Throws when unreadable. */
   readEventFile(path: string): string;
+  /** Git seam for the Publisher. Defaults to the system `git`. */
+  gitRunner?: GitRunner;
+  /** Lists the regular files of a Run_Dir, symlink-safe. Defaults to the artifact walker. */
+  listRunFiles?(runDir: string): DirectoryEntry[];
 }
 
 interface PullRequestContext {
   number: number | undefined;
   headRepo: string | undefined;
   baseRepo: string | undefined;
+  headRef: string | undefined;
+  baseRef: string | undefined;
+  /** The parsed Event_Payload, for the fork decision (Requirement 10.5). */
+  payload: unknown;
+}
+
+/** Regular files under `runDir` with bundle-relative paths and sizes. */
+export function listRunDirEntries(runDir: string): DirectoryEntry[] {
+  const entries: DirectoryEntry[] = [];
+  for (const full of listFilesRecursive(runDir)) {
+    try {
+      entries.push({
+        relativePath: relative(runDir, full).split(/[\\/]/).join('/'),
+        isFile: true,
+        sizeBytes: statSync(full).size,
+      });
+    } catch {
+      // unreadable file: leave it out
+    }
+  }
+  return entries;
+}
+
+/** Text of a failed Git step for the log, redacted by the caller. */
+function gitErrorText(error: unknown): string {
+  if (error === null || typeof error !== 'object') return String(error);
+  const e = error as { message?: unknown; result?: { stderr?: unknown }; stderr?: unknown };
+  return [e.result?.stderr, e.stderr, e.message]
+    .filter((v): v is string => typeof v === 'string' && v !== '')
+    .join('\n');
 }
 
 /** Reads only the PR number and the head and base repository names (Requirement 5.4). */
@@ -86,7 +131,14 @@ function readPullRequestContext(deps: ActionDeps): PullRequestContext | undefine
       return typeof full === 'string' && full !== '' ? full : undefined;
     };
     const number = pr['number'];
+    const ref = (side: unknown): string | undefined => {
+      const r = (side as { ref?: unknown } | null)?.ref;
+      return typeof r === 'string' && r !== '' ? r : undefined;
+    };
     return {
+      payload,
+      headRef: ref(pr['head']),
+      baseRef: ref(pr['base']),
       number: typeof number === 'number' && Number.isInteger(number) && number > 0 ? number : undefined,
       headRepo: name(pr['head']),
       baseRepo: name(pr['base']),
@@ -104,6 +156,15 @@ function message(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+/** Ends a run that concerns the evidence branch: one notice, empty outcome, exit code 0 (Requirement 12.1, 12.2). */
+function skipEvidenceBranchRun(log: Pick<Logger, 'info'>, outputs: OutputSetter): void {
+  log.info(
+    'notice: CE does not run on the ce-evidence branch. No CLI run, publish, artifact or comment was made.',
+  );
+  outputs.set('outcome', '');
+  outputs.set('exit-code', '0');
+}
+
 /**
  * Runs the whole Action. Resolves to the exit code the step must end with.
  * Never throws for an expected failure; the failure is logged and a non-zero code returned.
@@ -112,16 +173,31 @@ export async function runAction(deps: ActionDeps): Promise<number> {
   const { adapters, env } = deps;
   const log = adapters.log;
 
-  // 1. Inputs. `publish` is validated before any other side effect (Requirement 12.3, 12.4).
+  // 0. Evidence-branch guard: the very first statement, before any input is read, before the
+  // cache restore and before any GitHub or Git call (Requirement 12.1, 12.3).
+  if (isEvidenceBranchRun(env)) {
+    skipEvidenceBranchRun(log, adapters.outputs);
+    return 0;
+  }
+
+  // 1. Inputs. `publish` is validated before any other side effect (Requirement 1.6).
   const publishRaw = deps.getInput('publish').trim();
+  let publishInputMode: PublishMode;
   try {
-    validatePublishMode(publishRaw);
+    publishInputMode = validatePublishMode(publishRaw);
   } catch (error) {
     log.error(message(error));
     return 1;
   }
-  const token = deps.getInput('github-token').trim();
-  log.mask(token);
+  const token = resolveRunToken(
+    deps.getInput('token').trim(),
+    deps.getInput('github-token').trim(),
+    deps.getInput('default-token').trim(),
+  );
+  // Mask the token, its base64 form and the full Authorization header before any git command
+  // (Requirement 7.2).
+  const maskedValues = credentialMaskValues(token);
+  for (const value of maskedValues) log.mask(value);
   const commentEnabled = deps.getInput('comment').trim().toLowerCase() !== 'false';
   const commentAuthor = deps.getInput('comment-author').trim() || 'github-actions[bot]';
   const workingDirectory = deps.getInput('working-directory').trim();
@@ -169,6 +245,13 @@ export async function runAction(deps: ActionDeps): Promise<number> {
   const flags: Record<string, unknown> = {};
   if (configIndex >= 0) flags['config'] = invocation.argv[configIndex + 1];
   const outputDir = resolveEffectiveOutputDir({ cwd, flags, env: childEnv });
+  // Effective publish settings (consumed by the publish pipeline, task 7.2).
+  const publishSettings = resolvePublishSettings({ cwd, flags, env: childEnv }, publishInputMode);
+  if (publishSettings.mode === 'branch') {
+    log.info(
+      `publish: branch (at most ${publishSettings.maxImages} images, ${publishSettings.maxImageBytes} bytes each)`,
+    );
+  }
   const before = outputDir === undefined ? [] : deps.listEntries(outputDir);
 
   const result = await deps.spawnCli({ args: ['run', ...invocation.argv], env: childEnv, cwd });
@@ -223,8 +306,65 @@ export async function runAction(deps: ActionDeps): Promise<number> {
     upload,
   });
 
-  // 8. Render and redact the comment body.
-  const secrets = [...collectSecretValues(env), ...(token ? [token] : [])];
+  // 8. Publish screenshots (Requirement 2.2). Runs after the artifact upload attempt.
+  const secrets = [...collectSecretValues(env), ...maskedValues];
+  const pr = isPullRequestEvent(env['GITHUB_EVENT_NAME']) ? readPullRequestContext(deps) : undefined;
+  const repository = env['GITHUB_REPOSITORY'] ?? '';
+  const serverUrl = env['GITHUB_SERVER_URL'] ?? 'https://github.com';
+  let publishResult: PublishResult = { kind: 'not-attempted' };
+  if (publishSettings.mode === 'branch') {
+    if (!commentEnabled) {
+      log.info('notice: publish is "branch" but comment is false, so nothing is published.');
+    }
+    const decision = decidePrePublisher({
+      publishMode: publishSettings.mode,
+      commentEnabled,
+      outcome: record?.outcome,
+      isPullRequestEvent: pr?.number !== undefined,
+      isForkPr: isForkPullRequest(pr?.payload),
+      isEvidenceBranchRef: [pr?.headRef, pr?.baseRef, env['GITHUB_HEAD_REF'], env['GITHUB_BASE_REF']].some(
+        (ref) => isEvidenceBranchRef(ref),
+      ),
+    });
+    if (decision.kind === 'proceed') {
+      const [owner = '', repo = ''] = repository.split('/');
+      try {
+        publishResult = await publish({
+          runner: deps.gitRunner ?? createGitRunner(),
+          runToken: token,
+          record,
+          runDir: runDir ?? '',
+          listing: runDir === undefined ? [] : (deps.listRunFiles ?? listRunDirEntries)(runDir),
+          prNumber: pr?.number ?? 0,
+          runId: runDir === undefined ? '' : (runDir.split(/[\\/]/).pop() ?? ''),
+          owner,
+          repo,
+          serverUrl,
+          imageCap: publishSettings.maxImages,
+          byteCapBytes: publishSettings.maxImageBytes,
+          tmpBase: env['RUNNER_TEMP'],
+          refs: [pr?.headRef, pr?.baseRef],
+          warn: (m) => log.warning(redactSecretValues(m, secrets)),
+          onGitError: (e) => log.info(redactSecretValues(gitErrorText(e), secrets)),
+        });
+      } catch (error) {
+        // publish() does not throw; this keeps a bug there from failing the step.
+        log.info(redactSecretValues(message(error), secrets));
+        publishResult = { kind: 'fallback', reason: 'git-error' };
+      }
+    } else if (decision.kind === 'fallback') {
+      publishResult = decision;
+    }
+    if (
+      publishResult.kind === 'fallback' &&
+      publishResult.reason !== 'no-images' &&
+      publishResult.reason !== 'no-pr-number'
+    ) {
+      log.warning(redactSecretValues(fallbackNote(publishResult.reason), secrets));
+    }
+  }
+
+  // 9. Render and redact the comment body, then comment or job summary.
   const unavailable: UnavailableRecord = {
     kind: 'unavailable',
     exitCode: exitCode ?? Number.NaN,
@@ -233,13 +373,15 @@ export async function runAction(deps: ActionDeps): Promise<number> {
     record: record ?? unavailable,
     artifactLink,
     secrets,
+    publishResult,
+    repository,
+    serverUrl,
+    prNumber: pr?.number,
   });
   const body = redactSecretValues(rendered, secrets);
 
-  // 9. Comment or job summary.
   let commentUrl = '';
   let posted = false;
-  const pr = isPullRequestEvent(env['GITHUB_EVENT_NAME']) ? readPullRequestContext(deps) : undefined;
   if (!commentEnabled) {
     log.info('comment is false: the report is written to the job summary.');
   } else if (pr === undefined || pr.number === undefined) {
@@ -314,10 +456,18 @@ export function createRealDeps(): ActionDeps {
     listEntries,
     readRunRecord,
     readEventFile: (path) => readFileSync(path, 'utf8'),
+    gitRunner: createGitRunner(),
+    listRunFiles: listRunDirEntries,
   };
 }
 
 async function main(): Promise<void> {
+  // The guard comes first: before the real adapters (cache, artifact client, ...) are built.
+  if (isEvidenceBranchRun(process.env)) {
+    skipEvidenceBranchRun(createLogger(), createOutputSetter());
+    process.exitCode = 0;
+    return;
+  }
   const code = await runAction(createRealDeps());
   process.exitCode = code;
 }

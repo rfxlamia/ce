@@ -106,6 +106,9 @@ export const ConfigSchema = strict({
     dir: z.string().optional(),
     'fail-on': z.array(z.enum(['error', 'unsupported', 'evidenced-not-reached'])).optional(),
   }).optional(),
+  publish: z.enum(['none', 'branch']).optional(),
+  'publish-max-images': z.number().int().min(1).max(50).optional(),
+  'publish-max-image-bytes': z.number().int().min(1).max(20971520).optional(),
 });
 
 export type EffectiveConfig = z.infer<typeof ConfigSchema>;

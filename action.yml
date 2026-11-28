@@ -119,8 +119,16 @@ inputs:
     description: 'Working directory for the CE run. Defaults to the workspace root.'
     required: false
     default: ''
+  token:
+    description: 'Token for the Git push and the comment calls. Empty falls back to github-token, then the default token.'
+    required: false
+    default: ''
   github-token:
-    description: 'Token used for GitHub API calls (comment upsert).'
+    description: 'Alias of token, kept for workflows written against the earlier release.'
+    required: false
+    default: ''
+  default-token:
+    description: 'Internal. Carries github.token because an Action cannot read that context. Do not set.'
     required: false
     default: '${{ github.token }}'
   comment:
@@ -136,9 +144,17 @@ inputs:
     required: false
     default: ''
   publish:
-    description: 'Evidence publishing mode: none or branch. Only none is implemented.'
+    description: 'Evidence publishing mode: none or branch. Empty means none unless ce.yml sets publish (the effective default is none).'
     required: false
-    default: 'none'
+    default: ''
+  publish-max-images:
+    description: 'publish-max-images: maximum screenshots published per run.'
+    required: false
+    default: ''
+  publish-max-image-bytes:
+    description: 'publish-max-image-bytes: maximum size in bytes of one published screenshot.'
+    required: false
+    default: ''
 outputs:
   outcome:
     description: 'SKIPPED, EVIDENCED, UNSUPPORTED or ERROR, or empty when unknown.'
