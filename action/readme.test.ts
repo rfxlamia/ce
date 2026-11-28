@@ -179,6 +179,11 @@ describe('README Releasing runbook', () => {
     expect(releasing()).toContain('Pushing one tag releases the GitHub Action and the npm package together.');
   });
 
+  it('documents moving the v0 major tag to the release', () => {
+    expect(releasing()).toContain('git tag -f v0');
+    expect(releasing()).toContain('git push -f origin v0');
+  });
+
   it('documents prerelease versions on the next dist-tag', () => {
     expect(releasing()).toMatch(/prerelease[^\n]*`next`/i);
   });

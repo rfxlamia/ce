@@ -233,6 +233,7 @@ default applies. List inputs are split at `,`.
 ## Releasing
 
 This section is for maintainers. Pushing one tag releases the GitHub Action and the npm package together.
+Action users pin `rfxlamia/ce@v0`, so the `v0` major tag must also move (step 5).
 
 1. Run `npm login` with an account that can publish `continuous-evidence`.
 2. After the PR is merged, publish the first release by hand from the
@@ -249,7 +250,15 @@ This section is for maintainers. Pushing one tag releases the GitHub Action and 
    `v0.1.1`). Push the tag soon after step 3, because a trusted publisher
    configuration may expire if it goes unused. The release workflow fails
    when the tag and the package version differ.
-5. Optionally, in the package settings on npmjs.com, select "Require 2FA and disallow tokens".
+5. Move the `v0` major tag to the same release so `rfxlamia/ce@v0` users get
+   it:
+
+   ```sh
+   git tag -f v0 vX.Y.Z
+   git push -f origin v0
+   ```
+
+6. Optionally, in the package settings on npmjs.com, select "Require 2FA and disallow tokens".
 
 Pushing a tag runs `.github/workflows/release.yml`. It publishes with OIDC trusted publishing, so the repository stores no npm token. Stable versions go to the `latest` dist-tag. Prerelease versions (for example `0.2.0-rc.1`) go to the `next` dist-tag.
 
