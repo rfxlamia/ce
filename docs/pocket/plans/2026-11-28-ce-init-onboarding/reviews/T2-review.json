@@ -1,0 +1,64 @@
+{
+  "task_id": "T2",
+  "task_name": "Project detection (package manager, script, port, framework)",
+  "cycle": 1,
+  "timestamp": "2026-11-28T00:20:00Z",
+  "reviewer_mode": "read-only",
+  "reviewer_config": "batch-parallel",
+  "stage_1": {
+    "status": "PASS",
+    "issues": [],
+    "concerns_addressed": [
+      "Unknown packageManager prefix ignored (falls to lockfile): consistent with A2 prefix set npm|pnpm|yarn|bun; tested with deno@2.0.0. Accepted.",
+      "-p matched only with whitespace: matches spec literal '-p N'; avoids -p=... ambiguity. Accepted.",
+      "ng matched without requiring serve: spec says '@angular/cli (ng serve)'; looser than spec, Minor.",
+      "@sveltejs/kit deps-only: it has no command token, so command-first is vacuous; tested. Accepted.",
+      "Cycle 2 RED partly from a crash: process observation only, no code impact; final tests cover parsing behaviour. Accepted."
+    ]
+  },
+  "stage_2": {
+    "status": "PASS",
+    "strengths": [
+      "detect.ts is pure: no imports, no fs, no process.*, no new dependencies; package.json untouched",
+      "Detection type matches the task contract exactly (field names and types); scriptText documented as raw",
+      "52 tests pass in src/init; tsc --noEmit clean; every Story A scenario has a test (earliest-port, invalid ports 0/70000/$PORT/abc, framework table, tokens-before-deps, unknown 3000, packageManager+pmMajor, wrong-typed packageManager, fallback reasons, BOM)",
+      "Regexes use boundary prefixes: MY_PORT=, --preserve, --pport, --public do not false-match (probed and tested)",
+      "Property test exercises wrong-typed fields, BOM, and asserts port/script/pm invariants",
+      "Small file (179 lines), no function over 50 lines, no triplicated logic"
+    ],
+    "issues": [
+      {
+        "severity": "Minor",
+        "description": "Port VALUE captures any non-whitespace except ;&|, so a closing paren or quote glued to the number invalidates a real explicit port: '(vite --port 3000)' and 'vite --port \"4000\"' fall back to the framework default. Consider also excluding ')' and quotes from VALUE or trimming them.",
+        "location": "packages/ce/src/init/detect.ts:59"
+      },
+      {
+        "severity": "Minor",
+        "description": "'ng' command token matches without requiring 'serve' (e.g. 'ng build', 'echo ng' report @angular/cli 4200); spec A3 says '@angular/cli (ng serve)'.",
+        "location": "packages/ce/src/init/detect.ts:54"
+      },
+      {
+        "severity": "Minor",
+        "description": "Framework command match follows FRAMEWORKS table order, not script position ('vite build && next dev' reports vite). Spec is silent; acceptable.",
+        "location": "packages/ce/src/init/detect.ts:102"
+      },
+      {
+        "severity": "Minor",
+        "description": "scripts that is not an object yields reason 'no-script' (A8 lists it separately but the Detection reason set has no distinct value); matches the task contract. A shell comment 'node a.js # PORT=9' yields explicit 9. Both are acceptable edge behaviour.",
+        "location": "packages/ce/src/init/detect.ts:162"
+      }
+    ],
+    "assessment": "Approved"
+  },
+  "overall": "REVIEW_PASS",
+  "fix_instructions": "",
+  "loop_info": {
+    "recovery_window": 1,
+    "current_cycle": 1,
+    "max_cycles": 2,
+    "cycles_remaining": 2,
+    "strategies": [],
+    "prior_windows": []
+  },
+  "reviewed_sha": "ce8213fa9bc1a0269b02f96ada1eda46c0921c7d"
+}

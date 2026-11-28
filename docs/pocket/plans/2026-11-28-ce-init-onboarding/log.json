@@ -25,8 +25,9 @@
         {
           "id": "T2",
           "name": "Project detection (package manager, script, port, framework)",
-          "status": "WAITING",
-          "file": "execution-plan/tasks/T2-project-detection-package-manager-script-port-framework.md"
+          "status": "DONE",
+          "file": "execution-plan/tasks/T2-project-detection-package-manager-script-port-framework.md",
+          "done_sha": "ce8213fa9bc1a0269b02f96ada1eda46c0921c7d"
         },
         {
           "id": "T3",
