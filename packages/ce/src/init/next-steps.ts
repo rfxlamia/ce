@@ -89,8 +89,11 @@ export function renderNextSteps(input: NextStepsInput): string {
   if (detection.status === 'fallback') {
     steps.push(['Please edit target in ce.yml: we could not detect how to start your app.']);
   }
+  const keyIsSet = (input.env.OPENROUTER_API_KEY ?? '') !== '';
   steps.push([
-    'Set OPENROUTER_API_KEY (get one at https://openrouter.ai/keys) in your environment or in .env.',
+    keyIsSet
+      ? 'OPENROUTER_API_KEY is already set in your environment.'
+      : 'Set OPENROUTER_API_KEY (get one at https://openrouter.ai/keys) in your environment or in .env.',
     'A .env file in the current directory is loaded automatically; keep it out of git.',
   ]);
   steps.push(['Install the browser: npx playwright install chromium']);
