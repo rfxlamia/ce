@@ -27,6 +27,9 @@ describe('ENV_KEY_MAP name mapping (Requirements 5.7, 5.16)', () => {
     CE_JEV_MODEL: 'jev.model',
     CE_OUTPUT_DIR: 'output.dir',
     CE_OUTPUT_FAIL_ON: 'output.fail-on',
+    CE_PUBLISH: 'publish',
+    CE_PUBLISH_MAX_IMAGES: 'publish-max-images',
+    CE_PUBLISH_MAX_IMAGE_BYTES: 'publish-max-image-bytes',
   };
 
   it('maps every schema key (except runtime.fixtures) to its CE_ name', () => {

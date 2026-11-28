@@ -51,7 +51,10 @@ Every CE run resolves to exactly one outcome (`SPEC.md` section 7.1):
 - Capabilities other than the browser-first catalog (no backend-only, Android, or desktop-native verification).
 - A keyless or alternative classifier. A Jev API key is required in v0.
 - Acting as a merge gate or deploy gate by default.
-- Writing to the target application or to Git. CE reads Git as a context provider and does not manage it. CE writes only its own evidence output.
+- Writing to the target application. CE writes only its own evidence output.
+- Modifying the user's code branches or managing Git. CE reads Git as a context provider and MUST NOT be required to manage Git (`SPEC.md` line 273). CE never force-pushes.
+
+Scope note (issue #47): writing to Git is in scope for v0 only as CE's own evidence output. With the opt-in `publish: branch` mode, CE may publish its own evidence (screenshots) to the dedicated orphan branch `ce-evidence`, and only there. The default `publish: none` writes nothing to Git. Spec: `.kiro/specs/inline-screenshot-in-pr/`.
 
 These match `docs/journal/v0.0/requirements.md` ("Non-goals for v0") and `SPEC.md` sections 1.3, 4.3, 4.4, and 5.5.
 

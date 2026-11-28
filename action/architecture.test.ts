@@ -89,6 +89,23 @@ describe('architecture: action/src and evidence/comment.ts boundaries', () => {
     expect(scoped.some((s) => isTestFile(s.rel))).toBe(false);
   });
 
+  it('scans action/src/publish/** and evidence-branch-guard.ts', () => {
+    const rels = scoped.map((s) => s.rel);
+    expect(rels).toEqual(
+      expect.arrayContaining([
+        'action/src/evidence-branch-guard.ts',
+        'action/src/publish/publisher.ts',
+        'action/src/publish/cap.ts',
+        'action/src/publish/url.ts',
+        'action/src/publish/select.ts',
+        'action/src/publish/decision.ts',
+        'action/src/publish/fallback.ts',
+        'action/src/publish/git-runner.ts',
+      ]),
+    );
+    expect(rels.filter((r) => r.startsWith('action/src/publish/')).length).toBeGreaterThan(0);
+  });
+
   it('import nothing from jev/', () => {
     const offenders = scoped
       .filter((s) => importSpecifiers(s.code).some(isJevSpecifier))
@@ -123,6 +140,14 @@ describe('architecture: named files import nothing from jev/', () => {
     'action/src/inputs.ts',
     'action/src/cache.ts',
     'action/src/run-dir.ts',
+    'action/src/evidence-branch-guard.ts',
+    'action/src/publish/publisher.ts',
+    'action/src/publish/cap.ts',
+    'action/src/publish/url.ts',
+    'action/src/publish/select.ts',
+    'action/src/publish/decision.ts',
+    'action/src/publish/fallback.ts',
+    'action/src/publish/git-runner.ts',
     'packages/ce/src/evidence/comment.ts',
   ];
 

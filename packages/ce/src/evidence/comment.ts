@@ -4,6 +4,9 @@
 // reads `record.outcome` as data (Requirements 8, 9, 10).
 import { redactSecretValues } from '../config/secrets.js';
 import { OUTCOMES } from '../outcome/types.js';
+import { parseImageUrl } from './image-url.js';
+import { fallbackNote } from './publish-types.js';
+import type { PublishResult } from './publish-types.js';
 import type { RunRecord } from './schema.js';
 import { clamp, oneLine, rationaleLine } from './summary.js';
 
@@ -23,6 +26,13 @@ export interface CommentInput {
   artifactLink: string;
   /** Secret values to replace with `[REDACTED]`. */
   secrets: readonly string[];
+  /** Outcome of the publish step. Absent means `not-attempted` (publish: none). */
+  publishResult?: PublishResult;
+  /** `<owner>/<repo>` from GITHUB_REPOSITORY, used to re-validate Image_URLs. */
+  repository?: string;
+  /** From GITHUB_SERVER_URL; defaults to https://github.com. */
+  serverUrl?: string;
+  prNumber?: number | undefined;
 }
 
 const MAX_BODY = 60000;
@@ -151,6 +161,88 @@ function artifactLine(link: string, secrets: readonly string[]): string {
   return `Artifact: ${inert(url, secrets)}`;
 }
 
+const THUMB_WIDTH = 160;
+
+function escapeAttr(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+interface ImagePlan {
+  /** Re-validated final screenshot URL, or undefined when absent or dropped. */
+  finalUrl: string | undefined;
+  /** Re-validated step thumbnails with their 1-based step label. */
+  thumbs: { k: number; url: string }[];
+  /** skippedCount plus URLs dropped by re-validation. */
+  baseMore: number;
+  /** Fixed note for a `fallback` result. */
+  note: string | undefined;
+}
+
+/**
+ * Plans the image section. Image_URLs are accepted only when they match the
+ * canonical URL for this repository and PR (Requirement 9.5); the first URL of
+ * a `published` result is the final screenshot, the rest are steps in order.
+ */
+function planImages(input: CommentInput): ImagePlan {
+  const result = input.publishResult ?? { kind: 'not-attempted' as const };
+  const empty: ImagePlan = { finalUrl: undefined, thumbs: [], baseMore: 0, note: undefined };
+  if (result.kind === 'not-attempted') return empty;
+  if (result.kind === 'fallback') return { ...empty, note: fallbackNote(result.reason) };
+
+  const [owner, repo, ...rest] = (input.repository ?? '').split('/');
+  const prNumber = input.prNumber;
+  const context =
+    owner !== undefined && owner !== '' && repo !== undefined && repo !== '' && rest.length === 0 && prNumber !== undefined
+      ? { serverUrl: input.serverUrl ?? 'https://github.com', owner, repo, prNumber }
+      : undefined;
+  const valid = (url: string): boolean => context !== undefined && parseImageUrl(url, context) !== undefined;
+
+  let dropped = 0;
+  let finalUrl: string | undefined;
+  const thumbs: { k: number; url: string }[] = [];
+  result.imageUrls.forEach((url, i) => {
+    if (!valid(url)) {
+      dropped += 1;
+    } else if (i === 0) {
+      finalUrl = url;
+    } else {
+      thumbs.push({ k: i, url });
+    }
+  });
+  return { finalUrl, thumbs, baseMore: Math.max(0, result.skippedCount) + dropped, note: undefined };
+}
+
+function imageSection(plan: ImagePlan, shownThumbs: number): string[] {
+  const lines: string[] = [];
+  if (plan.note !== undefined) return [plan.note];
+  if (plan.finalUrl !== undefined) {
+    lines.push('Final screenshot (an observation of the final state):', `![final screenshot](${plan.finalUrl})`);
+  }
+  const shown = plan.thumbs.slice(0, shownThumbs);
+  if (shown.length > 0) {
+    lines.push(
+      '',
+      '<details>',
+      '<summary>Step screenshots (observations)</summary>',
+      '',
+      ...shown.map(
+        (t) =>
+          `<img src="${escapeAttr(t.url)}" alt="${escapeAttr(`step ${t.k} screenshot`)}" width="${THUMB_WIDTH}">`,
+      ),
+      '',
+    );
+  }
+  const more = plan.baseMore + (plan.thumbs.length - shown.length);
+  if (more > 0) lines.push(`(+${more} more screenshots in the artifact)`);
+  if (shown.length > 0) lines.push('</details>');
+  return lines;
+}
+
 function assemble(head: string[], claims: string[], more: number, tail: string[]): string {
   const claimBlock = more > 0 ? [...claims, `(+${more} more claims)`] : claims;
   return [...head, '', ...claimBlock, '', ...tail].join('\n');
@@ -173,20 +265,57 @@ export function renderPrComment(input: CommentInput): string {
     claims = ['No claim was identified.'];
     tail = ['Why: no run record was available', '', `CE exit code: ${code}`];
   }
-  tail = [...tail, '', artifactLine(input.artifactLink, secrets)];
+  const plan = planImages(input);
+  const artifact = ['', artifactLine(input.artifactLink, secrets)];
 
   const listed = totalClaims === 0 ? 0 : claims.length - 1;
   let shown = listed;
-  const build = (): string =>
-    assemble([outcomeLine], claims.slice(0, totalClaims === 0 ? claims.length : shown + 1), totalClaims - shown, tail);
-  let body = build();
-  while (body.length > MAX_BODY && shown > 0) {
-    shown -= 1;
-    body = build();
-  }
+  let thumbsShown = plan.thumbs.length;
+  const build = (): string => {
+    const images = imageSection(plan, thumbsShown);
+    const fullTail = [...tail, ...(images.length > 0 ? ['', ...images] : []), ...artifact];
+    return assemble(
+      [outcomeLine],
+      claims.slice(0, totalClaims === 0 ? claims.length : shown + 1),
+      totalClaims - shown,
+      fullTail,
+    );
+  };
+  // The marker line counts against the ceiling (Requirements 9.9, 9.10).
+  const prefix = `${COMMENT_MARKER}\n`;
   // Redact the part after the marker only, so a secret can never split the marker.
-  const rest = redactSecretValues(body, secrets);
-  return `${COMMENT_MARKER}\n${rest}`;
+  const render = (): string => redactSecretValues(build(), secrets);
+  const fits = (body: string): boolean => prefix.length + body.length <= MAX_BODY;
+
+  // Largest count in [0, max] for which the body fits, by bisection (length
+  // does not grow as items are dropped); `set` applies a candidate count.
+  const shed = (max: number, set: (n: number) => void): string => {
+    set(max);
+    let body = render();
+    if (fits(body) || max === 0) return body;
+    let lo = 0;
+    let hi = max; // hi does not fit
+    while (hi - lo > 1) {
+      const mid = (lo + hi) >> 1;
+      set(mid);
+      if (fits(render())) lo = mid;
+      else hi = mid;
+    }
+    set(lo);
+    body = render();
+    return body;
+  };
+
+  // Thumbnails go first (Requirement 9.10), then Claims.
+  let body = shed(thumbsShown, (n) => {
+    thumbsShown = n;
+  });
+  if (!fits(body)) {
+    body = shed(shown, (n) => {
+      shown = n;
+    });
+  }
+  return `${prefix}${body}`;
 }
 
 /** Job summary text: the body without the marker line (Requirement 10.6). */

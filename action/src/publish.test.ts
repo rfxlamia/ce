@@ -10,11 +10,8 @@ describe('validatePublishMode (Requirements 12.2, 12.3, 12.4, 15.8)', () => {
     expect(validatePublishMode('none')).toBe('none');
   });
 
-  it('rejects branch as not implemented', () => {
-    expect(() => validatePublishMode('branch')).toThrow(
-      'publish: branch is not implemented in this release',
-    );
-    expect(() => validatePublishMode('branch')).toThrow(/follow-up issue/);
+  it('accepts branch', () => {
+    expect(validatePublishMode('branch')).toBe('branch');
   });
 
   it('rejects an invalid value and lists the allowed values', () => {

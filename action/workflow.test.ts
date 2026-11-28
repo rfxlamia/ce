@@ -43,8 +43,27 @@ describe('.github/workflows/ce.yml', () => {
     expect(wf.on).toHaveProperty('pull_request');
   });
 
-  it('grants only contents: read and pull-requests: write', () => {
-    expect(wf.permissions).toEqual({ contents: 'read', 'pull-requests': 'write' });
+  it('grants exactly contents: write and pull-requests: write (Req 13.1)', () => {
+    expect(wf.permissions).toEqual({ contents: 'write', 'pull-requests': 'write' });
+  });
+
+  it('sets publish: branch on the Action step (Req 13.1)', () => {
+    const ceStep = steps.find((s) => s.uses === './');
+    expect(ceStep?.with?.publish).toBe('branch');
+  });
+
+  it('never runs on the ce-evidence branch (Req 13.3, 12.6)', () => {
+    const jobs = Object.values(wf.jobs ?? {});
+    expect(jobs.length).toBeGreaterThan(0);
+    for (const job of jobs) {
+      expect(job.if).toContain("github.head_ref != 'ce-evidence'");
+      expect(job.if).toContain("github.base_ref != 'ce-evidence'");
+    }
+  });
+
+  it('keeps fetch-depth 0 on checkout (Req 13.2)', () => {
+    const checkout = steps.find((s) => s.uses?.startsWith('actions/checkout@'));
+    expect(checkout?.with?.['fetch-depth']).toBe(0);
   });
 
   it('uses a per-PR concurrency group with cancel-in-progress', () => {

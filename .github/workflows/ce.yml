@@ -6,7 +6,7 @@ on:
   pull_request:
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 # One CE run per pull request; a newer push supersedes the running one so the
@@ -18,8 +18,12 @@ concurrency:
 jobs:
   evidence:
     name: evidence
-    # A fork pull request has no access to the secret.
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    # A fork pull request has no access to the secret. Never run on the
+    # evidence branch, so publishing cannot start a loop.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository
+      && github.head_ref != 'ce-evidence'
+      && github.base_ref != 'ce-evidence'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -45,6 +49,7 @@ jobs:
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         with:
+          publish: branch
           # Vite's dev server (`npm run dev` in examples/demo-app) defaults to
           # port 5173 and serves `/`. Bind to 127.0.0.1 so the URL does not
           # resolve to ::1.

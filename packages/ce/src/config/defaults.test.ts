@@ -31,6 +31,31 @@ describe('ConfigDefaults: values (Requirement 2.1)', () => {
   it('sets output defaults', () => {
     expect(ConfigDefaults.output).toEqual({ dir: '.ce/runs', 'fail-on': ['error'] });
   });
+
+});
+
+describe('publish keys: schema boundaries (Requirements 1.2, 1.7, 8.3, 8.8)', () => {
+  const ok = (cfg: object) => ConfigSchema.safeParse(cfg).success;
+
+  it('accepts none and branch and rejects other values', () => {
+    expect(ok({ publish: 'none' })).toBe(true);
+    expect(ok({ publish: 'branch' })).toBe(true);
+    expect(ok({ publish: 'tag' })).toBe(false);
+  });
+
+  it('bounds publish-max-images to integers 1..50', () => {
+    for (const v of [1, 50]) expect(ok({ 'publish-max-images': v })).toBe(true);
+    for (const v of [0, 51, 1.5]) expect(ok({ 'publish-max-images': v })).toBe(false);
+  });
+
+  it('bounds publish-max-image-bytes to integers 1..20971520', () => {
+    for (const v of [1, 20971520]) expect(ok({ 'publish-max-image-bytes': v })).toBe(true);
+    for (const v of [0, 20971521, 2.5]) expect(ok({ 'publish-max-image-bytes': v })).toBe(false);
+  });
+
+  it('still rejects a token key', () => {
+    expect(ok({ token: 'x' })).toBe(false);
+  });
 });
 
 describe('ConfigDefaults: keys without a default (Requirement 2.2)', () => {

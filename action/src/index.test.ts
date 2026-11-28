@@ -448,13 +448,14 @@ describe('runAction: setup and upload failures', () => {
   });
 });
 
-describe('runAction: publish fail-fast', () => {
-  it.each([['branch'], ['bogus'], ['BRANCH']])(
+describe('runAction: publish input validation', () => {
+  it.each([['bogus'], ['BRANCH'], ['push']])(
     'publish: %s fails before any side effect and writes nothing',
     async (value) => {
       const h = harness({ inputs: { publish: value } });
       expect(await runAction(h.deps)).toBe(1);
       expect(h.logs.error).toHaveLength(1);
+      expect(h.logs.error[0]).toContain('"none" and "branch"');
       expect(h.spawned).toHaveLength(0);
       expect(h.commands).toEqual([]);
       expect(h.writes).toEqual([]);
@@ -466,10 +467,12 @@ describe('runAction: publish fail-fast', () => {
     },
   );
 
-  it('publish: branch names the not-implemented state', async () => {
+  it('publish: branch is accepted and no longer reports "not implemented"', async () => {
     const h = harness({ inputs: { publish: 'branch' } });
-    await runAction(h.deps);
-    expect(h.logs.error[0]).toContain('not implemented');
+    expect(await runAction(h.deps)).toBe(0);
+    expect(h.logs.error).toEqual([]);
+    expect(h.spawned).toHaveLength(1);
+    expect(h.logs.info.some((m) => m.startsWith('publish: branch'))).toBe(true);
   });
 
   it.each([[''], ['none']])('publish: "%s" runs normally', async (value) => {
@@ -477,6 +480,67 @@ describe('runAction: publish fail-fast', () => {
     expect(await runAction(h.deps)).toBe(0);
     expect(h.spawned).toHaveLength(1);
     expectNoForbiddenWrites(h);
+  });
+});
+
+describe('runAction: evidence-branch guard (Requirement 12)', () => {
+  it.each([
+    [{ GITHUB_REF: 'refs/heads/ce-evidence' }],
+    [{ GITHUB_HEAD_REF: 'ce-evidence' }],
+    [{ GITHUB_BASE_REF: 'ce-evidence' }],
+  ])('ends with exit 0 and empty outcome, before any side effect (%j)', async (env) => {
+    const h = harness({ env, inputs: { publish: 'bogus' } });
+    expect(await runAction(h.deps)).toBe(0);
+    // Ran before input validation, so the bad `publish` value was never looked at.
+    expect(h.logs.error).toEqual([]);
+    expect(h.logs.info).toHaveLength(1);
+    expect(h.outputs).toEqual({ outcome: '', 'exit-code': '0' });
+    expect(h.spawned).toHaveLength(0);
+    expect(h.commands).toEqual([]);
+    expect(h.writes).toEqual([]);
+    expect(h.requests).toEqual([]);
+    expect(h.logs.mask).toEqual([]);
+  });
+
+  it('does not match a branch that merely contains the name', async () => {
+    const h = harness({ env: { GITHUB_HEAD_REF: 'feature/ce-evidence-docs' } });
+    expect(await runAction(h.deps)).toBe(0);
+    expect(h.spawned).toHaveLength(1);
+  });
+});
+
+describe('runAction: token resolution and masking (Requirement 1.4, 7.2)', () => {
+  const b64 = (t: string): string => Buffer.from(`x-access-token:${t}`).toString('base64');
+
+  it('masks the token, its base64 form and the full header, before the cache restore', async () => {
+    const h = harness({ inputs: { token: 'tok-A', 'github-token': 'tok-B', 'default-token': 'tok-C' } });
+    const order: string[] = [];
+    const restore = h.deps.adapters.cache.restore.bind(h.deps.adapters.cache);
+    h.deps.adapters.cache.restore = async (p, k) => {
+      order.push(`restore after ${h.logs.mask.length} masks`);
+      return restore(p, k);
+    };
+    await runAction(h.deps);
+    expect(h.logs.mask).toEqual(['tok-A', b64('tok-A'), `AUTHORIZATION: basic ${b64('tok-A')}`]);
+    expect(order).toEqual(['restore after 3 masks']);
+  });
+
+  it('uses github-token alone, and default-token when both are empty', async () => {
+    const a = harness({ inputs: { 'github-token': 'only-gh' } });
+    await runAction(a.deps);
+    expect(a.logs.mask[0]).toBe('only-gh');
+    const b = harness({ inputs: { 'github-token': '', 'default-token': 'dflt' } });
+    await runAction(b.deps);
+    expect(b.logs.mask[0]).toBe('dflt');
+  });
+
+  it('keeps every masked value out of the CE_CLI child environment', async () => {
+    const h = harness({ inputs: { token: 'tok-A' } });
+    await runAction(h.deps);
+    const values = Object.values(h.spawned[0]!.env);
+    for (const v of ['tok-A', b64('tok-A'), `AUTHORIZATION: basic ${b64('tok-A')}`]) {
+      expect(values).not.toContain(v);
+    }
   });
 });
 

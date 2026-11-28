@@ -28651,7 +28651,10 @@ var ConfigSchema = strict({
   output: strict({
     dir: external_exports.string().optional(),
     "fail-on": external_exports.array(external_exports.enum(["error", "unsupported", "evidenced-not-reached"])).optional()
-  }).optional()
+  }).optional(),
+  publish: external_exports.enum(["none", "branch"]).optional(),
+  "publish-max-images": external_exports.number().int().min(1).max(50).optional(),
+  "publish-max-image-bytes": external_exports.number().int().min(1).max(20971520).optional()
 });
 
 // packages/ce/src/config/secrets.ts
