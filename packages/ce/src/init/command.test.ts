@@ -45,6 +45,24 @@ const read = (name: string) => readFileSync(path.join(cwd, name), 'utf8');
 const exists = (name: string) => realFs.existsSync(path.join(cwd, name));
 const entries = () => readdirSync(cwd).sort();
 
+function errno(code: string): NodeJS.ErrnoException {
+  return Object.assign(new Error(`${code}: simulated`), { code });
+}
+
+/** Real node:fs with selected operations replaced, to simulate failures. */
+function fsWith(over: Record<string, unknown>) {
+  return {
+    lstat: realFs.lstatSync,
+    stat: realFs.statSync,
+    readFile: realFs.readFileSync,
+    readdir: realFs.readdirSync,
+    writeFile: realFs.writeFileSync,
+    rename: realFs.renameSync,
+    unlink: realFs.unlinkSync,
+    ...over,
+  };
+}
+
 describe('runInitCommand happy path', () => {
   it('writes a detected config end to end', async () => {
     write('package.json', VITE_PKG);
@@ -58,5 +76,72 @@ describe('runInitCommand happy path', () => {
     expect(r.out).toContain('Next steps:');
     expect(r.out).toContain('Wrote ce.yml');
     expect(r.err).toBe('');
+  });
+});
+
+describe('runInitCommand guard', () => {
+  const EXISTS = (name: string) => `${name} already exists; re-run with --force to overwrite`;
+  beforeEach(() => write('package.json', VITE_PKG));
+
+  it('refuses to overwrite an existing ce.yml', async () => {
+    write('package.json', VITE_PKG);
+    write('ce.yml', 'custom: true\n');
+    const r = await init([]);
+    expect(r.code).toBe(1);
+    expect(read('ce.yml')).toBe('custom: true\n');
+    expect(r.err).toContain(EXISTS('ce.yml'));
+    expect(r.out).toBe('');
+  });
+
+  it('refuses when only .ce.yml exists and does not create ce.yml', async () => {
+    write('.ce.yml', 'custom: true\n');
+    const r = await init([]);
+    expect(r.code).toBe(1);
+    expect(exists('ce.yml')).toBe(false);
+    expect(read('.ce.yml')).toBe('custom: true\n');
+    expect(r.err).toContain(EXISTS('.ce.yml'));
+  });
+
+  it('is a no-op on a second run', async () => {
+    write('package.json', VITE_PKG);
+    expect((await init([])).code).toBe(0);
+    const first = read('ce.yml');
+    const r = await init([]);
+    expect(r.code).toBe(1);
+    expect(read('ce.yml')).toBe(first);
+    expect(r.err).toContain(EXISTS('ce.yml'));
+  });
+
+  it('treats a directory named ce.yml as existing', async () => {
+    realFs.mkdirSync(path.join(cwd, 'ce.yml'));
+    const r = await init([]);
+    expect(r.code).toBe(1);
+    expect(r.err).toContain(EXISTS('ce.yml'));
+  });
+
+  it('treats a dangling symlink ce.yml as existing', async () => {
+    realFs.symlinkSync(path.join(cwd, 'nowhere'), path.join(cwd, 'ce.yml'));
+    const r = await init([]);
+    expect(r.code).toBe(1);
+    expect(r.err).toContain(EXISTS('ce.yml'));
+    expect(exists('nowhere')).toBe(false);
+  });
+
+  it('maps an EEXIST race on the exclusive create to the same message', async () => {
+    write('package.json', VITE_PKG);
+    const fs = fsWith({
+      writeFile: (p: string, data: string, o: { flag: string }) => {
+        if (o.flag === 'wx') {
+          realFs.writeFileSync(p, 'raced\n');
+          throw errno('EEXIST');
+        }
+        realFs.writeFileSync(p, data, o);
+      },
+    });
+    const r = await init([], {}, fs);
+    expect(r.code).toBe(1);
+    expect(r.err).toContain(EXISTS('ce.yml'));
+    expect(read('ce.yml')).toBe('raced\n');
+    expect(r.out).toBe('');
   });
 });
