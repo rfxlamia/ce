@@ -1,0 +1,54 @@
+{
+  "task_id": "T8",
+  "task_name": "README Quick start and Releasing runbook",
+  "cycle": 1,
+  "timestamp": "2026-11-28T00:57:58Z",
+  "reviewer_mode": "read-only",
+  "reviewer_config": "standard",
+  "stage_1": {
+    "status": "PASS",
+    "issues": [],
+    "concerns_addressed": [
+      "Runbook step 4 bumps packages/ce/package.json before tagging: correct refinement of spec D6 step 4 (tag the next release). Step 2 manually publishes the current 0.1.0, so re-tagging v0.1.0 would make release.yml's npm publish fail; bumping is required for the tag/version guard (scripts/release-tag.mjs) and publish to both succeed.",
+      "Stub line replaced: 'Run the CE CLI (stub for now):' became 'Build the CE CLI and check its version:' plus a pointer to Quick start; guarded by a 'stub for now' absence test.",
+      "'may expire' phrasing matches the packet and the spec Open Questions row (48 h expiry is UNVERIFIED, secondary source)."
+    ]
+  },
+  "stage_2": {
+    "status": "PASS",
+    "strengths": [
+      "Quick start (README.md:14) precedes ## GitHub Action (README.md:120); the only 'rfxlamia/ce@' occurrence is the untouched Action example (README.md:145).",
+      "Diff touches only README.md and action/readme.test.ts; existing README tests and Action example are unchanged, and the readme tests pass 19/19 on re-run.",
+      "Facts verified against the repo: Node >=22.12 (packages/ce/package.json engines), bin 'ce', 'ce init'/'ce run' in cli.ts help, OPENROUTER_API_KEY, playwright as a runtime dependency (so npx playwright install chromium resolves locally), workflow filename release.yml, latest/next dist-tag and tag/version mismatch failure per scripts/release-tag.mjs.",
+      "New tests are section-scoped via sectionText and assert exact packet strings, the sh-only fencing and the no-yaml rule. A missing heading fails the test cleanly instead of breaking the whole file.",
+      "The bare 'npx ce' warning is accurate and prominent, which suits the < 2 min onboarding goal."
+    ],
+    "issues": [
+      {
+        "severity": "Minor",
+        "description": "Releasing prose lines (intro, trailing OIDC paragraph, step 5) are long unwrapped lines, while the rest of the README wraps near 80 columns.",
+        "location": "README.md:235"
+      },
+      {
+        "severity": "Minor",
+        "description": "Step 1 'npm login' is listed before 'After the PR is merged' in step 2, so the ordering reads ambiguously. It matches spec D6, but the prose does not say login is needed only for the manual publish in step 2.",
+        "location": "README.md:236"
+      },
+      {
+        "severity": "Minor",
+        "description": "Quick start never says what 'ce init' writes (ce.yml) or that a missing API key makes 'ce run' exit 1. A first-time user gets no hint before the first run.",
+        "location": "README.md:18"
+      },
+      {
+        "severity": "Minor",
+        "description": "The spec's one-liner 'npm i -D continuous-evidence && npx ce init' is split into two lines. That is fine, but no test asserts the && form.",
+        "location": "README.md:19"
+      }
+    ],
+    "assessment": "Approved"
+  },
+  "overall": "REVIEW_PASS",
+  "fix_instructions": "",
+  "loop_info": {"recovery_window": 1, "current_cycle": 1, "max_cycles": 2, "cycles_remaining": 2, "strategies": [], "prior_windows": []},
+  "reviewed_sha": "19a54ea693eeec5a7b8623c785217d6998ed5823"
+}

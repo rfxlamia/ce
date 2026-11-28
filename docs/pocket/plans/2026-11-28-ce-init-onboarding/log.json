@@ -93,9 +93,10 @@
         {
           "id": "T8",
           "name": "README Quick start and Releasing runbook",
-          "status": "WAITING",
+          "status": "DONE",
           "depends": "T7",
-          "file": "execution-plan/tasks/T8-readme-quick-start-and-releasing-runbook.md"
+          "file": "execution-plan/tasks/T8-readme-quick-start-and-releasing-runbook.md",
+          "done_sha": "19a54ea693eeec5a7b8623c785217d6998ed5823"
         },
         {
           "id": "T9",
