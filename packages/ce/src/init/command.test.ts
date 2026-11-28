@@ -127,6 +127,20 @@ describe('runInitCommand guard', () => {
     expect(exists('nowhere')).toBe(false);
   });
 
+  it('reports a non-ENOENT lstat failure cleanly instead of rejecting', async () => {
+    const fs = fsWith({
+      lstat: () => {
+        throw errno('EACCES');
+      },
+    });
+    const r = await init([], {}, fs);
+    expect(r.code).toBe(1);
+    expect(r.err).toContain('ce.yml');
+    expect(r.err).toContain('EACCES');
+    expect(r.out).toBe('');
+    expect(exists('ce.yml')).toBe(false);
+  });
+
   it('maps an EEXIST race on the exclusive create to the same message', async () => {
     write('package.json', VITE_PKG);
     const fs = fsWith({
@@ -233,6 +247,28 @@ describe('runInitCommand force', () => {
     expect(r.err).toContain('ENOSPC');
   });
 
+  it('omits the ignored-.ce.yml note when the replace fails', async () => {
+    write('ce.yml', 'one: 1\n');
+    write('.ce.yml', 'two: 2\n');
+    const fs = fsWith({
+      rename: () => {
+        throw errno('ENOSPC');
+      },
+    });
+    const r = await init(['--force'], {}, fs);
+    expect(r.code).toBe(1);
+    expect(r.err).not.toContain('ignored');
+  });
+
+  it('replaces a dangling symlink ce.yml with a regular file', async () => {
+    realFs.symlinkSync(path.join(cwd, 'nowhere'), path.join(cwd, 'ce.yml'));
+    const r = await init(['--force']);
+    expect(r.code).toBe(0);
+    expect(realFs.lstatSync(path.join(cwd, 'ce.yml')).isFile()).toBe(true);
+    expect(read('ce.yml')).toContain('http://localhost:5173');
+    expect(exists('nowhere')).toBe(false);
+  });
+
   it('reports EACCES from the create without --force', async () => {
     const fs = fsWith({
       writeFile: () => {
@@ -289,6 +325,15 @@ describe('runInitCommand argv and fallbacks', () => {
     expect(r.err).toContain('package.json could not be read (EISDIR)');
     expect(read('ce.yml')).toContain('package.json could not be read');
     expect(r.out).toContain('Please edit target in ce.yml');
+  });
+
+  it('ignores a lockfile name that is a directory', async () => {
+    write('package.json', VITE_PKG);
+    realFs.mkdirSync(path.join(cwd, 'yarn.lock'));
+    const r = await init([]);
+    expect(r.code).toBe(0);
+    expect(r.out).toContain('npm install');
+    expect(r.out).not.toContain('yarn');
   });
 
   it('never prints the API key value', async () => {

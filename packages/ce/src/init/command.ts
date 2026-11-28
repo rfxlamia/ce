@@ -4,7 +4,7 @@
 import { randomBytes } from 'node:crypto';
 import * as nodeFs from 'node:fs';
 import { join } from 'node:path';
-import { detectProject } from './detect.js';
+import { detectProject, type Detection } from './detect.js';
 import { renderNextSteps } from './next-steps.js';
 import { renderConfig } from './template.js';
 
@@ -100,17 +100,95 @@ function replaceAtomically(fs: InitFs, cwd: string, name: string, text: string):
   }
 }
 
-/** B0: any directory entry (file, directory, symlink, dangling or not) counts. Returns the first name found. */
+/**
+ * B0: any directory entry (file, directory, symlink, dangling or not) counts. Returns the first name found.
+ * Throws only for a non-ENOENT lstat failure, which the caller reports.
+ */
 function firstExistingConfig(fs: InitFs, cwd: string): string | null {
   for (const name of CONFIG_NAMES) {
     try {
       fs.lstat(join(cwd, name));
       return name;
     } catch (error) {
-      if (errorCode(error) !== 'ENOENT') throw error;
+      if (errorCode(error) !== 'ENOENT') throw new ConfigCheckError(name, errorCode(error));
     }
   }
   return null;
+}
+
+class ConfigCheckError extends Error {
+  constructor(
+    readonly file: string,
+    readonly code: string,
+  ) {
+    super(`Cannot check ${file}: ${code}`);
+  }
+}
+
+interface ProjectInput {
+  packageJsonText: string | null;
+  packageJsonUnreadable: boolean;
+  /** Set when package.json exists but could not be read. */
+  readErrorCode: string | null;
+  files: Set<string>;
+}
+
+/** Reads package.json and the regular-file lockfiles in `cwd`. Never throws. */
+function gatherProjectInput(cwd: string, fs: InitFs): ProjectInput {
+  let packageJsonText: string | null = null;
+  let readErrorCode: string | null = null;
+  try {
+    packageJsonText = fs.readFile(join(cwd, 'package.json'), 'utf8');
+  } catch (error) {
+    const code = errorCode(error);
+    if (code !== 'ENOENT') readErrorCode = code;
+  }
+  let names: string[] = [];
+  try {
+    names = fs.readdir(cwd);
+  } catch {
+    // Lockfile detection is best effort.
+  }
+  const files = new Set(LOCKFILES.filter((f) => names.includes(f) && isFile(fs, join(cwd, f))));
+  return { packageJsonText, packageJsonUnreadable: readErrorCode !== null, readErrorCode, files };
+}
+
+/** Creates `ce.yml` exclusively, or replaces the B3 target atomically under --force. Returns the file name written. */
+function writeConfig(fs: InitFs, cwd: string, text: string, force: boolean, stderr: Writable): string {
+  if (!force) {
+    try {
+      fs.writeFile(join(cwd, 'ce.yml'), text, { flag: 'wx' });
+    } catch (error) {
+      throw new ConfigWriteError('ce.yml', errorCode(error), errorCode(error) === 'EEXIST');
+    }
+    return 'ce.yml';
+  }
+  const target = forceTarget(fs, cwd);
+  try {
+    replaceAtomically(fs, cwd, target.name, text);
+  } catch (error) {
+    throw new ConfigWriteError(target.name, errorCode(error), false);
+  }
+  if (target.bothFiles) stderr.write('Note: .ce.yml also exists and stays ignored; ce.yml takes precedence.\n');
+  return target.name;
+}
+
+class ConfigWriteError extends Error {
+  constructor(
+    readonly file: string,
+    readonly code: string,
+    readonly alreadyExists: boolean,
+  ) {
+    super(`Cannot write ${file}: ${code}`);
+  }
+}
+
+function packageJsonNotes(input: ProjectInput, detection: Detection): string[] {
+  if (input.readErrorCode !== null) return [`package.json could not be read (${input.readErrorCode})\n`];
+  if (detection.status === 'fallback' && detection.reason === 'unparseable') {
+    return ['package.json could not be parsed\n'];
+  }
+  return [];
 }
 
 export async function runInitCommand(argv: readonly string[], deps: InitCommandDeps): Promise<number> {
@@ -122,59 +200,33 @@ export async function runInitCommand(argv: readonly string[], deps: InitCommandD
     stderr.write(USAGE);
     return 1;
   }
-  const { force } = args;
 
-  if (!force) {
-    const existing = firstExistingConfig(fs, cwd);
-    if (existing !== null) {
-      stderr.write(existsMessage(existing));
-      return 1;
-    }
-  }
-
-  const notes: string[] = [];
-  let packageJsonText: string | null = null;
-  let packageJsonUnreadable = false;
   try {
-    packageJsonText = fs.readFile(join(cwd, 'package.json'), 'utf8');
+    if (!args.force) {
+      const existing = firstExistingConfig(fs, cwd);
+      if (existing !== null) {
+        stderr.write(existsMessage(existing));
+        return 1;
+      }
+    }
+    const input = gatherProjectInput(cwd, fs);
+    const detection = detectProject({
+      packageJsonText: input.packageJsonText,
+      packageJsonUnreadable: input.packageJsonUnreadable,
+      files: input.files,
+    });
+    const name = writeConfig(fs, cwd, renderConfig(detection), args.force, stderr);
+    for (const note of packageJsonNotes(input, detection)) stderr.write(note);
+    stdout.write(renderNextSteps({ detection, configPath: name, env }));
+    return 0;
   } catch (error) {
-    const code = errorCode(error);
-    if (code !== 'ENOENT') {
-      packageJsonUnreadable = true;
-      notes.push(`package.json could not be read (${code})\n`);
-    }
-  }
-  let entries = new Set<string>();
-  try {
-    entries = new Set(fs.readdir(cwd));
-  } catch {
-    // Lockfile detection is best effort.
-  }
-  const files = new Set(LOCKFILES.filter((f) => entries.has(f)));
-
-  const detection = detectProject({ packageJsonText, packageJsonUnreadable, files });
-  if (detection.status === 'fallback' && detection.reason === 'unparseable') {
-    notes.push('package.json could not be parsed\n');
-  }
-  const text = renderConfig(detection);
-
-  let name = 'ce.yml';
-  try {
-    if (force) {
-      const target = forceTarget(fs, cwd);
-      name = target.name;
-      if (target.bothFiles) stderr.write('Note: .ce.yml also exists and stays ignored; ce.yml takes precedence.\n');
-      replaceAtomically(fs, cwd, name, text);
+    if (error instanceof ConfigCheckError) {
+      stderr.write(`${error.message}\n`);
+    } else if (error instanceof ConfigWriteError) {
+      stderr.write(error.alreadyExists ? existsMessage(error.file) : `${error.message}\n`);
     } else {
-      fs.writeFile(join(cwd, name), text, { flag: 'wx' });
+      throw error;
     }
-  } catch (error) {
-    const code = errorCode(error);
-    stderr.write(code === 'EEXIST' && !force ? existsMessage(name) : `Cannot write ${name}: ${code}\n`);
     return 1;
   }
-
-  for (const note of notes) stderr.write(note);
-  stdout.write(renderNextSteps({ detection, configPath: name, env }));
-  return 0;
 }
