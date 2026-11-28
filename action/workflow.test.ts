@@ -7,12 +7,16 @@ import { parse } from 'yaml';
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 interface Step {
+  name?: string;
+  run?: string;
   uses?: string;
   env?: Record<string, string>;
   with?: Record<string, unknown>;
 }
 interface Job {
   if?: string;
+  'runs-on'?: string;
+  env?: Record<string, string>;
   steps?: Step[];
 }
 interface Workflow {
@@ -78,5 +82,32 @@ describe('.github/workflows/ci.yml', () => {
     expect(wf.jobs).toBeDefined();
     expect(allSteps(wf).some((s) => s.uses === './')).toBe(false);
     expect(text).not.toContain('rfxlamia/ce');
+  });
+
+  describe('smoke-pack job', () => {
+    const job = wf.jobs?.['smoke-pack'];
+    const steps = job?.steps ?? [];
+
+    it('exists on ubuntu-latest with Node 24.x', () => {
+      expect(job).toBeDefined();
+      expect(job?.['runs-on']).toBe('ubuntu-latest');
+      const setup = steps.find((s) => s.uses?.startsWith('actions/setup-node@'));
+      expect(setup?.with?.['node-version']).toBe('24.x');
+    });
+
+    it('runs npm ci before node scripts/smoke-pack.mjs', () => {
+      const runs = steps.map((s) => s.run?.trim());
+      const ci = runs.indexOf('npm ci');
+      const smoke = runs.indexOf('node scripts/smoke-pack.mjs');
+      expect(ci).toBeGreaterThanOrEqual(0);
+      expect(smoke).toBeGreaterThan(ci);
+    });
+
+    it('needs no secrets and does not install Chromium', () => {
+      const raw = JSON.stringify(job ?? {});
+      expect(raw).not.toContain('OPENROUTER_API_KEY');
+      expect(raw).not.toContain('secrets.');
+      expect(raw).not.toMatch(/playwright install/i);
+    });
   });
 });
