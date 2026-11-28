@@ -40,9 +40,10 @@
         {
           "id": "T4",
           "name": "Next-steps text and workflow snippet",
-          "status": "WAITING",
+          "status": "DONE",
           "depends": "T2",
-          "file": "execution-plan/tasks/T4-next-steps-text-and-workflow-snippet.md"
+          "file": "execution-plan/tasks/T4-next-steps-text-and-workflow-snippet.md",
+          "done_sha": "4c33a4720d4376c383c979c3aa8d69864132870a"
         }
       ]
     },

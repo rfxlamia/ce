@@ -275,7 +275,7 @@ Scenario: write fails mid --force
   |---|---|---|
   | npm with `package-lock.json` | none | `npm ci` |
   | npm without a lockfile | none | `npm install` |
-  | pnpm | `pnpm/action-setup@v4` | `pnpm install --frozen-lockfile` when `pnpm-lock.yaml` exists, else `pnpm install` |
+  | pnpm | `pnpm/action-setup@v4`, plus `with: version: 10  # match your pnpm version` when package.json has no `packageManager` field (the action requires `version` then; amended during T4 audit) | `pnpm install --frozen-lockfile` when `pnpm-lock.yaml` exists, else `pnpm install` |
   | yarn | none (`corepack enable` as a run step) | `yarn install --immutable` when `packageManager` is `yarn@2` or later (Berry); otherwise `yarn install --frozen-lockfile` (Yarn 1, also when `packageManager` is absent). Either way, the frozen flag is used only when `yarn.lock` exists, else `yarn install` |
   | bun | `oven-sh/setup-bun@v2` | `bun install --frozen-lockfile` when `bun.lock` or `bun.lockb` exists, else `bun install` |
   | A8 fallback (target not detected) | none | `npm ci`, with the comment `# adjust to your install command` |

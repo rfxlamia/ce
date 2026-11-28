@@ -1,0 +1,49 @@
+{
+  "task_id": "T4",
+  "task_name": "Next-steps text and workflow snippet",
+  "cycle": 2,
+  "timestamp": "2026-11-28T00:28:30Z",
+  "reviewer_mode": "read-only",
+  "reviewer_config": "batch-parallel",
+  "stage_1": {
+    "status": "PASS",
+    "issues": [],
+    "concerns_addressed": [
+      "Fix 4c33a47 deviates from spec C2 (pnpm row lists bare pnpm/action-setup@v4) by adding with.version 10 when pmMajor is null; controller-approved, justified by action README (version required unless packageManager present) and does not break any other C1/C2/C3 requirement.",
+      "pnpm/action-setup@v4 action.yml lists input 'version' (required: false in metadata, enforced at runtime when packageManager is absent), so 'version: 10' is a valid input; YAML number is stringified by the runner. Known-pmMajor case stays bare, which avoids the v4 version-conflict error.",
+      "Action-setup still precedes setup-node; frozen-lockfile logic, ordering, key handling and not-installed guard unchanged. vitest src/init/: 5 files, 88 tests pass; tsc --noEmit clean."
+    ]
+  },
+  "stage_2": {
+    "status": "PASS",
+    "strengths": [
+      "Previous Important resolved: pmMajor null yields with.version 10 with an inline '# match your pnpm version' comment; known pmMajor yields a bare step with an explanatory code comment.",
+      "New tests parse the printed YAML and assert with equals {version: 10} for pmMajor null with and without lockfile, assert the comment is printed, and assert with is undefined when pmMajor is 9.",
+      "Change is minimal (one conditional in table-driven installPlan), no regressions in existing install-table, ordering or key tests."
+    ],
+    "issues": [
+      {
+        "severity": "Minor",
+        "description": "Carried forward: workflow snippet is printed as an unnumbered 'Optional:' section rather than numbered step 7 as in C1. Presentation only.",
+        "location": "packages/ce/src/init/next-steps.ts:117"
+      },
+      {
+        "severity": "Minor",
+        "description": "Spec C2 table still lists bare pnpm/action-setup@v4; spec should be updated to record the version-when-packageManager-absent rule so spec and code agree.",
+        "location": "docs/pocket/spec/2026-11-28-ce-init-onboarding/ce-init-and-npm-distribution.md (C2 table, pnpm row)"
+      }
+    ],
+    "assessment": "Approve"
+  },
+  "overall": "REVIEW_PASS",
+  "fix_instructions": "",
+  "loop_info": {
+    "recovery_window": 1,
+    "current_cycle": 2,
+    "max_cycles": 2,
+    "cycles_remaining": 1,
+    "strategies": ["round 1: add with.version 10 to pnpm/action-setup when pmMajor is null; bare step otherwise"],
+    "prior_windows": []
+  },
+  "reviewed_sha": "4c33a4720d4376c383c979c3aa8d69864132870a"
+}
