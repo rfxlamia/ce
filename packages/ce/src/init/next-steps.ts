@@ -29,7 +29,16 @@ function installPlan(d: Detection): InstallPlan {
   switch (d.pm) {
     case 'pnpm':
       return plan(d.hasLockfile ? 'pnpm install --frozen-lockfile' : 'pnpm install', {
-        before: ['      - uses: pnpm/action-setup@v4'],
+        // action-setup@v4 needs `version` unless package.json has packageManager (pmMajor known),
+        // and errors when both disagree, so pin only when the field is absent.
+        before:
+          d.pmMajor === null
+            ? [
+                '      - uses: pnpm/action-setup@v4',
+                '        with:',
+                '          version: 10 # match your pnpm version',
+              ]
+            : ['      - uses: pnpm/action-setup@v4'],
       });
     case 'yarn': {
       const frozen = d.pmMajor !== null && d.pmMajor >= 2 ? '--immutable' : '--frozen-lockfile';

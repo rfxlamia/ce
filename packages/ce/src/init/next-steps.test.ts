@@ -180,6 +180,25 @@ describe('install step table', () => {
     });
   }
 
+  describe('pnpm version input', () => {
+    const pnpmStep = (det: Detection): Step | undefined =>
+      snippet(render(det)).steps.find((s) => s.uses === 'pnpm/action-setup@v4');
+
+    it('pins version 10 when packageManager is absent', () => {
+      for (const hasLockfile of [true, false]) {
+        const det = detected({ pm: 'pnpm', pmMajor: null, hasLockfile });
+        expect(pnpmStep(det)?.with).toEqual({ version: 10 });
+        expect(render(det)).toContain('# match your pnpm version');
+      }
+    });
+
+    it('adds no with block when packageManager declares the version', () => {
+      const step = pnpmStep(detected({ pm: 'pnpm', pmMajor: 9 }));
+      expect(step).toBeDefined();
+      expect(step?.with).toBeUndefined();
+    });
+  });
+
   it('covers every package manager', () => {
     const pms: PackageManager[] = ['npm', 'pnpm', 'yarn', 'bun'];
     for (const pm of pms) expect(cases.some((c) => c.det.pm === pm)).toBe(true);
