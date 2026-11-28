@@ -22,6 +22,33 @@ function header(): string[] {
 }
 
 const DEFAULT_PORT = 3000;
+/** Maximum length of a generated comment's text after the leading "# ". */
+const COMMENT_TEXT_MAX = 120;
+
+/** Control, line-separator and invisible format characters become a space so a comment stays on one line. */
+function sanitizeForComment(text: string): string {
+  return text.replace(/[\p{Cc}\p{Cf}\u2028\u2029]/gu, ' ');
+}
+
+/** Truncates to at most `max` UTF-16 units without splitting a surrogate pair. */
+function truncateUtf16(text: string, max: number): string {
+  let out = '';
+  for (const ch of text) {
+    if (out.length + ch.length > max) break;
+    out += ch;
+  }
+  return out;
+}
+
+/** Single-line detection hint: user-controlled script text is sanitised and the whole line capped. */
+function detectedHint(d: Detected): string {
+  const prefix = `Detected: ${d.framework ?? 'no known framework'} (script "${d.script}": "`;
+  const suffix = '")';
+  const room = Math.max(0, COMMENT_TEXT_MAX - prefix.length - suffix.length);
+  const clean = sanitizeForComment(d.scriptText);
+  const body = clean.length <= room ? clean : `${truncateUtf16(clean, Math.max(0, room - 3))}...`;
+  return `# ${prefix}${body}${suffix}`;
+}
 
 const FALLBACK_REASONS: Record<Extract<Detection, { status: 'fallback' }>['reason'], string> = {
   missing: 'package.json was not found',
@@ -42,7 +69,7 @@ function targetLines(start: string, port: number, indent: string): string[] {
 }
 
 function targetBlock(d: Detected): string[] {
-  const lines = [`# Detected: ${d.framework ?? 'no known framework'} (script "${d.script}")`];
+  const lines = [detectedHint(d)];
   if (d.portSource === 'unknown') {
     lines.push('# Dev server port not detected; check the url below and change it if needed.');
   }

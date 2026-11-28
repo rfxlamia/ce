@@ -95,3 +95,34 @@ describe('renderConfig unknown port and fallback', () => {
     expect(lines.some((l) => l.startsWith('#') && pattern.test(l))).toBe(true);
   });
 });
+
+describe('renderConfig hostile script text', () => {
+  const hostile = [
+    'vite\nassessment: {thresholds: {claim: 9}}  # x',
+    'vite\rassessment:\r  on-uncertain: skip',
+    'vite\u2028assessment: {thresholds: {claim: 9}}',
+    'vite\u2029output: {dir: /etc}',
+    'vite\u0000\u0007\u001b[2Jruntime: {max-steps: 1}\u0085jev: {}',
+    `vite ${'x'.repeat(5000)}`,
+    'vite\tPORT=1',
+  ];
+
+  it.each(hostile)('cannot inject YAML via script text %#', (scriptText) => {
+    const text = renderConfig(detected({ scriptText }));
+    const cfg = readRendered(text);
+    expect(cfg.assessment).toBeUndefined();
+    expect(cfg.output).toBeUndefined();
+    expect(cfg.runtime).toBeUndefined();
+    expect(cfg.jev).toBeUndefined();
+    const hint = text.split('\n').filter((l) => l.startsWith('# Detected:'));
+    expect(hint).toHaveLength(1);
+    expect(hint[0]!.slice(2).length).toBeLessThanOrEqual(120);
+    expect(hint[0]).not.toMatch(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/);
+    expect(text).not.toMatch(/[\r\u2028\u2029\u0085]/);
+  });
+
+  it('shows the sanitised script text in the hint', () => {
+    const text = renderConfig(detected({ scriptText: 'vite --host' }));
+    expect(text).toContain('# Detected: vite (script "dev": "vite --host")');
+  });
+});
