@@ -129,34 +129,51 @@ function pmFromLockfiles(files: ReadonlySet<string>): PackageManager {
 
 const LOCKFILES = ['pnpm-lock.yaml', 'yarn.lock', 'bun.lock', 'bun.lockb', 'package-lock.json'];
 
+function parseJson(text: string): { ok: true; value: unknown } | { ok: false } {
+  try {
+    return { ok: true, value: JSON.parse(text.charCodeAt(0) === 0xfeff ? text.slice(1) : text) };
+  } catch {
+    return { ok: false };
+  }
+}
+
 export function detectProject(input: DetectInput): Detection {
-  const pkg = JSON.parse(input.packageJsonText ?? '{}') as Record<string, unknown>;
-  const scripts = (isRecord(pkg.scripts) ? pkg.scripts : {}) as Record<string, unknown>;
-  const dev = scripts.dev;
-  const start = scripts.start;
-  const script: 'dev' | 'start' = usableScript(dev) ? 'dev' : 'start';
-  const scriptText = (usableScript(dev) ? dev : start) as string;
+  const lockfilePm = pmFromLockfiles(input.files);
+  const hasLockfile = LOCKFILES.some((f) => input.files.has(f));
+  const bare = { pm: lockfilePm, pmMajor: null, hasLockfile, ceInstalled: false } as const;
+
+  if (input.packageJsonText === null) return { status: 'fallback', reason: 'missing', ...bare };
+  const parsed = parseJson(input.packageJsonText);
+  if (!parsed.ok) return { status: 'fallback', reason: 'unparseable', ...bare };
+  const pkg = parsed.value;
+  if (!isRecord(pkg)) return { status: 'fallback', reason: 'not-object', ...bare };
 
   const deps = isRecord(pkg.dependencies) ? pkg.dependencies : {};
   const devDeps = isRecord(pkg.devDependencies) ? pkg.devDependencies : {};
   const depNames = new Set([...Object.keys(deps), ...Object.keys(devDeps)]);
+  const declared = packageManagerField(pkg.packageManager);
+  const common = {
+    pm: declared?.pm ?? lockfilePm,
+    pmMajor: declared?.pmMajor ?? null,
+    hasLockfile,
+    ceInstalled: depNames.has('continuous-evidence'),
+  };
+
+  const scripts = isRecord(pkg.scripts) ? pkg.scripts : {};
+  const { dev, start } = scripts;
+  const script: 'dev' | 'start' | null = usableScript(dev) ? 'dev' : usableScript(start) ? 'start' : null;
+  if (script === null) return { status: 'fallback', reason: 'no-script', ...common };
+  const scriptText = (script === 'dev' ? dev : start) as string;
 
   const explicit = explicitPort(scriptText);
   const fw = detectFramework(scriptText, depNames);
-  const port = explicit ?? fw?.port ?? DEFAULT_PORT;
-  const portSource = explicit !== null ? 'explicit' : fw ? 'framework' : 'unknown';
-  const declared = packageManagerField(pkg.packageManager);
-
   return {
     status: 'detected',
-    pm: declared?.pm ?? pmFromLockfiles(input.files),
-    pmMajor: declared?.pmMajor ?? null,
+    ...common,
     script,
-    port,
-    portSource,
+    port: explicit ?? fw?.port ?? DEFAULT_PORT,
+    portSource: explicit !== null ? 'explicit' : fw ? 'framework' : 'unknown',
     framework: fw?.name ?? null,
-    hasLockfile: LOCKFILES.some((f) => input.files.has(f)),
-    ceInstalled: depNames.has('continuous-evidence'),
     scriptText,
   };
 }

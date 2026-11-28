@@ -174,3 +174,40 @@ describe('detectProject: selection of script and package manager', () => {
     });
   });
 });
+
+describe('detectProject: fallback cases and BOM', () => {
+  const files = new Set(['yarn.lock']);
+
+  it.each([
+    [null, 'missing'],
+    ['{ not json', 'unparseable'],
+    ['', 'unparseable'],
+    ['[]', 'not-object'],
+    ['42', 'not-object'],
+    ['null', 'not-object'],
+    ['"x"', 'not-object'],
+    ['{"scripts":"x"}', 'no-script'],
+    ['{"scripts":{}}', 'no-script'],
+    ['{}', 'no-script'],
+    ['{"scripts":{"dev":" ","start":3}}', 'no-script'],
+  ] as const)('package.json %j falls back with reason %s', (text, reason) => {
+    expect(detectProject({ packageJsonText: text, files })).toMatchObject({
+      status: 'fallback',
+      reason,
+      pm: 'yarn',
+      pmMajor: null,
+      hasLockfile: true,
+      ceInstalled: false,
+    });
+  });
+
+  it('keeps pm and ceInstalled information in the fallback', () => {
+    const d = detect({ packageManager: 'pnpm@9.1.0', devDependencies: { 'continuous-evidence': '^0.1.0' } });
+    expect(d).toMatchObject({ status: 'fallback', reason: 'no-script', pm: 'pnpm', pmMajor: 9, ceInstalled: true });
+  });
+
+  it('tolerates a leading BOM', () => {
+    const d = detectProject({ packageJsonText: '﻿{"scripts":{"dev":"vite"}}', files: new Set() });
+    expect(d).toMatchObject({ status: 'detected', port: 5173 });
+  });
+});
